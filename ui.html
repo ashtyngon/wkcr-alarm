@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radio Alarm Clock</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --text: #e6edf3;
+      --text2: #8b949e;
+      --border: #30363d;
+      --accent: #f0883e;
+      --accent2: #d29922;
+      --green: #3fb950;
+      --red: #f85149;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      padding-bottom: 100px;
+    }
+
+    /* Header */
+    .header {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 40;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .header .status {
+      font-size: 13px;
+      color: var(--text2);
+    }
+
+    /* Panel System */
+    .panel {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-header {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .panel-header:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .panel-header h2 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .panel-toggle {
+      color: var(--text2);
+      transition: transform 0.2s;
+      font-size: 18px;
+    }
+
+    .panel-toggle.open {
+      transform: rotate(180deg);
+    }
+
+    .panel-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+
+    .panel-content.open {
+      max-height: 2000px;
+      transition: max-height 0.3s ease-in;
+    }
+
+    .panel-inner {
+      padding: 0 20px 16px;
+    }
+
+    /* Speaker Panel */
+    .speaker-select {
+      width: 100%;
+      padding: 8px 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .speaker-select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* Volume Panel */
+    .volume-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .volume-label {
+      font-size: 13px;
+      color: var(--text2);
+      min-width: 60px;
+    }
+
+    .volume-slider {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--card);
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+
+    .volume-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+    }
+
+    .volume-value {
+      font-size: 13px;
+      color: var(--text);
+      min-width: 35px;
+      text-align: right;
+    }
+
+    /* Station Panel */
+    .station-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .mood-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mood-pill {
+      padding: 6px 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--text);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mood-pill:hover {
+      background: rgba(240, 136, 62, 0.1);
+      border-color: var(--accent);
+    }
+
+    .mood-pill.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+    }
+
+    .search-wrap {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .search-wrap::before {
+      content: '🔍';
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 13px;
+      color: var(--text2);
+    }
+
+    .station-search {
+      width: 100%;
+      padding: 8px 12px 8px 32px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+    }
+
+    .station-search::placeholder {
+      color: var(--text2);
+    }
+
+    .station-search:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .station-scroll {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .station-group {
+      margin-bottom: 16px;
+    }
+
+    .station-group-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 0 8px;
+      border-top: 1px solid var(--border);
+    }
+
+    .station-group:first-child .station-group-label {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .station-card {
+      padding: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .station-card:hover {
+      border-color: var(--accent);
+      background: rgba(240, 136, 62, 0.05);
+    }
+
+    .station-card.playing {
+      background: rgba(63, 185, 80, 0.1);
+      border-color: var(--green);
+    }
+
+    .station-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .station-genre {
+      font-size: 12px;
+      color: var(--text2);
+      margin-bottom: 2px;
+    }
+
+    .station-meta {
+      font-size: 11px;
+      color: var(--text2);
+      margin-bottom: 8px;
+    }
+
+    .station-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .station-tag {
+      display: inline-block;
+      padding: 3px 8px;
+      background: rgba(240, 136, 62, 0.15);
+      color: var(--accent);
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    .station-info-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--border);
+      border: none;
+      color: var(--text2);
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .station-info-btn:hover {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    .info-tooltip {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 90vw;
+      width: 400px;
+      z-index: 1000;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      display: none;
+    }
+
+    .info-tooltip.show {
+      display: block;
+      animation: slideIn 0.2s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -48%);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
+
+    .info-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: none;
+      border: none;
+      color: var(--text2);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .info-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .info-location {
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 12px;
+    }
+
+    .info-about {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .info-link {
+      display: inline-block;
+      padding: 6px 12px;
+      background: var(--accent);
+      color: var(--bg);
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .info-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 999;
+    }
+
+    .info-overlay.show {
+      display: block;
+    }
+
+    /* Alarm Panel */
+    .alarm-toggle {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .alarm-checkbox {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--green);
+    }
+
+    .alarm-checkbox:checked {
+      background: var(--green);
+    }
+
+    .alarm-time {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .time-input {
+      flex: 1;
+      padding: 8px 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+    }
+
+    .time-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .alarm-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .day-btn {
+      padding: 8px 4px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text2);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .day-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .day-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+    }
+
+    /* Play Bar (Old - Hidden) */
+    .play-bar {
+      display: none;
+    }
+
+    /* Bottom Bar */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 60;
+      display: flex;
+      gap: 8px;
+      padding: 12px 20px;
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      justify-content: center;
+    }
+
+    .bottom-bar .btn {
+      flex: 1;
+      max-width: 200px;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-play {
+      background: var(--green);
+      color: var(--bg);
+    }
+
+    .btn-play:hover:not(:disabled) {
+      background: #35d155;
+    }
+
+    .btn-stop {
+      background: var(--red);
+      color: white;
+    }
+
+    .btn-stop:hover:not(:disabled) {
+      background: #ff6b6b;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      z-index: 50;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    .toast.error {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .toast.success {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .info-tooltip {
+        width: 90vw;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Radio Alarm Clock</h1>
+    <div class="status" id="statusText">Ready</div>
+  </div>
+
+  <!-- Speaker Panel -->
+  <div class="panel">
+    <div class="panel-header" onclick="updatePanel('speaker')">
+      <h2>Speaker</h2>
+      <div class="panel-toggle" id="speakerToggle">▼</div>
+    </div>
+    <div class="panel-content" id="speakerContent">
+      <div class="panel-inner">
+        <select class="speaker-select" id="speakerSelect" onchange="changeSpeaker()">
+          <option value="headphones">Headphones</option>
+          <option value="airplay">AirPlay</option>
+          <option value="chromecast">Chromecast</option>
+          <option value="speakers">Speakers</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Station Panel -->
+  <div class="panel">
+    <div class="panel-header" onclick="updatePanel('station')">
+      <h2>Station</h2>
+      <div class="panel-toggle" id="stationToggle">▼</div>
+    </div>
+    <div class="panel-content open" id="stationContent">
+      <div class="panel-inner">
+        <div class="station-header-row">
+          <div class="mood-pills" id="moodPills"></div>
+        </div>
+        <div class="search-wrap" onclick="event.stopPropagation()">
+          <input class="station-search" id="stationSearch" type="text" placeholder="Filter by genre, location, mood…" oninput="renderStations()"/>
+        </div>
+        <div class="station-scroll" id="stationScroll"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Volume Panel -->
+  <div class="panel">
+    <div class="panel-header" onclick="updatePanel('volume')">
+      <h2>Volume</h2>
+      <div class="panel-toggle" id="volumeToggle">▼</div>
+    </div>
+    <div class="panel-content" id="volumeContent">
+      <div class="panel-inner">
+        <div class="volume-row">
+          <span class="volume-label">Playback</span>
+          <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70" oninput="changeVolume()">
+          <span class="volume-value" id="volumeValue">70</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alarm Panel -->
+  <div class="panel">
+    <div class="panel-header" onclick="updatePanel('alarm')">
+      <h2>Alarm</h2>
+      <div class="panel-toggle" id="alarmToggle">▼</div>
+    </div>
+    <div class="panel-content" id="alarmContent">
+      <div class="panel-inner">
+        <div class="alarm-toggle">
+          <input type="checkbox" id="alarmEnabled" class="alarm-checkbox" onchange="toggleAlarm()">
+          <label for="alarmEnabled" style="cursor: pointer; flex: 1;">Enable Alarm</label>
+        </div>
+        <div class="alarm-time">
+          <input type="time" id="alarmTime" class="time-input" value="07:00" onchange="setAlarmTime()">
+          <button class="btn btn-play" onclick="testAlarm()" style="flex: 0 0 auto; padding: 8px 12px; font-size: 12px;">Test</button>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <span style="font-size: 12px; color: var(--text2);">Repeat</span>
+        </div>
+        <div class="alarm-days" id="alarmDays"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Old Play Bar (hidden) -->
+  <div class="play-bar"></div>
+
+  <!-- Bottom Bar (new sticky bar) -->
+  <div class="bottom-bar" id="bottomBar">
+    <button class="btn btn-play" id="playBtn2" onclick="playNow()">Play</button>
+    <button class="btn btn-stop" id="stopBtn2" onclick="stopNow()">Stop</button>
+  </div>
+
+  <!-- Info Tooltip -->
+  <div class="info-overlay" id="infoOverlay" onclick="closeInfo()"></div>
+  <div class="info-tooltip" id="infoTooltip">
+    <button class="info-close" onclick="closeInfo()">×</button>
+    <div class="info-title" id="infoTitle"></div>
+    <div class="info-location" id="infoLocation"></div>
+    <div class="info-about" id="infoAbout"></div>
+    <a class="info-link" id="infoLink" target="_blank" href="#">Visit Station</a>
+  </div>
+
+  <script>
+    // ============== Data ==============
+
+    const STATION_MOODS = {
+      wkcr:          ['explore','focus'],
+      swissjazz:     ['focus','mellow'],
+      czjazz:        ['explore','focus'],
+      tsfjazz:       ['focus','mellow','explore'],
+      abcjazz:       ['focus','mellow','explore'],
+      fipjazz:       ['focus','mellow','explore'],
+      swissclassic:  ['focus','mellow'],
+      concertzender: ['explore','focus'],
+      classicfm:     ['focus','mellow','winddown'],
+      wqxr:          ['focus','mellow'],
+      ancientfm:     ['mellow','winddown'],
+      wcpe:          ['focus','mellow'],
+      abcclassic:    ['focus','mellow','winddown'],
+      rai3:          ['focus','mellow'],
+      operafm:       ['focus','mellow'],
+      klassikopera:  ['focus','mellow'],
+      fmopera:       ['focus','mellow'],
+      operavore:     ['focus','mellow'],
+      operamrg:      ['focus','mellow'],
+      capriceopera:  ['focus','mellow'],
+      klassikverdi:  ['focus','mellow'],
+      fip:           ['explore','focus','mellow'],
+      kexp:          ['explore','wakeup'],
+      nts1:          ['explore','wakeup'],
+      nts2:          ['explore','wakeup'],
+      wfmu:          ['explore','wakeup'],
+      rp:            ['explore','focus','mellow'],
+      fipnouv:       ['explore','wakeup'],
+      fipfolk:       ['explore','mellow'],
+      radioroots:    ['explore','wakeup'],
+      maqam:         ['mellow','explore','winddown'],
+      radiomeuh:     ['explore','wakeup'],
+      rfimusique:    ['explore','wakeup'],
+      fipreggae:     ['mellow','wakeup','explore'],
+      fipgroove:     ['wakeup','explore'],
+      couleur3:      ['explore','focus'],
+      bytefm:        ['explore','focus'],
+      fluxfm:        ['explore','wakeup'],
+      thelot:        ['explore','wakeup'],
+      dublab:        ['explore','focus'],
+      resonancefm:   ['explore','focus'],
+      cashmerefm:    ['explore','focus'],
+      rprock:        ['wakeup','explore'],
+      fiprock:       ['wakeup','explore'],
+      fipelectro:    ['explore','focus'],
+      somadefcon:    ['explore','focus'],
+      rpmellow:      ['mellow','winddown'],
+      somagroove:    ['mellow','focus','winddown'],
+      somadrone:     ['mellow','winddown'],
+      custom:        ['explore'],
+    };
+
+    const STATION_INFO = {
+      wkcr:         { loc: 'New York City, USA', url: 'https://www.cc-seas.columbia.edu/wkcr', about: 'Columbia University\'s legendary station, broadcasting since 1941. Famous for its annual Charlie Parker and Bach festivals. One of the last true freeform jazz stations in America — run entirely by students and volunteers.' },
+      swissjazz:    { loc: 'Basel, Switzerland', url: 'https://www.radioswissjazz.ch', about: 'Switzerland\'s dedicated jazz station from SRG SSR public broadcasting. 24/7 jazz with zero talk or ads — just music. Draws from an enormous catalog spanning swing to avant-garde.' },
+      czjazz:       { loc: 'Hilversum, Netherlands', url: 'https://www.concertzender.nl', about: 'Concertzender\'s jazz channel covers the full spectrum: from New Orleans to free improv, Latin jazz to European ECM-style. Community-run Dutch broadcasting with deep curation.' },
+      tsfjazz:      { loc: 'Paris, France', url: 'https://www.tsfjazz.com', about: 'Paris jazz institution since 2000. Real DJs, real curation — jazz, soul, and groove from the heart of Paris. Run by people who live and breathe jazz. One of Europe\'s finest jazz stations.' },
+      abcjazz:      { loc: 'Melbourne, Australia', url: 'https://www.abc.net.au/jazz', about: 'Australia\'s national jazz station from ABC. 24/7 jazz from Down Under — local Australian jazz artists alongside international legends. Public broadcasting, no ads.' },
+      fipjazz:      { loc: 'Paris, France', url: 'https://www.radiofrance.fr/fip', about: 'FIP\'s dedicated jazz channel. Miles Davis to Kamasi Washington, Django to Coltrane. Radio France\'s jazz curation is world-class. No ads.' },
+      swissclassic: { loc: 'Basel, Switzerland', url: 'https://www.radioswissclassic.ch', about: 'SRG SSR\'s classical channel — pure music, no presenters, no ads. Algorithmically programmed from thousands of recordings. Arguably the cleanest classical stream available anywhere.' },
+      concertzender:{ loc: 'Hilversum, Netherlands', url: 'https://www.concertzender.nl', about: 'Dutch community broadcaster covering classical, early music, world music and jazz since 1982. Known for broadcasting rare recordings and live concerts you won\'t find elsewhere.' },
+      classicfm:    { loc: 'London, UK', url: 'https://www.classicfm.com', about: 'Britain\'s most popular classical station since 1992. Accessible programming — film scores alongside Mozart, relaxation playlists alongside Beethoven. Owned by Global Media.' },
+      wqxr:         { loc: 'New York City, USA', url: 'https://www.wqxr.org', about: 'New York\'s classical music station since 1936, now part of WNYC/New York Public Radio. Deep programming with expert hosts. Known for its Operavore channel and new music advocacy.' },
+      ancientfm:    { loc: 'Internet-only', url: 'https://www.ancientfm.com', about: 'A rare gem — 24/7 medieval, Renaissance, and baroque music. Troubadour songs, lute pieces, Gregorian chant. Run by a single enthusiast. One of the most unique stations on the internet.' },
+      wcpe:         { loc: 'Wake Forest, NC, USA', url: 'https://theclassicalstation.org', about: 'Non-commercial, listener-supported classical since 1978. Known as "The Classical Station." No commercials ever — funded entirely by donations. Covers symphonic, chamber, choral, and opera.' },
+      abcclassic:   { loc: 'Melbourne, Australia', url: 'https://www.abc.net.au/classic', about: 'Australia\'s national classical station from ABC. Symphonic, chamber, choral and contemporary classical. Expert presenters and live concert broadcasts from Australian orchestras. Public broadcasting, no ads.' },
+      rai3:         { loc: 'Rome, Italy', url: 'https://www.raiplayradio.it/radio3', about: 'Italy\'s national cultural radio from RAI. Classical music, jazz, drama, literature, and art. Italian public broadcasting at its finest — deep culture programming since 1950.' },
+      operafm:      { loc: 'Internet-only (1.FM)', url: 'https://www.1.fm/station/opera', about: '24/7 opera arias, overtures, and complete acts from the world\'s greatest opera houses. Part of the 1.FM network. Covers Italian, German, French, and Russian repertoire.' },
+      klassikopera: { loc: 'Hamburg, Germany', url: 'https://www.klassikradio.de', about: 'Klassik Radio\'s dedicated opera stream. Germany\'s leading classical broadcaster. Curated selections from Verdi, Puccini, Wagner, Mozart, and contemporary opera.' },
+      fmopera:      { loc: 'Paris, France', url: 'https://www.radiofrance.fr/francemusique', about: 'Radio France\'s dedicated opera channel. Part of France Musique. Broadcasts complete performances from Opéra de Paris, Aix-en-Provence, and international houses. AAC high-fidelity.' },
+      operavore:    { loc: 'New York City, USA', url: 'https://www.wqxr.org/shows/operavore/', about: 'WQXR\'s curated opera stream. Launched for opera lovers who want arias and complete acts without the broader classical mix. Expert programming from New York Public Radio.' },
+      operamrg:     { loc: 'Internet-only (MRG.FM)', url: 'https://www.mrg.fm', about: 'Dedicated opera channel from the MRG.FM network. Mixes famous arias with lesser-known gems. Covers bel canto, verismo, baroque opera, and contemporary works.' },
+      capriceopera: { loc: 'Internet-only', url: '', about: 'Part of the Radio Caprice network — genre-specific internet radio. Their opera channel covers international repertoire spanning four centuries of vocal music.' },
+      klassikverdi: { loc: 'Hamburg, Germany', url: 'https://www.klassikradio.de', about: 'Klassik Radio\'s channel devoted entirely to Giuseppe Verdi — Italy\'s most beloved opera composer. Aida, La Traviata, Rigoletto, Nabucco, and more, 24/7.' },
+      fip:          { loc: 'Paris, France', url: 'https://www.radiofrance.fr/fip', about: 'Radio France\'s legendary genre-defying station. Seamlessly mixes jazz, world music, chanson, rock, classical, and electronic. No ads. Beloved by Parisians since 1971. A mood, not just a station.' },
+      kexp:         { loc: 'Seattle, WA, USA', url: 'https://www.kexp.org', about: 'Seattle\'s iconic indie station. Live sessions, deep cuts, and passionate DJs who actually know music. Non-commercial, listener-powered. Launched artists from Nirvana to Fleet Foxes.' },
+      nts1:         { loc: 'London, UK', url: 'https://www.nts.live', about: 'London-born, globally networked. NTS Channel 1 is the main stream with rotating shows from DJs, artists, and curators worldwide. Underground, eclectic, and always surprising.' },
+      nts2:         { loc: 'London, UK', url: 'https://www.nts.live', about: 'NTS Channel 2 runs parallel programming — often more experimental, ambient, or genre-deep. Where Channel 1 is the party, Channel 2 is the after-hours.' },
+      wfmu:         { loc: 'Jersey City, NJ, USA', url: 'https://wfmu.org', about: 'America\'s longest-running freeform radio station. No playlists, no format, no corporate oversight. Each DJ programs their own show. Legendary for its unpredictability since 1958.' },
+      rp:           { loc: 'Paradise, CA, USA', url: 'https://www.radioparadise.com', about: 'Bill Goldsmith\'s labor of love since 2000. Eclectic mix of rock, world, jazz, and classical — sequenced by a human, not an algorithm. Listener-supported, ad-free. The gold standard of internet radio.' },
+      fipnouv:      { loc: 'Paris, France', url: 'https://www.radiofrance.fr/fip', about: 'FIP\'s new music channel. The latest releases across all genres — the freshest picks from Radio France\'s legendary curators. No ads. Where FIP\'s taste meets what\'s new.' },
+      fipfolk:      { loc: 'Paris, France', url: 'https://www.radiofrance.fr/fip', about: 'FIP\'s world music channel. Global sounds curated by Radio France — African, Asian, Latin American, and European folk traditions. No ads.' },
+      radioroots:   { loc: 'Hilversum, Netherlands', url: 'https://www.concertzender.nl', about: 'Concertzender\'s world roots channel. Global folk, traditional music from every continent. Deep curation from Dutch community broadcasting.' },
+      maqam:        { loc: 'Internet-only', url: '', about: 'Dedicated Arabic classical music stream. Maqam-based music from the golden age of tarab — Umm Kulthum, Fairuz, Abdel Halim, and the great composers of the Arab world.' },
+      radiomeuh:    { loc: 'Méaudre, French Alps', url: 'https://www.radiomeuh.com', about: 'Born in a tiny Alpine village, Radio Meuh broadcasts eclectic, feel-good music from the mountains. Reggae, dub, world, funk, and folk — curated by music lovers in the French Alps. Community-run and ad-free.' },
+      rfimusique:   { loc: 'Paris, France (global)', url: 'https://www.rfi.fr', about: 'Radio France International\'s world service. French and international music, world culture, and news. Broadcasts to 5 continents. A window into global music from a Parisian perspective.' },
+      fipreggae:    { loc: 'Paris, France', url: 'https://www.radiofrance.fr/fip', about: 'FIP\'s reggae and dub channel. Roots reggae, dub classics, and contemporary reggae. Radio France\'s world music expertise. No ads.' },
+      fipgroove:    { loc: 'Paris, France', url: 'https://www.radiofrance.fr/fip', about: 'FIP\'s funk/soul/groove channel. James Brown, Curtis Mayfield, Erykah Badu, Anderson .Paak. Radio France\'s groove encyclopedia. No ads.' },
+      couleur3:     { loc: 'Lausanne, Switzerland', url: 'https://www.rts.ch/couleur3', about: 'SRG SSR\'s alternative French-language channel. Electronic, hip-hop, world, indie — whatever\'s interesting. Known for adventurous programming and discovering new sounds. Swiss public broadcasting, no ads.' },
+      bytefm:       { loc: 'Hamburg, Germany', url: 'https://www.byte.fm', about: 'German internet radio founded by music journalists. Deep curation with themed shows — indie, electronic, jazz, world, classical crossover. Run by music nerds for music nerds. No ads, listener-supported.' },
+      fluxfm:       { loc: 'Berlin, Germany', url: 'https://www.fluxfm.de', about: 'Berlin\'s indie radio. Indie rock, electronica, and everything in between. Known for discovering new artists and championing Berlin\'s music scene. One of Germany\'s most respected independent stations.' },
+      thelot:       { loc: 'Brooklyn, New York, USA', url: 'https://www.thelotradio.com', about: 'Broadcasting from a shipping container on a Ridgewood rooftop in Brooklyn. Volunteer DJs play everything — house, jazz, ambient, global, experimental. One of NYC\'s most beloved community stations.' },
+      dublab:       { loc: 'Los Angeles, USA', url: 'https://dublab.com', about: 'LA-based non-profit community radio since 1999. Experimental, underground, and boundary-pushing music. DJs include artists, producers, and curators from around the world. A launchpad for sounds you won\'t hear anywhere else.' },
+      resonancefm:  { loc: 'London, UK', url: 'https://resonancefm.com', about: 'London\'s art-radio station, broadcasting since 2002. Run by artists, musicians, and thinkers. Shows range from sound art to avant-garde jazz to field recordings. Not background music — it\'s a listening experience.' },
+      cashmerefm:   { loc: 'Berlin, Germany', url: 'https://cashmereradio.com', about: 'Berlin community radio born from the city\'s underground music scene. Local and international DJs, experimental sounds, and deep-cut selections. The sound of Berlin beyond techno.' },
+      rprock:       { loc: 'Paradise, CA, USA', url: 'https://www.radioparadise.com/rock', about: 'Radio Paradise\'s rock-focused mix. Classic and modern rock with the same intelligent sequencing as the main channel. Listener-supported, ad-free.' },
+      fiprock:      { loc: 'Paris, France', url: 'https://www.radiofrance.fr/fip', about: 'FIP\'s rock channel. From The Beatles to Radiohead, Hendrix to Arctic Monkeys. Radio France\'s rock expertise. No ads.' },
+      fipelectro:   { loc: 'Paris, France', url: 'https://www.radiofrance.fr/fip', about: 'FIP\'s electronic music channel. From Kraftwerk to Aphex Twin to modern techno. Radio France\'s electronic selections. No ads.' },
+      somadefcon:   { loc: 'San Francisco, USA', url: 'https://somafm.com/defcon/', about: 'SomaFM\'s hacker-themed electronic music. Dark electronica, synthwave, industrial. Originally the soundtrack for the DEF CON hacker conference.' },
+      rpmellow:     { loc: 'Paradise, CA, USA', url: 'https://www.radioparadise.com/mellow', about: 'Radio Paradise\'s acoustic & mellow mix. Gentle, beautiful music for quiet moments. Same curated quality as the main channel, just softer. Ad-free.' },
+      somagroove:   { loc: 'San Francisco, USA', url: 'https://somafm.com/groovesalad/', about: 'SomaFM\'s flagship channel since 2000. Ambient, downtempo, and chill. The most popular channel on SomaFM. Perfect for focus and relaxation. Listener-supported, ad-free.' },
+      somadrone:    { loc: 'San Francisco, USA', url: 'https://somafm.com/dronezone/', about: 'SomaFM\'s deep ambient channel. Atmospheric textures, drones, and soundscapes. For deep focus or falling asleep. Listener-supported, ad-free.' },
+    };
+
+    const STATION_TAGS = {
+      wkcr:          ['ad-free','live-djs'],
+      swissjazz:     ['ad-free','pure-music'],
+      czjazz:        ['ad-free','live-djs'],
+      tsfjazz:       ['ad-free','live-djs'],
+      abcjazz:       ['ad-free','live-djs'],
+      fipjazz:       ['ad-free','pure-music'],
+      swissclassic:  ['ad-free','pure-music'],
+      concertzender: ['ad-free','live-djs'],
+      classicfm:     ['some-ads','live-djs'],
+      wqxr:          ['ad-free','live-djs'],
+      ancientfm:     ['ad-free','pure-music'],
+      wcpe:          ['ad-free','live-djs'],
+      abcclassic:    ['ad-free','live-djs'],
+      rai3:          ['ad-free','live-djs'],
+      operafm:       ['ad-free','pure-music'],
+      klassikopera:  ['some-ads','pure-music'],
+      fmopera:       ['ad-free','live-djs'],
+      operavore:     ['ad-free','live-djs'],
+      operamrg:      ['ad-free','pure-music'],
+      capriceopera:  ['ad-free','pure-music'],
+      klassikverdi:  ['some-ads','pure-music'],
+      fip:           ['ad-free','live-djs'],
+      kexp:          ['ad-free','live-djs'],
+      nts1:          ['ad-free','live-djs'],
+      nts2:          ['ad-free','live-djs'],
+      wfmu:          ['ad-free','live-djs'],
+      rp:            ['ad-free','pure-music'],
+      fipnouv:       ['ad-free','pure-music'],
+      fipfolk:       ['ad-free','pure-music'],
+      radioroots:    ['ad-free','live-djs'],
+      maqam:         ['ad-free','pure-music'],
+      radiomeuh:     ['ad-free','live-djs'],
+      rfimusique:    ['ad-free','live-djs'],
+      fipreggae:     ['ad-free','pure-music'],
+      fipgroove:     ['ad-free','pure-music'],
+      couleur3:      ['ad-free','live-djs'],
+      bytefm:        ['ad-free','live-djs'],
+      fluxfm:        ['some-ads','live-djs'],
+      thelot:        ['ad-free','live-djs'],
+      dublab:        ['ad-free','live-djs'],
+      resonancefm:   ['ad-free','live-djs'],
+      cashmerefm:    ['ad-free','live-djs'],
+      rprock:        ['ad-free','pure-music'],
+      fiprock:       ['ad-free','pure-music'],
+      fipelectro:    ['ad-free','pure-music'],
+      somadefcon:    ['ad-free','pure-music'],
+      rpmellow:      ['ad-free','pure-music'],
+      somagroove:    ['ad-free','pure-music'],
+      somadrone:     ['ad-free','pure-music'],
+    };
+
+    const GROUPS = [
+      { label: 'Jazz',                   match: s => ['wkcr','swissjazz','czjazz','tsfjazz','abcjazz','fipjazz'].includes(s.id) },
+      { label: 'Classical',              match: s => ['swissclassic','concertzender','classicfm','wqxr','ancientfm','wcpe','abcclassic','rai3'].includes(s.id) },
+      { label: 'Opera',                  match: s => ['operafm','klassikopera','fmopera','operavore','operamrg','capriceopera','klassikverdi'].includes(s.id) },
+      { label: 'Eclectic',              match: s => ['fip','kexp','nts1','nts2','wfmu','rp','fipnouv'].includes(s.id) },
+      { label: 'Folk / Roots / World',   match: s => ['fipfolk','radioroots','maqam','radiomeuh','rfimusique'].includes(s.id) },
+      { label: 'Reggae & Funk',          match: s => ['fipreggae','fipgroove'].includes(s.id) },
+      { label: 'European Independent',   match: s => ['couleur3','bytefm','fluxfm','thelot'].includes(s.id) },
+      { label: 'Discovery / Underground', match: s => ['dublab','resonancefm','cashmerefm'].includes(s.id) },
+      { label: 'Rock / Indie',           match: s => ['rprock','fiprock'].includes(s.id) },
+      { label: 'Electronic',             match: s => ['fipelectro','somadefcon'].includes(s.id) },
+      { label: 'Ambient / Sleep',        match: s => ['rpmellow','somagroove','somadrone'].includes(s.id) },
+      { label: 'Other',                  match: s => s.id === 'custom' },
+    ];
+
+        const stations = [
+      // --- Jazz ---
+      { id: 'wkcr', name: 'WKCR 89.9', genre: 'Jazz & Classical — Columbia Univ., NYC', url: 'http://wkcr.streamguys1.com/live' },
+      { id: 'swissjazz', name: 'Radio Swiss Jazz', genre: 'Pure jazz, no talk — Switzerland', url: 'https://stream.srg-ssr.ch/srgssr/rsj/mp3/128' },
+      { id: 'czjazz', name: 'Concertzender Jazz', genre: 'World of Jazz — Netherlands', url: 'https://streams.greenhost.nl:8006/jazz' },
+      { id: 'tsfjazz', name: 'TSF Jazz', genre: 'Jazz institution — Paris, France', url: 'https://tsfjazz.ice.infomaniak.ch/tsfjazz-high.mp3' },
+      { id: 'abcjazz', name: 'ABC Jazz', genre: 'Jazz — ABC Australia, Melbourne', url: 'http://live-radio01.mediahubaustralia.com/JAZW/mp3/' },
+      { id: 'fipjazz', name: 'FIP Jazz', genre: 'Jazz — Radio France', url: 'https://icecast.radiofrance.fr/fipjazz-hifi.aac' },
+      // --- Classical ---
+      { id: 'swissclassic', name: 'Radio Swiss Classic', genre: 'Pure classical, no talk — Switzerland', url: 'https://stream.srg-ssr.ch/srgssr/rsc_de/mp3/128' },
+      { id: 'concertzender', name: 'Concertzender', genre: 'Classical, Jazz & World — Netherlands', url: 'https://streams.greenhost.nl:8006/live' },
+      { id: 'classicfm', name: 'Classic FM', genre: 'Classical — UK', url: 'https://media-ice.musicradio.com/ClassicFMMP3' },
+      { id: 'wqxr', name: 'WQXR', genre: 'Classical — New York City', url: 'https://stream.wqxr.org/wqxr' },
+      { id: 'ancientfm', name: 'Ancient FM', genre: 'Medieval & Renaissance music', url: 'https://mediaserv73.live-streams.nl:18058/stream' },
+      { id: 'wcpe', name: 'WCPE Classical', genre: '24/7 classical, no commercials — NC', url: 'https://audio-mp3.ibiblio.org:443/wcpe.mp3' },
+      { id: 'abcclassic', name: 'ABC Classic', genre: 'Classical — ABC Australia, Melbourne', url: 'http://live-radio01.mediahubaustralia.com/2FMW/mp3/' },
+      { id: 'rai3', name: 'RAI Radio 3', genre: 'Classical & culture — RAI, Italy', url: 'https://icestreaming.rai.it/3.mp3' },
+      // --- Opera ---
+      { id: 'operafm', name: '1.FM Opera House', genre: 'Opera arias & performances — 24/7', url: 'http://strm112.1.fm/opera_mobile_mp3' },
+      { id: 'klassikopera', name: 'Klassik Radio Opera', genre: 'Opera selections — Germany', url: 'http://stream.klassikradio.de/opera/mp3-128/www.klassikradio.de/' },
+      { id: 'fmopera', name: 'France Musique Opéra', genre: 'French opera & vocal — Radio France', url: 'https://icecast.radiofrance.fr/francemusiqueopera-hifi.aac' },
+      { id: 'operavore', name: 'WQXR Operavore', genre: 'Curated opera — New York Public Radio', url: 'http://opera-stream.wqxr.org/operavore-tunein' },
+      { id: 'operamrg', name: 'OperaRadio MRG.FM', genre: 'Opera recordings & live performances', url: 'http://listen.mrg.fm:8110/;' },
+      { id: 'capriceopera', name: 'Radio Caprice Opera', genre: 'Opera — international repertoire', url: 'http://79.120.39.202:8000/opera' },
+      { id: 'klassikverdi', name: 'Klassik Radio Verdi', genre: 'Pure Verdi — arias, overtures, choruses', url: 'http://stream.klassikradio.de/verdi/mp3-128/' },
+      // --- Eclectic ---
+      { id: 'fip', name: 'FIP', genre: 'Eclectic, Jazz, World — Radio France, Paris', url: 'http://direct.fipradio.fr/live/fip-midfi.mp3' },
+      { id: 'kexp', name: 'KEXP 90.3', genre: 'Indie & Eclectic — Seattle', url: 'https://kexp.streamguys1.com/kexp160.aac' },
+      { id: 'nts1', name: 'NTS 1', genre: 'Underground & Global — London', url: 'https://stream-relay-geo.ntslive.net/stream' },
+      { id: 'nts2', name: 'NTS 2', genre: 'Underground & Global — London', url: 'https://stream-relay-geo.ntslive.net/stream2' },
+      { id: 'wfmu', name: 'WFMU 91.1', genre: 'Freeform — Jersey City, NJ', url: 'http://stream0.wfmu.org/freeform-128k' },
+      { id: 'rp', name: 'Radio Paradise', genre: 'Eclectic — rock, world, jazz, classical', url: 'http://stream.radioparadise.com/mp3-192' },
+      { id: 'fipnouv', name: 'FIP Nouveautés', genre: 'New releases & discoveries — Radio France', url: 'https://icecast.radiofrance.fr/fipnouveautes-hifi.aac' },
+      // --- Folk / Roots / World ---
+      { id: 'fipfolk', name: 'FIP Monde', genre: 'World folk & roots — Radio France', url: 'https://icecast.radiofrance.fr/fipworld-hifi.aac' },
+      { id: 'radioroots', name: 'Concertzender Roots', genre: 'World roots & folk — Netherlands', url: 'https://streams.greenhost.nl:8006/roots' },
+      { id: 'maqam', name: 'Maqam Radio', genre: 'Arabic classical & tarab', url: 'http://listen.radionomy.com/maqam' },
+      { id: 'radiomeuh', name: 'Radio Meuh', genre: 'Eclectic mountain radio — French Alps', url: 'http://radiomeuh.ice.infomaniak.ch/radiomeuh-128.mp3' },
+      { id: 'rfimusique', name: 'RFI Musique', genre: 'World music & culture — Radio France International', url: 'https://live02.rfi.fr/rfimonde-96k.mp3' },
+      // --- Reggae & Funk ---
+      { id: 'fipreggae', name: 'FIP Reggae', genre: 'Reggae & dub — Radio France', url: 'https://icecast.radiofrance.fr/fipreggae-hifi.aac' },
+      { id: 'fipgroove', name: 'FIP Groove', genre: 'Funk, soul & groove — Radio France', url: 'https://icecast.radiofrance.fr/fipgroove-hifi.aac' },
+      // --- European Independent ---
+      { id: 'couleur3', name: 'Couleur 3', genre: 'Eclectic alternative — Swiss public radio', url: 'https://stream.srg-ssr.ch/srgssr/couleur3/mp3/128' },
+      { id: 'bytefm', name: 'ByteFM', genre: 'Curated music radio — Hamburg, Germany', url: 'https://bytefm.cast.addradio.de/bytefm/main/mid/stream' },
+      { id: 'fluxfm', name: 'FluxFM', genre: 'Indie & eclectic — Berlin, Germany', url: 'https://streams.fluxfm.de/live/mp3-320/streams.fluxfm.de/' },
+      { id: 'thelot', name: 'The Lot Radio', genre: 'Community rooftop radio — Brooklyn, NYC', url: 'https://streams.radio.co/se1a320b47/listen' },
+      // --- Discovery / Underground ---
+      { id: 'dublab', name: 'Dublab', genre: 'Experimental & underground — Los Angeles', url: 'https://dublab.out.airtime.pro/dublab_a' },
+      { id: 'resonancefm', name: 'Resonance 104.4', genre: 'Arts & experimental — London', url: 'https://stream.resonance.fm/resonance' },
+      { id: 'cashmerefm', name: 'Cashmere Radio', genre: 'Underground & community — Berlin', url: 'https://cashmereradio.out.airtime.pro/cashmereradio_a' },
+      // --- Rock / Indie ---
+      { id: 'rprock', name: 'Radio Paradise Rock', genre: 'Eclectic rock mix', url: 'http://stream.radioparadise.com/rock-192' },
+      { id: 'fiprock', name: 'FIP Rock', genre: 'Rock & indie — Radio France', url: 'https://icecast.radiofrance.fr/fiprock-hifi.aac' },
+      // --- Electronic ---
+      { id: 'fipelectro', name: 'FIP Electro', genre: 'Electronic — Radio France', url: 'https://icecast.radiofrance.fr/fipelectro-hifi.aac' },
+      { id: 'somadefcon', name: 'SomaFM DEF CON', genre: 'Hacker-themed electronica', url: 'https://ice2.somafm.com/defcon-128-mp3' },
+      // --- Ambient / Mellow ---
+      { id: 'rpmellow', name: 'Radio Paradise Mellow', genre: 'Acoustic & chill', url: 'http://stream.radioparadise.com/mellow-192' },
+      { id: 'somagroove', name: 'SomaFM Groove Salad', genre: 'Ambient & downtempo', url: 'https://ice2.somafm.com/groovesalad-128-mp3' },
+      { id: 'somadrone', name: 'SomaFM Drone Zone', genre: 'Atmospheric ambient', url: 'https://ice2.somafm.com/dronezone-128-mp3' },
+      // --- Custom ---
+      { id: 'custom', name: 'Custom URL', genre: 'Paste any stream URL', url: '' },
+    ];
+
+    const aliases = {
+      'sleep': ['mellow','winddown','ambient','drone'],
+      'work': ['focus'],
+      'chill': ['mellow','winddown','ambient'],
+      'morning': ['wakeup'],
+      'night': ['winddown','mellow'],
+      'party': ['explore','wakeup'],
+      'relax': ['mellow','winddown'],
+      'study': ['focus','mellow'],
+      'meditation': ['mellow','winddown'],
+      'arabic': ['maqam'],
+      'turkish': ['maqam'],
+      'reggae': ['fipreggae'],
+      'funk': ['fipgroove'],
+      'soul': ['fipgroove'],
+      'techno': ['fipelectro','somadefcon'],
+      'electronic': ['fipelectro','somadefcon'],
+      'underground': ['dublab','resonancefm','cashmerefm'],
+      'experimental': ['dublab','resonancefm'],
+      'community': ['dublab','resonancefm','cashmerefm','thelot','radiomeuh'],
+      'celtic': [],
+      'scottish': [],
+      'dreamy': ['somadrone','somagroove'],
+      'fusion': [],
+      'discovery': ['dublab','resonancefm','cashmerefm'],
+      'paris': ['tsfjazz','fip','rfimusique','fipnouv'],
+      'berlin': ['cashmerefm','fluxfm'],
+      'hamburg': ['bytefm'],
+      'australia': ['abcjazz','abcclassic'],
+      'italy': ['rai3'],
+      'switzerland': ['swissjazz','swissclassic','couleur3'],
+      'brooklyn': ['thelot'],
+      'alps': ['radiomeuh'],
+      'german': ['bytefm','fluxfm'],
+      'french': ['fip','tsfjazz','rfimusique','fipnouv','radiomeuh'],
+      'world': ['fipfolk','radioroots','rfimusique'],
+      'country': [],
+    };
+
+    // ============== State ==============
+
+    let state = {
+      currentStation: null,
+      playing: false,
+      volume: 70,
+      speaker: 'headphones',
+      mood: 'all',
+      alarmEnabled: false,
+      alarmTime: '07:00',
+      alarmDays: [1, 2, 3, 4, 5],
+    };
+
+    // ============== Utility ==============
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function toast(msg, type = 'success') {
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    function load() {
+      const saved = localStorage.getItem('radioAlarmState');
+      if (saved) {
+        state = { ...state, ...JSON.parse(saved) };
+      }
+    }
+
+    function save() {
+      localStorage.setItem('radioAlarmState', JSON.stringify(state));
+    }
+
+    async function checkServer() {
+      try {
+        const r = await fetch('/config');
+        if (!r.ok) {
+          toast('Backend unavailable', 'error');
+          return false;
+        }
+        return true;
+      } catch (e) {
+        toast('Cannot reach backend', 'error');
+        return false;
+      }
+    }
+
+    // ============== Panel Control ==============
+
+    function updatePanel(panelName) {
+      const content = $(`${panelName}Content`);
+      const toggle = $(`${panelName}Toggle`);
+
+      content.classList.toggle('open');
+      toggle.classList.toggle('open');
+    }
+
+    // ============== Station Rendering ==============
+
+    function getFilteredStations() {
+      const search = $('stationSearch').value.toLowerCase();
+      const moodFilter = state.mood;
+
+      let filtered = stations.filter(s => {
+        if (moodFilter !== 'all') {
+          const moods = STATION_MOODS[s.id] || [];
+          if (!moods.includes(moodFilter)) return false;
+        }
+
+        if (!search) return true;
+
+        // Check aliases
+        if (aliases[search]) {
+          const aliasStationIds = new Set();
+          aliases[search].forEach(mood => {
+            stations.forEach(st => {
+              const moods = STATION_MOODS[st.id] || [];
+              if (moods.includes(mood)) aliasStationIds.add(st.id);
+            });
+          });
+          return aliasStationIds.has(s.id);
+        }
+
+        // Generic search
+        return s.name.toLowerCase().includes(search) ||
+               s.genre.toLowerCase().includes(search) ||
+               (STATION_INFO[s.id] && STATION_INFO[s.id].loc.toLowerCase().includes(search));
+      });
+
+      return filtered;
+    }
+
+    function renderStations() {
+      const filtered = getFilteredStations();
+      const scroll = $('stationScroll');
+      scroll.innerHTML = '';
+
+      if (state.mood === 'all') {
+        // Group by GROUPS
+        GROUPS.forEach(group => {
+          const groupStations = filtered.filter(group.match);
+          if (groupStations.length === 0) return;
+
+          const groupDiv = document.createElement('div');
+          groupDiv.className = 'station-group';
+
+          const label = document.createElement('div');
+          label.className = 'station-group-label';
+          label.textContent = group.label;
+          groupDiv.appendChild(label);
+
+          groupStations.forEach(s => {
+            groupDiv.appendChild(createStationCard(s));
+          });
+
+          scroll.appendChild(groupDiv);
+        });
+      } else {
+        // Mood mode: just list
+        filtered.forEach(s => {
+          scroll.appendChild(createStationCard(s));
+        });
+      }
+    }
+
+    function createStationCard(s) {
+      const card = document.createElement('div');
+      card.className = 'station-card';
+      if (state.currentStation === s.id) card.classList.add('playing');
+
+      const info = STATION_INFO[s.id];
+      const tags = STATION_TAGS[s.id] || [];
+
+      let html = `
+        <button class="station-info-btn" onclick="showInfo('${s.id}')">ⓘ</button>
+        <div class="station-name">${s.name}</div>
+        <div class="station-genre">${s.genre}</div>
+      `;
+
+      if (info) {
+        html += `<div class="station-meta">${info.loc}</div>`;
+      }
+
+      if (tags.length > 0) {
+        html += '<div class="station-tags">';
+        tags.forEach(tag => {
+          html += `<span class="station-tag">${tag}</span>`;
+        });
+        html += '</div>';
+      }
+
+      card.innerHTML = html;
+      card.onclick = () => playStation(s.id, s.name);
+
+      return card;
+    }
+
+    function renderMoodPills() {
+      const moods = ['all', 'focus', 'mellow', 'explore', 'wakeup', 'winddown'];
+      const pills = $('moodPills');
+      pills.innerHTML = '';
+
+      moods.forEach(mood => {
+        const pill = document.createElement('div');
+        pill.className = 'mood-pill';
+        if (state.mood === mood) pill.classList.add('active');
+        pill.textContent = mood.charAt(0).toUpperCase() + mood.slice(1);
+        pill.onclick = () => {
+          state.mood = mood;
+          save();
+          renderMoodPills();
+          renderStations();
+        };
+        pills.appendChild(pill);
+      });
+    }
+
+    // ============== Station Info ==============
+
+    function showInfo(stationId) {
+      const info = STATION_INFO[stationId];
+      if (!info) return;
+
+      $('infoTitle').textContent = stations.find(s => s.id === stationId)?.name || '';
+      $('infoLocation').textContent = info.loc;
+      $('infoAbout').textContent = info.about;
+      $('infoLink').href = info.url || '#';
+      $('infoLink').style.display = info.url ? 'inline-block' : 'none';
+
+      $('infoOverlay').classList.add('show');
+      $('infoTooltip').classList.add('show');
+    }
+
+    function closeInfo() {
+      $('infoOverlay').classList.remove('show');
+      $('infoTooltip').classList.remove('show');
+    }
+
+    // ============== Playback ==============
+
+    let playTimeout = null;
+    let stopRequested = false;
+
+    async function playStation(stationId, stationName) {
+      if (state.playing && state.currentStation === stationId) {
+        stopNow();
+        return;
+      }
+
+      state.currentStation = stationId;
+      state.playing = true;
+      save();
+      renderStations();
+      updateStatus();
+
+      $('playBtn2').disabled = true;
+      $('stopBtn2').disabled = false;
+
+      const success = await sendPlay(stationId);
+      if (!success) {
+        toast(`Failed to play ${stationName}`, 'error');
+        state.playing = false;
+        state.currentStation = null;
+        save();
+        renderStations();
+        updateStatus();
+        $('playBtn2').disabled = false;
+        $('stopBtn2').disabled = true;
+      } else {
+        toast(`Playing ${stationName}`, 'success');
+        pollPlaying();
+      }
+    }
+
+    async function playNow() {
+      if (!state.currentStation) {
+        toast('Select a station first', 'error');
+        return;
+      }
+      const s = stations.find(st => st.id === state.currentStation);
+      await playStation(state.currentStation, s?.name || 'Station');
+    }
+
+    async function stopNow() {
+      stopRequested = true;
+      state.playing = false;
+      save();
+      renderStations();
+      updateStatus();
+
+      $('playBtn2').disabled = false;
+      $('stopBtn2').disabled = true;
+
+      const success = await sendStop();
+      if (success) {
+        toast('Stopped', 'success');
+      } else {
+        toast('Stop failed', 'error');
+      }
+      stopRequested = false;
+    }
+
+    async function sendPlay(stationId) {
+      try {
+        const r = await fetch('/play', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ station: stationId, volume: state.volume })
+        });
+        return r.ok;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    async function sendStop() {
+      try {
+        const r = await fetch('/stop', { method: 'POST' });
+        return r.ok;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    async function pollPlaying() {
+      if (!state.playing || stopRequested) return;
+
+      try {
+        const r = await fetch('/now-playing');
+        const data = await r.json();
+        if (data.station !== state.currentStation) {
+          state.currentStation = data.station;
+          renderStations();
+        }
+      } catch (e) {}
+
+      playTimeout = setTimeout(pollPlaying, 5000);
+    }
+
+    // ============== Volume ==============
+
+    function changeVolume() {
+      state.volume = parseInt($('volumeSlider').value);
+      $('volumeValue').textContent = state.volume;
+      save();
+    }
+
+    // ============== Speaker ==============
+
+    function changeSpeaker() {
+      state.speaker = $('speakerSelect').value;
+      save();
+    }
+
+    // ============== Alarm ==============
+
+    function toggleAlarm() {
+      state.alarmEnabled = $('alarmEnabled').checked;
+      save();
+      updateStatus();
+    }
+
+    function setAlarmTime() {
+      state.alarmTime = $('alarmTime').value;
+      save();
+      updateStatus();
+    }
+
+    function renderDays() {
+      const container = $('alarmDays');
+      container.innerHTML = '';
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+      dayNames.forEach((name, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'day-btn';
+        btn.textContent = name;
+        if (state.alarmDays.includes(idx)) btn.classList.add('active');
+        btn.onclick = () => {
+          if (state.alarmDays.includes(idx)) {
+            state.alarmDays = state.alarmDays.filter(d => d !== idx);
+          } else {
+            state.alarmDays.push(idx);
+            state.alarmDays.sort();
+          }
+          save();
+          renderDays();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function testAlarm() {
+      toast('Test alarm triggered!', 'success');
+      // Could send /test-alarm to backend
+    }
+
+    function updateStatus() {
+      let statusText = 'Ready';
+      if (state.playing) {
+        const s = stations.find(st => st.id === state.currentStation);
+        statusText = `Playing: ${s?.name || 'Station'}`;
+      }
+      if (state.alarmEnabled) {
+        statusText += ` | Alarm: ${state.alarmTime}`;
+      }
+      $('statusText').textContent = statusText;
+    }
+
+    // ============== Init ==============
+
+    function init() {
+      load();
+
+      // Collapse speaker/volume/alarm on init
+      if (localStorage.getItem('radioAlarmState')) {
+        $('speakerContent').classList.remove('open');
+        $('speakerToggle').classList.remove('open');
+        $('volumeContent').classList.remove('open');
+        $('volumeToggle').classList.remove('open');
+        $('alarmContent').classList.remove('open');
+        $('alarmToggle').classList.remove('open');
+      }
+
+      // Restore station panel state
+      if (localStorage.getItem('stationOpen') === 'false') {
+        $('stationContent').classList.remove('open');
+        $('stationToggle').classList.remove('open');
+      }
+
+      checkServer();
+      renderMoodPills();
+      renderStations();
+      renderDays();
+
+      $('speakerSelect').value = state.speaker;
+      $('volumeSlider').value = state.volume;
+      $('volumeValue').textContent = state.volume;
+      $('alarmEnabled').checked = state.alarmEnabled;
+      $('alarmTime').value = state.alarmTime;
+
+      updateStatus();
+
+      if (state.playing) {
+        $('playBtn2').disabled = true;
+        $('stopBtn2').disabled = false;
+        pollPlaying();
+      } else {
+        $('playBtn2').disabled = false;
+        $('stopBtn2').disabled = true;
+      }
+
+      // Save station panel state on toggle
+      const origToggle = window.updatePanel;
+      window.updatePanel = function(panelName) {
+        origToggle(panelName);
+        if (panelName === 'station') {
+          const isOpen = $('stationContent').classList.contains('open');
+          localStorage.setItem('stationOpen', isOpen ? 'true' : 'false');
+        }
+      };
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

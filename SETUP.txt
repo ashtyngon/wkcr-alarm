@@ -1,0 +1,133 @@
+
+  ╔══════════════════════════════════════╗
+  ║   Radio Alarm — Setup Guide          ║
+  ╚══════════════════════════════════════╝
+
+
+  WHAT YOU NEED
+  ─────────────
+  - Raspberry Pi Zero 2 W (you ordered this)
+  - 32GB SD card with Pi OS (you ordered this)
+  - USB-C cable + any phone charger
+  - Your WiFi name and password
+
+
+  STEP 1: Prepare the SD card
+  ───────────────────────────
+  Before putting the SD card in the Pi, plug it into your Mac.
+
+  Open "Raspberry Pi Imager" (download from raspberrypi.com/software
+  if you don't have it). Even though your SD card is preloaded,
+  the Imager lets you pre-configure WiFi — which is much easier
+  than connecting a monitor.
+
+  In the Imager:
+    • Choose OS → "Raspberry Pi OS Lite (32-bit)"
+    • Choose Storage → your SD card
+    • Click the gear icon (⚙) and fill in:
+        - Hostname: raspberrypi
+        - Enable SSH: yes (use password)
+        - Username: pi
+        - Password: (pick something simple)
+        - WiFi SSID: your WiFi name
+        - WiFi Password: your WiFi password
+        - Country: US
+    • Click Write
+
+  This takes ~5 minutes.
+
+
+  STEP 2: Boot the Pi
+  ────────────────────
+  Put the SD card in the Pi. Plug it into power.
+  Wait 2 minutes for it to boot and connect to WiFi.
+
+
+  STEP 3: Copy the alarm files to the Pi
+  ───────────────────────────────────────
+  Open Terminal on your Mac and run:
+
+    scp -r /path/to/wkcr-alarm pi@raspberrypi.local:~/alarm
+
+  (Replace /path/to/wkcr-alarm with wherever this folder
+  is on your Mac. You can drag the folder into Terminal
+  to paste its path.)
+
+  Type "yes" if it asks about fingerprints, then enter
+  the password you chose in Step 1.
+
+
+  STEP 4: Install everything
+  ──────────────────────────
+  Still in Terminal:
+
+    ssh pi@raspberrypi.local
+    (enter your password)
+
+    cd ~/alarm
+    bash install.sh
+
+  This takes ~3 minutes. It installs everything automatically.
+
+
+  STEP 5: Open the settings page
+  ───────────────────────────────
+  On your phone or laptop, go to:
+
+    http://raspberrypi.local:8550
+
+  Bookmark this. That's your alarm control page.
+
+  Pick your speaker, choose a station, set the time, save.
+  Done!
+
+
+  OPTIONAL: Access from anywhere (Tailscale)
+  ───────────────────────────────────────────
+  The install script already put Tailscale on your Pi.
+  To finish setting it up:
+
+  1. SSH into the Pi:
+       ssh pi@raspberrypi.local
+
+  2. Run:
+       sudo tailscale up
+
+  3. It prints a link — open it in your browser and sign in
+     with Google (or whatever you prefer).
+
+  4. Install Tailscale on your phone too:
+       - iPhone: App Store → "Tailscale"
+       - Android: Play Store → "Tailscale"
+       Sign in with the same account.
+
+  5. Now find your Pi's Tailscale IP:
+       tailscale ip -4
+
+     It'll be something like 100.64.x.x
+
+  6. On your phone, go to:
+       http://100.64.x.x:8550
+
+     This works from anywhere — coffee shop, work, vacation.
+     Share the link with your partner so they can control it too.
+     (They just need Tailscale installed + same account, or
+     you can share the device with their account.)
+
+
+  TROUBLESHOOTING
+  ───────────────
+  "raspberrypi.local doesn't work"
+    → Find the Pi's IP on your router's admin page
+      (usually 192.168.1.x). Use that instead.
+
+  "No speakers found"
+    → Make sure the Pi and Google Home are on the same WiFi.
+
+  "Alarm didn't go off"
+    → SSH in and check: sudo systemctl status radio-alarm
+
+  To restart the alarm service:
+    ssh pi@raspberrypi.local
+    sudo systemctl restart radio-alarm
+
