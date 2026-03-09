@@ -12,7 +12,7 @@ app = Flask(__name__)
 LOG = logging.getLogger("radio")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
-CONFIG_PATH = os.environ.get("RADIO_CONFIG", "/home/pi/radio_alarm/config.json")
+CONFIG_PATH = os.environ.get("RADIO_CONFIG", os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json"))
 STOP_GRACE_SECONDS = 15
 
 # --- Station list ---
@@ -20,13 +20,13 @@ STATIONS = [
     # --- Jazz ---
     {"id": "wkcr",          "name": "WKCR 89.9",              "genre": "Jazz & Classical — Columbia Univ., NYC",        "url": "http://wkcr.streamguys1.com/live"},
     {"id": "swissjazz",     "name": "Radio Swiss Jazz",       "genre": "Pure jazz, no talk — Switzerland",              "url": "https://stream.srg-ssr.ch/srgssr/rsj/mp3/128"},
-    {"id": "czjazz",        "name": "Concertzender Jazz",     "genre": "World of Jazz — Netherlands",                   "url": "https://streams.greenhost.nl:8006/jazz"},
+    {"id": "jazzradio",     "name": "Jazz Radio",             "genre": "Jazz — Lyon, France",                           "url": "https://jazzradio.ice.infomaniak.ch/jazzradio-high.mp3"},
     {"id": "tsfjazz",       "name": "TSF Jazz",               "genre": "Jazz institution — Paris, France",              "url": "https://tsfjazz.ice.infomaniak.ch/tsfjazz-high.mp3"},
     {"id": "abcjazz",       "name": "ABC Jazz",               "genre": "Jazz — ABC Australia, Melbourne",               "url": "http://live-radio01.mediahubaustralia.com/JAZW/mp3/"},
     {"id": "fipjazz",       "name": "FIP Jazz",               "genre": "Jazz — Radio France",                           "url": "https://icecast.radiofrance.fr/fipjazz-hifi.aac"},
     # --- Classical ---
     {"id": "swissclassic",  "name": "Radio Swiss Classic",    "genre": "Pure classical, no talk — Switzerland",         "url": "https://stream.srg-ssr.ch/srgssr/rsc_de/mp3/128"},
-    {"id": "concertzender", "name": "Concertzender",          "genre": "Classical, Jazz & World — Netherlands",         "url": "https://streams.greenhost.nl:8006/live"},
+    {"id": "nporadio4",     "name": "NPO Radio 4",            "genre": "Classical — Dutch public radio",                 "url": "https://icecast.omroep.nl/radio4-bb-mp3"},
     {"id": "classicfm",     "name": "Classic FM",             "genre": "Classical — UK",                                "url": "https://media-ice.musicradio.com/ClassicFMMP3"},
     {"id": "wqxr",          "name": "WQXR",                   "genre": "Classical — New York City",                     "url": "https://stream.wqxr.org/wqxr"},
     {"id": "ancientfm",     "name": "Ancient FM",             "genre": "Medieval & Renaissance music",                  "url": "https://mediaserv73.live-streams.nl:18058/stream"},
@@ -51,7 +51,7 @@ STATIONS = [
     {"id": "fipnouv",       "name": "FIP Nouveautés",         "genre": "New releases & discoveries — Radio France",     "url": "https://icecast.radiofrance.fr/fipnouveautes-hifi.aac"},
     # --- Folk / Roots / World ---
     {"id": "fipfolk",       "name": "FIP Monde",              "genre": "World folk & roots — Radio France",             "url": "https://icecast.radiofrance.fr/fipworld-hifi.aac"},
-    {"id": "radioroots",    "name": "Concertzender Roots",    "genre": "World roots & folk — Netherlands",              "url": "https://streams.greenhost.nl:8006/roots"},
+    {"id": "rpworld",       "name": "Radio Paradise World",   "genre": "World, folk & roots mix",                       "url": "https://stream.radioparadise.com/world-etc-192"},
     {"id": "maqam",         "name": "Maqam Radio",            "genre": "Arabic classical & tarab",                      "url": "http://listen.radionomy.com/maqam"},
     {"id": "radiomeuh",     "name": "Radio Meuh",             "genre": "Eclectic mountain radio — French Alps",         "url": "http://radiomeuh.ice.infomaniak.ch/radiomeuh-128.mp3"},
     {"id": "rfimusique",    "name": "RFI Musique",            "genre": "World music & culture — Radio France International", "url": "https://live02.rfi.fr/rfimonde-96k.mp3"},

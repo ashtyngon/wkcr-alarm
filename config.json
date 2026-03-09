@@ -1,0 +1,16 @@
+{
+  "device_name": "Living Room",
+  "station": "wkcr",
+  "volume": 50,
+  "alarm_enabled": true,
+  "alarm_time": "06:30",
+  "alarm_days": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "alarm_station": "wkcr",
+  "custom_url": ""
+}

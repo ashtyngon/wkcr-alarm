@@ -716,12 +716,12 @@
     const STATION_MOODS = {
       wkcr:          ['explore','focus'],
       swissjazz:     ['focus','mellow'],
-      czjazz:        ['explore','focus'],
+      jazzradio:     ['explore','focus'],
       tsfjazz:       ['focus','mellow','explore'],
       abcjazz:       ['focus','mellow','explore'],
       fipjazz:       ['focus','mellow','explore'],
       swissclassic:  ['focus','mellow'],
-      concertzender: ['explore','focus'],
+      nporadio4:     ['focus','winddown'],
       classicfm:     ['focus','mellow','winddown'],
       wqxr:          ['focus','mellow'],
       ancientfm:     ['mellow','winddown'],
@@ -743,7 +743,7 @@
       rp:            ['explore','focus','mellow'],
       fipnouv:       ['explore','wakeup'],
       fipfolk:       ['explore','mellow'],
-      radioroots:    ['explore','wakeup'],
+      rpworld:       ['explore','wakeup'],
       maqam:         ['mellow','explore','winddown'],
       radiomeuh:     ['explore','wakeup'],
       rfimusique:    ['explore','wakeup'],
@@ -769,12 +769,12 @@
     const STATION_INFO = {
       wkcr:         { loc: 'New York City, USA', url: 'https://www.cc-seas.columbia.edu/wkcr', about: 'Columbia University\'s legendary station, broadcasting since 1941. Famous for its annual Charlie Parker and Bach festivals. One of the last true freeform jazz stations in America — run entirely by students and volunteers.' },
       swissjazz:    { loc: 'Basel, Switzerland', url: 'https://www.radioswissjazz.ch', about: 'Switzerland\'s dedicated jazz station from SRG SSR public broadcasting. 24/7 jazz with zero talk or ads — just music. Draws from an enormous catalog spanning swing to avant-garde.' },
-      czjazz:       { loc: 'Hilversum, Netherlands', url: 'https://www.concertzender.nl', about: 'Concertzender\'s jazz channel covers the full spectrum: from New Orleans to free improv, Latin jazz to European ECM-style. Community-run Dutch broadcasting with deep curation.' },
+      jazzradio:    { loc: 'Lyon, France', url: 'https://www.jazzradio.fr', about: 'French jazz station broadcasting from Lyon since 1996. Mainstream jazz, fusion, soul-jazz and vocal jazz. Reliable Infomaniak-hosted stream with high audio quality.' },
       tsfjazz:      { loc: 'Paris, France', url: 'https://www.tsfjazz.com', about: 'Paris jazz institution since 2000. Real DJs, real curation — jazz, soul, and groove from the heart of Paris. Run by people who live and breathe jazz. One of Europe\'s finest jazz stations.' },
       abcjazz:      { loc: 'Melbourne, Australia', url: 'https://www.abc.net.au/jazz', about: 'Australia\'s national jazz station from ABC. 24/7 jazz from Down Under — local Australian jazz artists alongside international legends. Public broadcasting, no ads.' },
       fipjazz:      { loc: 'Paris, France', url: 'https://www.radiofrance.fr/fip', about: 'FIP\'s dedicated jazz channel. Miles Davis to Kamasi Washington, Django to Coltrane. Radio France\'s jazz curation is world-class. No ads.' },
       swissclassic: { loc: 'Basel, Switzerland', url: 'https://www.radioswissclassic.ch', about: 'SRG SSR\'s classical channel — pure music, no presenters, no ads. Algorithmically programmed from thousands of recordings. Arguably the cleanest classical stream available anywhere.' },
-      concertzender:{ loc: 'Hilversum, Netherlands', url: 'https://www.concertzender.nl', about: 'Dutch community broadcaster covering classical, early music, world music and jazz since 1982. Known for broadcasting rare recordings and live concerts you won\'t find elsewhere.' },
+      nporadio4:    { loc: 'Hilversum, Netherlands', url: 'https://www.nporadio4.nl', about: 'Dutch public classical radio. Symphonic, chamber, opera, and contemporary classical. Part of the NPO broadcasting network. Clean, reliable stream.' },
       classicfm:    { loc: 'London, UK', url: 'https://www.classicfm.com', about: 'Britain\'s most popular classical station since 1992. Accessible programming — film scores alongside Mozart, relaxation playlists alongside Beethoven. Owned by Global Media.' },
       wqxr:         { loc: 'New York City, USA', url: 'https://www.wqxr.org', about: 'New York\'s classical music station since 1936, now part of WNYC/New York Public Radio. Deep programming with expert hosts. Known for its Operavore channel and new music advocacy.' },
       ancientfm:    { loc: 'Internet-only', url: 'https://www.ancientfm.com', about: 'A rare gem — 24/7 medieval, Renaissance, and baroque music. Troubadour songs, lute pieces, Gregorian chant. Run by a single enthusiast. One of the most unique stations on the internet.' },
@@ -796,7 +796,7 @@
       rp:           { loc: 'Paradise, CA, USA', url: 'https://www.radioparadise.com', about: 'Bill Goldsmith\'s labor of love since 2000. Eclectic mix of rock, world, jazz, and classical — sequenced by a human, not an algorithm. Listener-supported, ad-free. The gold standard of internet radio.' },
       fipnouv:      { loc: 'Paris, France', url: 'https://www.radiofrance.fr/fip', about: 'FIP\'s new music channel. The latest releases across all genres — the freshest picks from Radio France\'s legendary curators. No ads. Where FIP\'s taste meets what\'s new.' },
       fipfolk:      { loc: 'Paris, France', url: 'https://www.radiofrance.fr/fip', about: 'FIP\'s world music channel. Global sounds curated by Radio France — African, Asian, Latin American, and European folk traditions. No ads.' },
-      radioroots:   { loc: 'Hilversum, Netherlands', url: 'https://www.concertzender.nl', about: 'Concertzender\'s world roots channel. Global folk, traditional music from every continent. Deep curation from Dutch community broadcasting.' },
+      rpworld:      { loc: 'Paradise, California, USA', url: 'https://www.radioparadise.com', about: 'Radio Paradise\'s world and roots channel. Global folk, world beat, traditional and eclectic international music. Listener-supported, no ads.' },
       maqam:        { loc: 'Internet-only', url: '', about: 'Dedicated Arabic classical music stream. Maqam-based music from the golden age of tarab — Umm Kulthum, Fairuz, Abdel Halim, and the great composers of the Arab world.' },
       radiomeuh:    { loc: 'Méaudre, French Alps', url: 'https://www.radiomeuh.com', about: 'Born in a tiny Alpine village, Radio Meuh broadcasts eclectic, feel-good music from the mountains. Reggae, dub, world, funk, and folk — curated by music lovers in the French Alps. Community-run and ad-free.' },
       rfimusique:   { loc: 'Paris, France (global)', url: 'https://www.rfi.fr', about: 'Radio France International\'s world service. French and international music, world culture, and news. Broadcasts to 5 continents. A window into global music from a Parisian perspective.' },
@@ -821,12 +821,12 @@
     const STATION_TAGS = {
       wkcr:          ['ad-free','live-djs'],
       swissjazz:     ['ad-free','pure-music'],
-      czjazz:        ['ad-free','live-djs'],
+      jazzradio:     ['ad-free'],
       tsfjazz:       ['ad-free','live-djs'],
       abcjazz:       ['ad-free','live-djs'],
       fipjazz:       ['ad-free','pure-music'],
       swissclassic:  ['ad-free','pure-music'],
-      concertzender: ['ad-free','live-djs'],
+      nporadio4:     ['ad-free','live-djs'],
       classicfm:     ['some-ads','live-djs'],
       wqxr:          ['ad-free','live-djs'],
       ancientfm:     ['ad-free','pure-music'],
@@ -848,7 +848,7 @@
       rp:            ['ad-free','pure-music'],
       fipnouv:       ['ad-free','pure-music'],
       fipfolk:       ['ad-free','pure-music'],
-      radioroots:    ['ad-free','live-djs'],
+      rpworld:       ['ad-free'],
       maqam:         ['ad-free','pure-music'],
       radiomeuh:     ['ad-free','live-djs'],
       rfimusique:    ['ad-free','live-djs'],
@@ -871,11 +871,11 @@
     };
 
     const GROUPS = [
-      { label: 'Jazz',                   match: s => ['wkcr','swissjazz','czjazz','tsfjazz','abcjazz','fipjazz'].includes(s.id) },
-      { label: 'Classical',              match: s => ['swissclassic','concertzender','classicfm','wqxr','ancientfm','wcpe','abcclassic','rai3'].includes(s.id) },
+      { label: 'Jazz',                   match: s => ['wkcr','swissjazz','jazzradio','tsfjazz','abcjazz','fipjazz'].includes(s.id) },
+      { label: 'Classical',              match: s => ['swissclassic','nporadio4','classicfm','wqxr','ancientfm','wcpe','abcclassic','rai3'].includes(s.id) },
       { label: 'Opera',                  match: s => ['operafm','klassikopera','fmopera','operavore','operamrg','capriceopera','klassikverdi'].includes(s.id) },
       { label: 'Eclectic',              match: s => ['fip','kexp','nts1','nts2','wfmu','rp','fipnouv'].includes(s.id) },
-      { label: 'Folk / Roots / World',   match: s => ['fipfolk','radioroots','maqam','radiomeuh','rfimusique'].includes(s.id) },
+      { label: 'Folk / Roots / World',   match: s => ['fipfolk','rpworld','maqam','radiomeuh','rfimusique'].includes(s.id) },
       { label: 'Reggae & Funk',          match: s => ['fipreggae','fipgroove'].includes(s.id) },
       { label: 'European Independent',   match: s => ['couleur3','bytefm','fluxfm','thelot'].includes(s.id) },
       { label: 'Discovery / Underground', match: s => ['dublab','resonancefm','cashmerefm'].includes(s.id) },
@@ -889,13 +889,13 @@
       // --- Jazz ---
       { id: 'wkcr', name: 'WKCR 89.9', genre: 'Jazz & Classical — Columbia Univ., NYC', url: 'http://wkcr.streamguys1.com/live' },
       { id: 'swissjazz', name: 'Radio Swiss Jazz', genre: 'Pure jazz, no talk — Switzerland', url: 'https://stream.srg-ssr.ch/srgssr/rsj/mp3/128' },
-      { id: 'czjazz', name: 'Concertzender Jazz', genre: 'World of Jazz — Netherlands', url: 'https://streams.greenhost.nl:8006/jazz' },
+      { id: 'jazzradio', name: 'Jazz Radio', genre: 'Jazz — Lyon, France', url: 'https://jazzradio.ice.infomaniak.ch/jazzradio-high.mp3' },
       { id: 'tsfjazz', name: 'TSF Jazz', genre: 'Jazz institution — Paris, France', url: 'https://tsfjazz.ice.infomaniak.ch/tsfjazz-high.mp3' },
       { id: 'abcjazz', name: 'ABC Jazz', genre: 'Jazz — ABC Australia, Melbourne', url: 'http://live-radio01.mediahubaustralia.com/JAZW/mp3/' },
       { id: 'fipjazz', name: 'FIP Jazz', genre: 'Jazz — Radio France', url: 'https://icecast.radiofrance.fr/fipjazz-hifi.aac' },
       // --- Classical ---
       { id: 'swissclassic', name: 'Radio Swiss Classic', genre: 'Pure classical, no talk — Switzerland', url: 'https://stream.srg-ssr.ch/srgssr/rsc_de/mp3/128' },
-      { id: 'concertzender', name: 'Concertzender', genre: 'Classical, Jazz & World — Netherlands', url: 'https://streams.greenhost.nl:8006/live' },
+      { id: 'nporadio4', name: 'NPO Radio 4', genre: 'Classical — Dutch public radio', url: 'https://icecast.omroep.nl/radio4-bb-mp3' },
       { id: 'classicfm', name: 'Classic FM', genre: 'Classical — UK', url: 'https://media-ice.musicradio.com/ClassicFMMP3' },
       { id: 'wqxr', name: 'WQXR', genre: 'Classical — New York City', url: 'https://stream.wqxr.org/wqxr' },
       { id: 'ancientfm', name: 'Ancient FM', genre: 'Medieval & Renaissance music', url: 'https://mediaserv73.live-streams.nl:18058/stream' },
@@ -920,7 +920,7 @@
       { id: 'fipnouv', name: 'FIP Nouveautés', genre: 'New releases & discoveries — Radio France', url: 'https://icecast.radiofrance.fr/fipnouveautes-hifi.aac' },
       // --- Folk / Roots / World ---
       { id: 'fipfolk', name: 'FIP Monde', genre: 'World folk & roots — Radio France', url: 'https://icecast.radiofrance.fr/fipworld-hifi.aac' },
-      { id: 'radioroots', name: 'Concertzender Roots', genre: 'World roots & folk — Netherlands', url: 'https://streams.greenhost.nl:8006/roots' },
+      { id: 'rpworld', name: 'Radio Paradise World', genre: 'World, folk & roots mix', url: 'https://stream.radioparadise.com/world-etc-192' },
       { id: 'maqam', name: 'Maqam Radio', genre: 'Arabic classical & tarab', url: 'http://listen.radionomy.com/maqam' },
       { id: 'radiomeuh', name: 'Radio Meuh', genre: 'Eclectic mountain radio — French Alps', url: 'http://radiomeuh.ice.infomaniak.ch/radiomeuh-128.mp3' },
       { id: 'rfimusique', name: 'RFI Musique', genre: 'World music & culture — Radio France International', url: 'https://live02.rfi.fr/rfimonde-96k.mp3' },
@@ -985,7 +985,7 @@
       'alps': ['radiomeuh'],
       'german': ['bytefm','fluxfm'],
       'french': ['fip','tsfjazz','rfimusique','fipnouv','radiomeuh'],
-      'world': ['fipfolk','radioroots','rfimusique'],
+      'world': ['fipfolk','rpworld','rfimusique'],
       'country': [],
     };
 
@@ -1025,6 +1025,23 @@
 
     function save() {
       localStorage.setItem('radioAlarmState', JSON.stringify(state));
+      // Sync to backend so alarm thread picks up changes
+      // Map UI day indices (0=Sun) to Python weekday (0=Mon)
+      const uiToPython = [6, 0, 1, 2, 3, 4, 5]; // Sun=6, Mon=0, Tue=1...
+      const backendDays = state.alarmDays.map(d => uiToPython[d]);
+      fetch('/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          device_name: state.speaker,
+          station: state.currentStation || 'wkcr',
+          volume: state.volume,
+          alarm_enabled: state.alarmEnabled,
+          alarm_time: state.alarmTime,
+          alarm_days: backendDays,
+          alarm_station: state.currentStation || 'wkcr',
+        })
+      }).catch(() => {});
     }
 
     async function checkServer() {
@@ -1033,6 +1050,39 @@
         if (!r.ok) {
           toast('Backend unavailable', 'error');
           return false;
+        }
+        // Sync backend config into UI state
+        const data = await r.json();
+        const cfg = data.config || {};
+        if (cfg.device_name) state.speaker = cfg.device_name;
+        if (cfg.volume) state.volume = cfg.volume;
+        if (cfg.alarm_enabled !== undefined) state.alarmEnabled = cfg.alarm_enabled;
+        if (cfg.alarm_time) state.alarmTime = cfg.alarm_time;
+        if (cfg.alarm_days) {
+          // Map Python weekday (0=Mon) back to UI (0=Sun)
+          const pythonToUi = { 0:1, 1:2, 2:3, 3:4, 4:5, 5:6, 6:0 };
+          state.alarmDays = cfg.alarm_days.map(d => pythonToUi[d]);
+        }
+        if (cfg.station) state.currentStation = cfg.station;
+        // Update UI elements
+        $('speakerSelect').value = state.speaker;
+        $('volumeSlider').value = state.volume;
+        $('volumeValue').textContent = state.volume;
+        $('alarmEnabled').checked = state.alarmEnabled;
+        $('alarmTime').value = state.alarmTime;
+        renderDays();
+        updateStatus();
+        // Populate speaker dropdown from discovered devices
+        if (data.discovered && data.discovered.length > 0) {
+          const sel = $('speakerSelect');
+          sel.innerHTML = '';
+          data.discovered.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            sel.appendChild(opt);
+          });
+          sel.value = state.speaker;
         }
         return true;
       } catch (e) {
@@ -1261,7 +1311,7 @@
         const r = await fetch('/play', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ station: stationId, volume: state.volume })
+          body: JSON.stringify({ station_id: stationId, device_name: state.speaker, volume: state.volume })
         });
         return r.ok;
       } catch (e) {
@@ -1271,7 +1321,11 @@
 
     async function sendStop() {
       try {
-        const r = await fetch('/stop', { method: 'POST' });
+        const r = await fetch('/stop', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ device_name: state.speaker })
+        });
         return r.ok;
       } catch (e) {
         return false;
@@ -1346,9 +1400,11 @@
       });
     }
 
-    function testAlarm() {
-      toast('Test alarm triggered!', 'success');
-      // Could send /test-alarm to backend
+    async function testAlarm() {
+      const station = state.currentStation || 'wkcr';
+      toast('Testing alarm...', 'success');
+      const ok = await sendPlay(station);
+      if (!ok) toast('Test failed — check speaker', 'error');
     }
 
     function updateStatus() {
