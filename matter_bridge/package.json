@@ -1,0 +1,16 @@
+{
+  "name": "chechoo-radio-matter-bridge",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Matter bridge for Chechoo Radio — Google Home voice control",
+  "main": "bridge.js",
+  "scripts": {
+    "start": "node bridge.js"
+  },
+  "dependencies": {
+    "@matter/main": "^0.12.0"
+  },
+  "engines": {
+    "node": ">=20.19.0 <22.0.0 || >=22.13.0"
+  }
+}
