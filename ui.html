@@ -996,9 +996,12 @@ function renderSpeakers() {
     card.innerHTML = '<div class="speaker-radio"></div><span class="speaker-name">' + name + '</span>';
     card.onclick = (e) => {
       e.stopPropagation();
+      const prevDevice = $('device').value.trim();
       $('device').value = name;
       renderSpeakers(); autoSave();
       syncVolumeFromSpeaker(name);
+      // If currently playing, switch playback to the new speaker
+      if ((isPlaying || userStartedPlay) && name !== prevDevice) playNow();
       setTimeout(() => { panels.speaker.open = false; updatePanel('speaker'); }, 300);
     };
     grid.appendChild(card);
