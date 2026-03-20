@@ -119,6 +119,10 @@ STATIONS = [
     {"id": "rpmellow",      "name": "Radio Paradise Mellow",  "genre": "Acoustic & chill",                              "url": "http://stream.radioparadise.com/mellow-192"},
     {"id": "somagroove",    "name": "SomaFM Groove Salad",    "genre": "Ambient & downtempo",                           "url": "https://ice2.somafm.com/groovesalad-128-mp3"},
     {"id": "somadrone",     "name": "SomaFM Drone Zone",      "genre": "Atmospheric ambient",                           "url": "https://ice2.somafm.com/dronezone-128-mp3"},
+    # --- Talk / NPR ---
+    {"id": "wnyc",          "name": "WNYC 93.9",              "genre": "NPR & public radio — New York City",           "url": "https://fm939.wnyc.org/wnycfm"},
+    # --- Electronic / Techno ---
+    {"id": "sunshinelive",  "name": "Sunshine Live",           "genre": "Techno, house & trance — Germany",             "url": "https://stream.sunshine-live.de/live/mp3-192/"},
     # --- Custom ---
     {"id": "custom",        "name": "Custom URL",             "genre": "Paste any stream URL",                          "url": ""},
 ]
