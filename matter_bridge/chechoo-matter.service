@@ -1,0 +1,16 @@
+[Unit]
+Description=Chechoo Radio Matter Bridge
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/wkcr-alarm/matter_bridge
+ExecStart=/usr/bin/node bridge.js
+Restart=on-failure
+RestartSec=10
+Environment=FLASK_URL=http://localhost:8550
+
+[Install]
+WantedBy=multi-user.target
