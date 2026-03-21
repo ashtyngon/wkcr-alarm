@@ -1,977 +1,806 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Radio Alarm</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Sensory Radio</title>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#0d0e12"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary-container":"#d6beff","error":"#fd6f85","background":"#0d0e12",
+        "tertiary-fixed-dim":"#7fdede","secondary-dim":"#eaaf00",
+        "on-surface-variant":"#aaaab4","on-background":"#e4e5ef",
+        "surface-dim":"#0d0e12","on-tertiary":"#006161",
+        "on-error-container":"#ff97a3","surface-container-low":"#121318",
+        "tertiary":"#9cfbfa","secondary-fixed":"#ffdfa0",
+        "on-primary-fixed-variant":"#544178","secondary":"#fbbc00",
+        "surface-container-high":"#1e1f26","surface-container-highest":"#23252d",
+        "on-surface":"#e4e5ef","on-primary-fixed":"#362459",
+        "on-primary":"#544178","surface-container-lowest":"#000000",
+        "primary-dim":"#c8b1f0","inverse-on-surface":"#54555a",
+        "surface-tint":"#e1cfff","error-container":"#8a1632",
+        "on-tertiary-container":"#005858","surface-bright":"#2a2c34",
+        "tertiary-fixed":"#8dedec","on-tertiary-fixed-variant":"#006262",
+        "inverse-primary":"#69558d","secondary-container":"#332300",
+        "on-error":"#490013","secondary-fixed-dim":"#ffcd62",
+        "inverse-surface":"#faf8fe","on-secondary-fixed-variant":"#765600",
+        "on-primary-container":"#4b386e","on-secondary-container":"#d09b00",
+        "outline-variant":"#464850","on-tertiary-fixed":"#004343",
+        "on-secondary-fixed":"#523c00","surface-variant":"#23252d",
+        "tertiary-container":"#8dedec","primary-fixed":"#d6beff",
+        "tertiary-dim":"#7fdede","surface-container":"#18191f",
+        "on-secondary":"#533c00","surface":"#0d0e12",
+        "primary-fixed-dim":"#c8b1f0","outline":"#74757e",
+        "primary":"#e1cfff","error-dim":"#c8475d"
+      },
+      fontFamily: {
+        "headline":["Space Grotesk"],
+        "body":["Manrope"],
+        "label":["Manrope"]
+      },
+      borderRadius:{"DEFAULT":"1rem","lg":"2rem","xl":"3rem","full":"9999px"},
+    },
+  },
+}
+</script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
-
-  :root {
-    --bg: #111110; --surface: #1b1b19; --surface2: #232320;
-    --border: #2d2d28; --border-hi: #3d3d36;
-    --text: #e4e2db; --text2: #8a8880; --text3: #5c5a53;
-    --warm: #d4a053; --warm-bg: rgba(212,160,83,0.08); --warm-border: rgba(212,160,83,0.2);
-    --green: #7ab87a; --green-bg: rgba(122,184,122,0.08); --green-border: rgba(122,184,122,0.25);
-    --red: #c75d5d; --red-bg: rgba(199,93,93,0.08);
-    --radius: 10px;
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
-    background: var(--bg); color: var(--text);
+    background: #0d0e12; color: #e4e5ef;
+    font-family: 'Manrope', system-ui, sans-serif;
     min-height: 100vh; min-height: 100dvh;
-    display: flex; justify-content: center;
-    padding: 0 20px 100px; -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
-  .app { width: 100%; max-width: 420px; padding-top: 24px; }
-
-  /* ---- Status bar (sticky) ---- */
-  .status-bar {
-    position: sticky; top: 0; z-index: 50;
-    background: var(--bg); padding: 16px 0 12px;
-    border-bottom: 1px solid transparent; transition: border-color 0.3s;
+  .aura-blur { filter: blur(80px); }
+  .glass-card {
+    background: rgba(35, 37, 45, 0.4);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
   }
-  .status-bar.scrolled { border-bottom-color: var(--border); }
-  .header { margin-bottom: 4px; }
-  .eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; font-weight: 500;
-    letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--text3); margin-bottom: 6px;
-  }
-  .title { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; line-height: 1.15; }
-  .title .freq { color: var(--warm); }
-
-  /* Now-playing */
-  .now-playing {
-    display: none; align-items: center; gap: 10px;
-    padding: 10px 14px; margin-top: 10px;
-    background: var(--green-bg); border: 1px solid var(--green-border);
-    border-radius: 8px; font-size: 13px; color: var(--green);
-  }
-  .now-playing.visible { display: flex; }
-  .now-playing .pulse {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--green); flex-shrink: 0;
-    animation: pulse 2s ease-in-out infinite;
-  }
-  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
-  .now-playing .np-text { flex: 1; font-weight: 500; }
-  .now-playing .np-stop {
-    padding: 4px 12px; font-size: 12px; font-weight: 600;
-    background: transparent; color: var(--green);
-    border: 1px solid var(--green-border); border-radius: 6px;
-    cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
-  }
-  .now-playing .np-stop:hover { background: rgba(122,184,122,0.12); }
-
-  /* Alarm armed banner */
-  .alarm-banner {
-    display: none; align-items: center; gap: 10px;
-    padding: 10px 14px; margin-top: 10px;
-    background: var(--warm-bg); border: 1px solid var(--warm-border);
-    border-radius: 8px; font-size: 13px; color: var(--warm);
-  }
-  .alarm-banner.visible { display: flex; }
-  .alarm-banner .ab-icon { font-size: 16px; flex-shrink: 0; line-height: 1; }
-  .alarm-banner .ab-text { flex: 1; font-weight: 500; }
-
-  .bar-spacer { height: 12px; }
-
-  /* ---- Sections ---- */
-  .section {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 20px; margin-bottom: 12px;
-  }
-  .section-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; font-weight: 500;
-    letter-spacing: 1.2px; text-transform: uppercase;
-    color: var(--text3);
-    display: flex; align-items: center; gap: 8px;
-  }
-  .section-label .badge {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 10px; font-weight: 600; letter-spacing: 0;
-    text-transform: none; padding: 2px 8px; border-radius: 10px;
-    margin-left: auto;
-  }
-  .badge-ok { background: var(--green-bg); color: var(--green); }
-  .badge-warn { background: var(--warm-bg); color: var(--warm); }
-
-  /* ---- Generic collapsible ---- */
-  .section-header {
-    display: flex; align-items: center; justify-content: space-between;
-    cursor: pointer; user-select: none;
-  }
-  .section-header .section-label { margin-bottom: 0; flex: 1; }
-  .chevron {
-    width: 18px; height: 18px; color: var(--text3);
-    transition: transform 0.25s ease; flex-shrink: 0; margin-left: 8px;
-  }
-  .chevron.open { transform: rotate(180deg); }
-  .panel-body {
-    overflow: hidden; transition: max-height 0.3s ease, opacity 0.25s ease;
-    max-height: 0; opacity: 0;
-  }
-  .panel-body.open { max-height: 1200px; opacity: 1; }
-  .panel-summary {
-    display: none; align-items: center; gap: 8px;
-    margin-top: 12px; padding: 10px 12px;
-    background: var(--warm-bg); border: 1px solid var(--warm-border);
-    border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--warm);
-  }
-  .panel-summary.visible { display: flex; }
-  .panel-summary .ps-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--warm); flex-shrink: 0;
-  }
-  .panel-summary .ps-text { flex: 1; }
-  .panel-summary .ps-action {
-    font-size: 11px; font-weight: 500; color: var(--text3);
-    cursor: pointer; transition: color 0.15s;
-  }
-  .panel-summary .ps-action:hover { color: var(--text2); }
-
-  /* ---- Toggle ---- */
-  .toggle-row { display: flex; align-items: center; justify-content: space-between; }
-  .toggle-label { font-size: 15px; font-weight: 500; }
-  .switch { position: relative; width: 50px; height: 28px; cursor: pointer; }
-  .switch input { display: none; }
-  .switch .track {
-    position: absolute; inset: 0; background: var(--border-hi);
-    border-radius: 14px; transition: background 0.25s;
-  }
-  .switch input:checked + .track { background: var(--warm); }
-  .switch .thumb {
-    position: absolute; top: 3px; left: 3px; width: 22px; height: 22px;
-    background: #fff; border-radius: 50%; transition: transform 0.25s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  }
-  .switch input:checked ~ .thumb { transform: translateX(22px); }
-
-  /* ---- Time ---- */
-  .time-row { display: flex; align-items: center; gap: 6px; }
-  .time-input {
-    width: 76px; background: var(--bg); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 26px; font-weight: 500; text-align: center;
-    padding: 10px 4px; outline: none; transition: border-color 0.2s;
-  }
-  .time-input:focus { border-color: var(--warm); }
-  .time-sep {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 26px; color: var(--text3); padding-bottom: 2px;
-  }
-
-  /* ---- Days ---- */
-  .days { display: flex; gap: 6px; margin-top: 16px; }
-  .day {
-    flex: 1; padding: 9px 0; text-align: center;
-    font-size: 12px; font-weight: 500;
-    background: var(--bg); color: var(--text3);
-    border: 1px solid var(--border); border-radius: 8px;
-    cursor: pointer; transition: all 0.15s; user-select: none;
-  }
-  .day:hover { border-color: var(--border-hi); color: var(--text2); }
-  .day.on { background: var(--warm-bg); color: var(--warm); border-color: var(--warm-border); }
-
-  /* ---- Mood pills ---- */
-  .mood-bar {
-    display: flex; gap: 6px; flex-wrap: wrap;
-    margin-bottom: 12px;
-  }
-  .mood-pill {
-    padding: 6px 14px; font-size: 12px; font-weight: 500;
-    background: var(--bg); color: var(--text3);
-    border: 1px solid var(--border); border-radius: 20px;
-    cursor: pointer; transition: all 0.15s; user-select: none;
-    white-space: nowrap;
-  }
-  .mood-pill:hover { border-color: var(--border-hi); color: var(--text2); }
-  .mood-pill.active { background: var(--warm-bg); color: var(--warm); border-color: var(--warm-border); }
-  .mood-pill .mood-emoji { margin-right: 4px; }
-
-  /* ---- Station list ---- */
-  .station-scroll {
-    max-height: 320px; overflow-y: auto;
-    scrollbar-width: thin; scrollbar-color: var(--border-hi) transparent;
-  }
-  .station-scroll::-webkit-scrollbar { width: 5px; }
+  .active-glow { box-shadow: 0 0 30px 2px rgba(225,207,255,0.15); }
+  .tab-view { display: none; }
+  .tab-view.active { display: flex; }
+  .station-scroll::-webkit-scrollbar { width: 4px; }
   .station-scroll::-webkit-scrollbar-track { background: transparent; }
-  .station-scroll::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
-  .station-group-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px; font-weight: 500;
-    letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--text3); padding: 10px 0 6px;
-  }
-  .station-group-label:first-child { padding-top: 0; }
-  .station-card {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 12px; margin-bottom: 4px;
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 8px; cursor: pointer; transition: all 0.15s; user-select: none;
-  }
-  .station-card:hover { border-color: var(--border-hi); }
-  .station-card.active { background: var(--warm-bg); border-color: var(--warm-border); }
-  .station-radio {
-    width: 14px; height: 14px; flex-shrink: 0;
-    border: 2px solid var(--border-hi); border-radius: 50%;
-    position: relative; transition: border-color 0.15s;
-  }
-  .station-card.active .station-radio { border-color: var(--warm); }
-  .station-card.active .station-radio::after {
-    content: ''; position: absolute; top: 2px; left: 2px;
-    width: 6px; height: 6px; background: var(--warm); border-radius: 50%;
-  }
-  .station-info { flex: 1; min-width: 0; }
-  .station-name { font-size: 13px; font-weight: 500; }
-  .station-card.active .station-name { color: var(--warm); }
-  .station-genre {
-    font-size: 11px; color: var(--text3); margin-top: 1px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .station-fav {
-    flex-shrink: 0; width: 28px; height: 28px; display: flex;
-    align-items: center; justify-content: center;
-    background: none; border: none; cursor: pointer;
-    color: var(--text3); font-size: 16px; transition: all 0.15s;
-    border-radius: 50%; padding: 0;
-  }
-  .station-fav:hover { color: var(--warm); background: var(--warm-bg); }
-  .station-fav.on { color: var(--warm); }
-  .custom-url-row { margin-top: 8px; display: none; }
-  .custom-url-row.show { display: block; }
-
-  /* Play bar */
-  .play-bar {
-    display: flex; gap: 8px; margin-top: 14px;
-    padding-top: 14px; border-top: 1px solid var(--border);
-  }
-  .play-bar .btn { flex: 1; }
-
-  /* ---- Volume ---- */
-  .slider-group { margin-bottom: 0; }
-  .slider-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .slider-name { font-size: 13px; }
-  .slider-val {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px; font-weight: 500; color: var(--warm);
-    min-width: 40px; text-align: right;
-  }
+  .station-scroll::-webkit-scrollbar-thumb { background: #464850; border-radius: 2px; }
+  .station-scroll { scrollbar-width: thin; scrollbar-color: #464850 transparent; }
   input[type="range"] {
-    -webkit-appearance: none; width: 100%; height: 4px;
-    background: var(--border); border-radius: 2px; outline: none;
+    -webkit-appearance: none; width: 100%; height: 6px;
+    background: #23252d; border-radius: 3px; outline: none;
   }
   input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 18px; height: 18px;
-    background: var(--warm); border-radius: 50%; cursor: pointer;
-    box-shadow: 0 0 0 4px var(--warm-bg);
+    -webkit-appearance: none; width: 22px; height: 22px;
+    background: #e1cfff; border-radius: 50%; cursor: pointer;
+    box-shadow: 0 0 20px rgba(225,207,255,0.3);
   }
-  .vol-sync-hint {
-    font-size: 11px; color: var(--text3); margin-top: 8px;
-    display: flex; align-items: center; gap: 6px;
+  input[type="range"]::-moz-range-thumb {
+    width: 22px; height: 22px;
+    background: #e1cfff; border-radius: 50%; cursor: pointer; border: none;
+    box-shadow: 0 0 20px rgba(225,207,255,0.3);
   }
-  .vol-sync-hint .sync-dot {
-    width: 5px; height: 5px; border-radius: 50%; background: var(--green);
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .animate-pulse-slow { animation: pulse 2s ease-in-out infinite; }
+  .time-input {
+    width: 80px; background: #000; border: 1px solid #464850;
+    border-radius: 12px; color: #e4e5ef;
+    font-family: 'Space Grotesk', monospace;
+    font-size: 32px; font-weight: 600; text-align: center;
+    padding: 12px 4px; outline: none; transition: border-color 0.2s;
   }
-
-  /* ---- Speaker ---- */
-  .speaker-grid { display: flex; flex-direction: column; gap: 4px; }
-  .speaker-card {
-    display: flex; align-items: center; gap: 12px; padding: 10px 12px;
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 8px; cursor: pointer; transition: all 0.15s; user-select: none;
-  }
-  .speaker-card:hover { border-color: var(--border-hi); }
-  .speaker-card.active { background: var(--warm-bg); border-color: var(--warm-border); }
-  .speaker-radio {
-    width: 14px; height: 14px; flex-shrink: 0;
-    border: 2px solid var(--border-hi); border-radius: 50%;
-    position: relative; transition: border-color 0.15s;
-  }
-  .speaker-card.active .speaker-radio { border-color: var(--warm); }
-  .speaker-card.active .speaker-radio::after {
-    content: ''; position: absolute; top: 2px; left: 2px;
-    width: 6px; height: 6px; background: var(--warm); border-radius: 50%;
-  }
-  .speaker-name { font-size: 13px; font-weight: 500; }
-  .speaker-card.active .speaker-name { color: var(--warm); }
-  .device-item { padding: 10px 12px; font-size: 13px; color: var(--text3); }
-  .scan-btn {
-    padding: 0 14px; font-family: 'DM Sans', sans-serif;
-    font-size: 12px; font-weight: 500;
-    background: var(--surface2); color: var(--text2);
-    border: 1px solid var(--border); border-radius: 8px;
-    cursor: pointer; white-space: nowrap; transition: all 0.15s;
-  }
-  .scan-btn:hover { border-color: var(--border-hi); color: var(--text); }
-  .text-input {
-    flex: 1; background: var(--bg); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text);
-    font-family: 'DM Sans', sans-serif; font-size: 14px;
-    padding: 10px 12px; outline: none; transition: border-color 0.2s;
-  }
-  .text-input:focus { border-color: var(--warm); }
-
-  /* ---- Buttons ---- */
-  .btn {
-    padding: 13px 16px; font-family: 'DM Sans', sans-serif;
-    font-size: 14px; font-weight: 600; border: none;
-    border-radius: var(--radius); cursor: pointer; transition: all 0.15s;
-    text-align: center;
-  }
-  .btn:active { transform: scale(0.98); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-  .btn-play { background: var(--green); color: var(--bg); }
-  .btn-play:hover:not(:disabled) { background: #8ac88a; }
-  .btn-stop { background: var(--surface2); color: var(--red); border: 1px solid rgba(199,93,93,0.3); }
-  .btn-stop:hover:not(:disabled) { border-color: rgba(199,93,93,0.5); }
-
-  /* ---- Toast ---- */
-  .toast {
-    position: fixed; bottom: 24px; left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    padding: 12px 24px; font-size: 13px; font-weight: 500;
-    border-radius: 8px; opacity: 0; max-width: 360px; text-align: center;
-    transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
-    pointer-events: none; z-index: 100;
-  }
-  .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast.ok { background: var(--green-bg); color: var(--green); border: 1px solid rgba(122,184,122,0.2); }
-  .toast.err { background: var(--red-bg); color: var(--red); border: 1px solid rgba(199,93,93,0.2); }
-  .toast.info { background: var(--warm-bg); color: var(--warm); border: 1px solid var(--warm-border); }
-
-  .save-dot {
-    display: inline-block; width: 6px; height: 6px;
-    border-radius: 50%; margin-left: 6px;
-    vertical-align: middle; transition: opacity 0.3s; opacity: 0;
-  }
-  .save-dot.saving { background: var(--warm); opacity: 1; animation: pulse 0.8s ease-in-out; }
-  .save-dot.saved { background: var(--green); opacity: 1; }
-
-  .server-dot {
-    display: inline-block; width: 6px; height: 6px;
-    border-radius: 50%; background: var(--text3);
-    margin-right: 6px; vertical-align: middle;
-  }
-  .server-dot.online { background: var(--green); }
-  .server-dot.offline { background: var(--red); }
-  #device { display: none; }
+  .time-input:focus { border-color: #e1cfff; }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="number"] { -moz-appearance: textfield; }
 </style>
 </head>
-<body>
-<div class="app">
+<body class="font-body selection:bg-primary-container selection:text-on-primary-container">
 
-  <!-- ======== STICKY STATUS BAR ======== -->
-  <div class="status-bar" id="statusBar">
-    <div class="header">
-      <div class="eyebrow"><span class="server-dot" id="serverDot"></span>radio alarm</div>
-      <div class="title" id="headerTitle">WKCR <span class="freq">89.9</span></div>
-    </div>
-    <div class="now-playing" id="nowPlaying">
-      <div class="pulse"></div>
-      <span class="np-text" id="npText">Playing on Kitchen Max</span>
-      <button class="np-stop" onclick="stopNow()">Stop</button>
-    </div>
-    <div class="alarm-banner" id="alarmBanner">
-      <span class="ab-icon">&#9200;</span>
-      <span class="ab-text" id="alarmBannerText">Alarm set for 07:00</span>
-    </div>
-  </div>
-  <div class="bar-spacer"></div>
-  <input type="hidden" id="device" value=""/>
-
-  <!-- ======== 1. SPEAKER ======== -->
-  <div class="section" id="sec-speaker">
-    <div class="section-header" onclick="toggle('speaker')">
-      <div class="section-label">Speaker <span class="badge" id="speakerBadge"></span></div>
-      <svg class="chevron" id="chev-speaker" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-    </div>
-    <div class="panel-summary" id="sum-speaker">
-      <div class="ps-dot"></div>
-      <span class="ps-text" id="sum-speaker-text">Kitchen Max</span>
-      <span class="ps-action" onclick="event.stopPropagation(); toggle('speaker',true)">Change</span>
-    </div>
-    <div class="panel-body" id="body-speaker">
-      <div style="margin-top:14px;">
-        <div class="speaker-grid" id="speakerGrid">
-          <div class="device-item">Scanning your network...</div>
-        </div>
-        <div style="margin-top:10px; text-align:right;">
-          <button class="scan-btn" id="scanBtn" onclick="event.stopPropagation(); scanDevices()" style="padding:8px 14px;">Rescan network</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======== 2. STATION + PLAY ======== -->
-  <div class="section" id="sec-station">
-    <div class="section-header" onclick="toggle('station')">
-      <div class="section-label">Station</div>
-      <svg class="chevron" id="chev-station" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-    </div>
-    <div class="panel-summary" id="sum-station">
-      <div class="ps-dot"></div>
-      <span class="ps-text" id="sum-station-text">WKCR 89.9</span>
-      <span class="ps-action" onclick="event.stopPropagation(); toggle('station',true)">Change</span>
-    </div>
-    <div class="panel-body" id="body-station">
-      <div style="margin-top:14px;">
-        <div style="position:relative;margin-bottom:10px;">
-          <input type="text" id="stationSearch" class="text-input" placeholder="Search stations…"
-            style="width:100%;padding-left:30px;box-sizing:border-box;" oninput="onSearchInput()" onclick="event.stopPropagation()"/>
-          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;pointer-events:none;">&#x1F50D;</span>
-          <button id="searchClear" style="display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:2px 6px;" onclick="event.stopPropagation();clearSearch();">&times;</button>
-        </div>
-        <div class="mood-bar" id="moodBar" onclick="event.stopPropagation()"></div>
-        <div class="station-scroll" id="stationScroll"></div>
-        <div class="custom-url-row" id="customUrlRow">
-          <div style="margin-top:10px">
-            <div style="font-size:11px;font-weight:500;letter-spacing:0.3px;color:var(--text2);margin-bottom:6px;">Stream URL</div>
-            <input class="text-input" id="customUrl" placeholder="http://stream.example.com/live" style="width:100%"/>
-          </div>
-        </div>
-        <div class="play-bar">
-          <button class="btn btn-play" id="playBtn" onclick="playNow()">Play</button>
-          <button class="btn btn-stop" id="stopBtn" onclick="stopNow()">Stop</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======== 3. VOLUME ======== -->
-  <div class="section" id="sec-volume">
-    <div class="section-header" onclick="toggle('volume')">
-      <div class="section-label">Volume</div>
-      <svg class="chevron" id="chev-volume" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-    </div>
-    <div class="panel-summary" id="sum-volume">
-      <div class="ps-dot"></div>
-      <span class="ps-text" id="sum-volume-text">35%</span>
-      <span class="ps-action" onclick="event.stopPropagation(); toggle('volume',true)">Adjust</span>
-    </div>
-    <div class="panel-body" id="body-volume">
-      <div style="margin-top:14px;">
-        <div class="slider-group">
-          <div class="slider-row">
-            <span class="slider-name">Speaker volume</span>
-            <span class="slider-val" id="volVal">35%</span>
-          </div>
-          <input type="range" id="volume" min="5" max="80" value="35"/>
-        </div>
-        <div class="vol-sync-hint" id="volSyncHint" style="display:none;">
-          <div class="sync-dot"></div>
-          <span id="volSyncText">Synced with speaker</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======== 4. ALARM SCHEDULE ======== -->
-  <div class="section" id="sec-alarm">
-    <div class="section-header" onclick="toggle('alarm')">
-      <div class="section-label">
-        Alarm schedule
-        <span class="save-dot" id="saveDot"></span>
-      </div>
-      <svg class="chevron" id="chev-alarm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-    </div>
-    <div class="panel-summary" id="sum-alarm">
-      <div class="ps-dot" id="sum-alarm-dot"></div>
-      <span class="ps-text" id="sum-alarm-text">Off</span>
-      <span class="ps-action" onclick="event.stopPropagation(); toggle('alarm',true)">Edit</span>
-    </div>
-    <div class="panel-body" id="body-alarm">
-      <div style="margin-top:14px;">
-        <div class="toggle-row">
-          <span class="toggle-label">Wake-up alarm</span>
-          <label class="switch" onclick="event.stopPropagation()">
-            <input type="checkbox" id="enabled"/>
-            <div class="track"></div>
-            <div class="thumb"></div>
-          </label>
-        </div>
-        <div style="margin-top:16px;">
-          <div class="time-row" onclick="event.stopPropagation()">
-            <input class="time-input" id="hour" type="number" min="0" max="23" value="7"/>
-            <span class="time-sep">:</span>
-            <input class="time-input" id="minute" type="number" min="0" max="59" value="0"/>
-          </div>
-          <div class="days" id="days" onclick="event.stopPropagation()"></div>
-          <div style="margin-top:14px; font-size:12px; color:var(--text3);">
-            Plays <strong id="alarmStationName" style="color:var(--text2);font-weight:500;">WKCR 89.9</strong> on your selected speaker. Changes save automatically.
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
+<!-- Living Gradient Background -->
+<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+  <div class="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-primary/10 aura-blur"></div>
+  <div class="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] rounded-full bg-secondary/5 aura-blur"></div>
+  <div class="absolute top-[30%] right-[10%] w-[40%] h-[40%] rounded-full bg-tertiary/5 aura-blur"></div>
 </div>
-<div class="toast" id="toast"></div>
+
+<!-- Top Header -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 pt-4 pb-3 bg-transparent">
+  <div class="flex items-center gap-3">
+    <span class="material-symbols-outlined text-purple-200 text-xl" id="serverDotIcon">sensors</span>
+    <span class="font-label text-[10px] tracking-[0.15em] uppercase text-on-surface-variant" id="serverStatusText">connecting</span>
+  </div>
+  <h1 class="font-headline font-bold text-purple-200 tracking-tight text-xl">Sensory Radio</h1>
+  <button class="material-symbols-outlined text-purple-200 hover:bg-white/10 transition-colors p-2 rounded-full" onclick="scanDevices()">
+    cast_connected
+  </button>
+</header>
+
+<!-- ==================== RADIO TAB ==================== -->
+<main class="tab-view active flex-col relative z-10 pt-16 pb-32 px-4 min-h-screen" id="view-radio">
+
+  <!-- Now Playing Banner -->
+  <div class="hidden mb-4 mt-2" id="nowPlaying">
+    <div class="glass-card active-glow rounded-2xl p-5 border border-primary/10 flex items-center gap-4">
+      <div class="flex items-center justify-center w-12 h-12 rounded-full bg-primary/20">
+        <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings:'FILL' 1;">graphic_eq</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="font-label text-[10px] tracking-[0.2em] uppercase text-on-surface-variant flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse-slow"></span>
+          Now Streaming
+        </p>
+        <p class="font-headline font-semibold text-on-surface truncate mt-0.5" id="npText">Playing</p>
+      </div>
+      <button class="w-10 h-10 rounded-full bg-error/10 border border-error/20 flex items-center justify-center hover:bg-error/20 active:scale-90 transition-all" onclick="stopNow()">
+        <span class="material-symbols-outlined text-error text-xl">stop</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Alarm Armed Banner -->
+  <div class="hidden mb-4" id="alarmBanner">
+    <div class="glass-card rounded-2xl px-5 py-3 border border-secondary/10 flex items-center gap-3">
+      <span class="material-symbols-outlined text-secondary text-lg">alarm_on</span>
+      <span class="font-label text-sm text-secondary" id="alarmBannerText">Alarm set for 07:00</span>
+    </div>
+  </div>
+
+  <!-- Speaker Section -->
+  <div class="mb-4" id="speakerSection">
+    <div class="glass-card rounded-2xl p-5 border border-white/5">
+      <div class="flex items-center justify-between mb-0 cursor-pointer" onclick="toggleSection('speaker')">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-dim text-lg">speaker</span>
+          <span class="font-label text-xs tracking-[0.15em] uppercase text-on-surface-variant">Output Device</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="font-label text-sm text-primary-dim" id="speakerBadge"></span>
+          <span class="material-symbols-outlined text-on-surface-variant text-lg transition-transform duration-300" id="chevSpeaker">expand_more</span>
+        </div>
+      </div>
+      <div class="overflow-hidden transition-all duration-300" id="bodySpeaker" style="max-height:0;opacity:0;">
+        <div class="space-y-2 mt-3" id="speakerGrid">
+          <div class="text-sm text-on-surface-variant py-4 text-center">Scanning your network…</div>
+        </div>
+        <div class="flex justify-end mt-3">
+          <button class="font-label text-xs tracking-wider uppercase text-primary-dim hover:text-primary transition-colors px-3 py-2 rounded-lg hover:bg-white/5" id="scanBtn" onclick="event.stopPropagation();scanDevices()">
+            <span class="material-symbols-outlined text-sm align-middle mr-1">radar</span>Rescan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Station Browser -->
+  <div class="mb-4">
+    <div class="glass-card rounded-2xl p-5 border border-white/5">
+      <!-- Search -->
+      <div class="relative mb-4">
+        <div class="bg-surface-container-lowest/40 backdrop-blur-md rounded-xl flex items-center px-4 py-3 border border-outline-variant/10">
+          <span class="material-symbols-outlined text-on-surface-variant mr-3 text-lg">search</span>
+          <input class="bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-outline w-full font-body text-sm outline-none"
+            placeholder="Search stations…" type="text" id="stationSearch" oninput="onSearchInput()"/>
+          <button class="material-symbols-outlined text-on-surface-variant ml-2 text-lg hidden hover:text-primary transition-colors" id="searchClear" onclick="clearSearch()">close</button>
+        </div>
+      </div>
+      <!-- Mood Pills -->
+      <div class="flex gap-2 flex-wrap mb-4" id="moodBar"></div>
+      <!-- Station List -->
+      <div class="station-scroll max-h-[360px] overflow-y-auto space-y-1" id="stationScroll"></div>
+      <!-- Custom URL -->
+      <div class="hidden mt-3" id="customUrlRow">
+        <div class="bg-surface-container-lowest/40 backdrop-blur-md rounded-xl flex items-center px-4 py-3 border border-outline-variant/10">
+          <span class="material-symbols-outlined text-on-surface-variant mr-3 text-lg">link</span>
+          <input class="bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-outline w-full font-body text-sm outline-none"
+            placeholder="http://stream.example.com/live" type="text" id="customUrl"/>
+        </div>
+      </div>
+      <!-- Play Controls -->
+      <div class="flex gap-3 mt-4 pt-4 border-t border-outline-variant/10">
+        <button class="flex-1 py-3.5 rounded-xl font-label font-semibold text-sm tracking-wider bg-primary text-on-primary-fixed flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed" id="playBtn" onclick="playNow()">
+          <span class="material-symbols-outlined text-lg" style="font-variation-settings:'FILL' 1;">play_arrow</span>
+          <span id="playBtnText">Play</span>
+        </button>
+        <button class="py-3.5 px-6 rounded-xl font-label font-semibold text-sm tracking-wider bg-surface-container-highest/60 text-error border border-error/20 flex items-center justify-center gap-2 hover:bg-error/10 active:scale-[0.98] transition-all" id="stopBtn" onclick="stopNow()">
+          <span class="material-symbols-outlined text-lg">stop</span>
+          Stop
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Volume Control -->
+  <div class="mb-4">
+    <div class="glass-card rounded-2xl p-5 border border-white/5">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-dim text-lg">volume_up</span>
+          <span class="font-label text-xs tracking-[0.15em] uppercase text-on-surface-variant">Volume</span>
+        </div>
+        <span class="font-headline font-bold text-2xl text-primary" id="volVal">35%</span>
+      </div>
+      <input type="range" id="volume" min="5" max="80" value="35" class="w-full"/>
+      <div class="flex items-center gap-2 mt-3 text-on-surface-variant hidden" id="volSyncHint">
+        <span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+        <span class="font-label text-[10px] tracking-wider" id="volSyncText">Synced with speaker</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ==================== ALARM TAB ==================== -->
+<main class="tab-view flex-col relative z-10 pt-16 pb-32 px-4 min-h-screen" id="view-alarm">
+  <div class="mb-6 mt-2 px-2 flex items-end justify-between">
+    <div>
+      <p class="font-label text-secondary uppercase tracking-[0.2em] mb-2 text-[10px] font-bold">Wake-up Schedule</p>
+      <h2 class="font-headline text-3xl font-bold tracking-tight text-on-surface">Alarm</h2>
+    </div>
+    <div class="text-right">
+      <span class="inline-block w-1.5 h-1.5 rounded-full" id="saveDot"></span>
+    </div>
+  </div>
+
+  <div class="relative group mb-6">
+    <div class="absolute -inset-1 bg-gradient-to-r from-primary/10 to-tertiary/10 rounded-2xl blur-xl opacity-0 transition-opacity duration-500" id="alarmGlow"></div>
+    <div class="relative glass-card rounded-2xl p-6 border border-white/5">
+      <div class="flex items-center justify-between mb-6">
+        <span class="font-headline font-semibold text-lg text-on-surface">Wake-up alarm</span>
+        <button class="w-14 h-8 rounded-full relative p-1 transition-all duration-300" id="alarmToggle" onclick="toggleAlarm()">
+          <div class="w-6 h-6 rounded-full shadow-md transition-all duration-300 flex items-center justify-center" id="alarmToggleThumb"></div>
+        </button>
+        <input type="checkbox" id="enabled" class="hidden"/>
+      </div>
+      <div class="flex items-center gap-2 mb-6">
+        <input class="time-input" id="hour" type="number" min="0" max="23" value="7"/>
+        <span class="font-headline text-3xl text-outline-variant font-light">:</span>
+        <input class="time-input" id="minute" type="number" min="0" max="59" value="0"/>
+      </div>
+      <div class="flex gap-2 mb-6" id="days"></div>
+      <div class="flex items-center gap-2 pt-4 border-t border-outline-variant/10">
+        <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1;">radio</span>
+        <span class="font-body text-on-surface-variant text-sm" id="alarmStationName">WKCR 89.9</span>
+      </div>
+    </div>
+  </div>
+  <p class="text-center text-on-surface-variant/40 font-label text-xs tracking-wider">
+    Plays on your selected speaker · Changes save automatically
+  </p>
+</main>
+
+<!-- ==================== SPEAKERS TAB ==================== -->
+<main class="tab-view flex-col relative z-10 pt-16 pb-32 px-4 min-h-screen" id="view-speakers">
+  <div class="mb-6 mt-2 px-2">
+    <p class="font-label text-primary-dim uppercase tracking-[0.2em] mb-2 text-[10px] font-bold">Audio Output</p>
+    <h2 class="font-headline text-3xl font-bold tracking-tight text-on-surface">Speakers</h2>
+  </div>
+  <div class="mb-6" id="activeSpeakerHero">
+    <p class="font-label text-[10px] uppercase tracking-widest text-primary-dim mb-3 px-1">Now Playing On</p>
+    <div class="glass-card active-glow rounded-2xl p-6 border border-white/5 flex items-center gap-5" id="activeSpeakerCard" style="display:none;">
+      <div class="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings:'FILL' 1;">speaker</span>
+      </div>
+      <div class="flex-1">
+        <h3 class="font-headline font-bold text-xl text-on-surface" id="activeSpeakerName"></h3>
+        <p class="font-label text-sm text-primary/70">Connected</p>
+      </div>
+      <div class="flex gap-1">
+        <div class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse-slow"></div>
+        <div class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse-slow" style="animation-delay:75ms"></div>
+        <div class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse-slow" style="animation-delay:150ms"></div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <p class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/60 mb-3 px-1">Available Devices</p>
+    <div class="grid grid-cols-1 gap-3" id="speakerGridFull"></div>
+    <div class="flex flex-col items-center justify-center pt-8 opacity-60" id="scanningIndicator" style="display:none;">
+      <div class="flex gap-1 mb-3">
+        <div class="w-1 h-4 bg-primary-container/40 rounded-full animate-bounce"></div>
+        <div class="w-1 h-6 bg-primary-container/40 rounded-full animate-bounce" style="animation-delay:100ms"></div>
+        <div class="w-1 h-4 bg-primary-container/40 rounded-full animate-bounce" style="animation-delay:200ms"></div>
+      </div>
+      <p class="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant">Scanning for speakers…</p>
+    </div>
+    <div class="flex justify-center mt-6">
+      <button class="font-label text-xs tracking-wider uppercase text-primary-dim hover:text-primary transition-colors px-4 py-2.5 rounded-xl hover:bg-white/5 border border-outline-variant/10" id="scanBtnFull" onclick="scanDevices()">
+        <span class="material-symbols-outlined text-sm align-middle mr-1">radar</span>Rescan Network
+      </button>
+    </div>
+  </div>
+</main>
+
+<!-- ==================== BOTTOM NAV ==================== -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-8 pb-8 pt-4 bg-gray-950/50 backdrop-blur-2xl rounded-t-[2rem] shadow-[0_-10px_40px_rgba(200,177,240,0.06)] border-t border-white/5">
+  <button class="flex flex-col items-center justify-center p-3 transition-all duration-300 rounded-full nav-tab" data-tab="speakers" onclick="switchTab('speakers')">
+    <span class="material-symbols-outlined text-2xl">speaker_group</span>
+  </button>
+  <button class="flex flex-col items-center justify-center p-3 transition-all duration-300 rounded-full nav-tab" data-tab="radio" onclick="switchTab('radio')">
+    <span class="material-symbols-outlined text-2xl">radio</span>
+  </button>
+  <button class="flex flex-col items-center justify-center p-3 transition-all duration-300 rounded-full nav-tab" data-tab="alarm" onclick="switchTab('alarm')">
+    <span class="material-symbols-outlined text-2xl">alarm</span>
+  </button>
+</nav>
+
+<!-- Toast -->
+<div class="fixed bottom-28 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-xl font-label text-sm font-medium opacity-0 pointer-events-none transition-all duration-300 max-w-[320px] text-center" id="toast" style="transform:translateX(-50%) translateY(10px);"></div>
+
+<!-- Hidden fields -->
+<input type="hidden" id="device" value=""/>
 
 <script>
 const $ = id => document.getElementById(id);
 
-/* ======== Generic collapsible panel system ======== */
-const panels = {
-  speaker: { open: true },
-  station: { open: true },
-  volume:  { open: true },
-  alarm:   { open: true },
-};
-
-function toggle(name, forceOpen) {
-  if (forceOpen === true) panels[name].open = true;
-  else panels[name].open = !panels[name].open;
-  updatePanel(name);
-}
-
-function updatePanel(name) {
-  const body = $('body-' + name);
-  const chev = $('chev-' + name);
-  const sum  = $('sum-' + name);
-  const open = panels[name].open;
-
-  if (open) {
-    body.classList.add('open');
-    chev.classList.add('open');
-    sum.classList.remove('visible');
-  } else {
-    body.classList.remove('open');
-    chev.classList.remove('open');
-    updateSummary(name);
-    sum.classList.add('visible');
-  }
-}
-
-function updateSummary(name) {
-  if (name === 'speaker') {
-    const dev = $('device').value.trim();
-    $('sum-speaker-text').textContent = dev || 'No speaker selected';
-  } else if (name === 'station') {
-    $('sum-station-text').textContent = getStationName() || 'No station selected';
-  } else if (name === 'volume') {
-    $('sum-volume-text').textContent = $('volume').value + '%';
-  } else if (name === 'alarm') {
-    const on = $('enabled').checked;
-    const dot = $('sum-alarm-dot');
-    if (!on) {
-      $('sum-alarm-text').textContent = 'Alarm off';
-      dot.style.background = 'var(--text3)';
+/* ======== Tab navigation ======== */
+let activeTab = 'radio';
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+  $('view-' + tab).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(btn => {
+    const isActive = btn.dataset.tab === tab;
+    const icon = btn.querySelector('.material-symbols-outlined');
+    if (isActive) {
+      btn.className = 'flex flex-col items-center justify-center p-3 transition-all duration-300 rounded-full nav-tab bg-primary/10 text-yellow-400 scale-110';
+      icon.style.fontVariationSettings = "'FILL' 1";
     } else {
-      const h = String(parseInt($('hour').value) || 0).padStart(2, '0');
-      const m = String(parseInt($('minute').value) || 0).padStart(2, '0');
-      const dn = {mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',sun:'Sun'};
-      const ds = Array.from(activeDays).map(d => dn[d]).filter(Boolean).join(', ');
-      $('sum-alarm-text').textContent = h + ':' + m + ' · ' + ds;
-      dot.style.background = 'var(--warm)';
+      btn.className = 'flex flex-col items-center justify-center p-3 transition-all duration-300 rounded-full nav-tab text-gray-500 hover:text-purple-200';
+      icon.style.fontVariationSettings = "'FILL' 0";
     }
+  });
+  if (tab === 'speakers') renderSpeakersFull();
+  window.scrollTo(0, 0);
+}
+
+/* ======== Section toggle ======== */
+function toggleSection(name) {
+  const body = $('bodySpeaker');
+  const chev = $('chevSpeaker');
+  const isOpen = body.style.maxHeight !== '0px';
+  if (isOpen) {
+    body.style.maxHeight = '0px'; body.style.opacity = '0';
+    chev.style.transform = 'rotate(0deg)';
+  } else {
+    body.style.maxHeight = '600px'; body.style.opacity = '1';
+    chev.style.transform = 'rotate(180deg)';
   }
 }
 
-function collapseAll() {
-  Object.keys(panels).forEach(name => {
-    panels[name].open = false;
-    updatePanel(name);
-  });
-}
-
-/* ======== Day mapping: UI string IDs <-> Python weekday ints ======== */
-const DAY_TO_PY = {mon:0, tue:1, wed:2, thu:3, fri:4, sat:5, sun:6};
-const PY_TO_DAY = {0:'mon', 1:'tue', 2:'wed', 3:'thu', 4:'fri', 5:'sat', 6:'sun'};
+/* ======== Day mapping ======== */
+const DAY_TO_PY = {mon:0,tue:1,wed:2,thu:3,fri:4,sat:5,sun:6};
+const PY_TO_DAY = {0:'mon',1:'tue',2:'wed',3:'thu',4:'fri',5:'sat',6:'sun'};
 function daysToPython(daySet) { return Array.from(daySet).map(d => DAY_TO_PY[d]).filter(x => x !== undefined); }
 function pythonToDays(arr) { return new Set((arr||[]).map(d => PY_TO_DAY[d]).filter(Boolean)); }
 
 /* ======== Mood system ======== */
 const MOODS = [
-  { id: 'all',        emoji: '',       label: 'All' },
-  { id: 'favorites',  emoji: '\u2605', label: 'Favorites',  desc: 'Your starred stations' },
-  { id: 'jazz',       emoji: '\u266B', label: 'Jazz',       desc: 'Swing, bebop, cool, vocal' },
-  { id: 'classical',  emoji: '\u266A', label: 'Classical',  desc: 'Symphonies, chamber, baroque' },
-  { id: 'opera',      emoji: '\u2726', label: 'Opera',      desc: 'Arias, overtures, vocal' },
-  { id: 'oriental',   emoji: '\u2736', label: 'Oriental',   desc: 'Turkish, Persian, Arabic, Armenian' },
-  { id: 'world',      emoji: '\u25C7', label: 'World',      desc: 'Folk, roots, Latin, Celtic, Balkan' },
-  { id: 'indie',      emoji: '\u25CE', label: 'Indie',      desc: 'Alternative, eclectic, freeform' },
-  { id: 'groove',     emoji: '\u25CF', label: 'Groove',     desc: 'Reggae, funk, electronic, rock' },
-  { id: 'chill',      emoji: '~',      label: 'Chill',      desc: 'Ambient, downtempo, mellow' },
-  { id: 'morning',    emoji: '\u2600', label: 'Morning',    desc: 'Bright picks for waking up' },
+  {id:'all',emoji:'',label:'All'},
+  {id:'favorites',emoji:'\u2605',label:'Favorites',desc:'Your starred stations'},
+  {id:'jazz',emoji:'\u266B',label:'Jazz',desc:'Swing, bebop, cool, vocal'},
+  {id:'classical',emoji:'\u266A',label:'Classical',desc:'Symphonies, chamber, baroque'},
+  {id:'opera',emoji:'\u2726',label:'Opera',desc:'Arias, overtures, vocal'},
+  {id:'oriental',emoji:'\u2736',label:'Oriental',desc:'Turkish, Persian, Arabic, Armenian'},
+  {id:'world',emoji:'\u25C7',label:'World',desc:'Folk, roots, Latin, Celtic, Balkan'},
+  {id:'indie',emoji:'\u25CE',label:'Indie',desc:'Alternative, eclectic, freeform'},
+  {id:'groove',emoji:'\u25CF',label:'Groove',desc:'Reggae, funk, electronic, rock'},
+  {id:'chill',emoji:'~',label:'Chill',desc:'Ambient, downtempo, mellow'},
+  {id:'morning',emoji:'\u2600',label:'Morning',desc:'Bright picks for waking up'},
 ];
 let activeMood = 'all';
 
 const STATION_MOODS = {
-  // Jazz
-  wkcr:['jazz','morning','indie'], swissjazz:['jazz','chill'], jazzradio:['jazz'],
-  tsfjazz:['jazz','morning'], abcjazz:['jazz','morning'], fipjazz:['jazz','chill'],
-  // Classical
-  swissclassic:['classical','chill'], nporadio4:['classical','world'], classicfm:['classical','morning'],
-  wqxr:['classical','opera'], ancientfm:['classical','world','chill'], wcpe:['classical','morning'],
-  abcclassic:['classical','morning'], rai3:['classical','opera'], naim:['classical','chill'],
-  // Opera
-  operafm:['opera'], fmopera:['opera'], operavore:['opera','classical'],
-  operamrg:['opera'], capriceopera:['opera','world'],
-  // Turkish / Anatolian
-  radyosiran:['oriental','world'], ankarahava:['oriental','world','morning'],
+  wkcr:['jazz','morning','indie'],swissjazz:['jazz','chill'],jazzradio:['jazz'],
+  tsfjazz:['jazz','morning'],abcjazz:['jazz','morning'],fipjazz:['jazz','chill'],
+  swissclassic:['classical','chill'],nporadio4:['classical','world'],classicfm:['classical','morning'],
+  wqxr:['classical','opera'],ancientfm:['classical','world','chill'],wcpe:['classical','morning'],
+  abcclassic:['classical','morning'],rai3:['classical','opera'],naim:['classical','chill'],
+  operafm:['opera'],fmopera:['opera'],operavore:['opera','classical'],
+  operamrg:['opera'],capriceopera:['opera','world'],
+  radyosiran:['oriental','world'],ankarahava:['oriental','world','morning'],
   turkishlove:['oriental','chill'],
-  // Persian / Iranian
-  radiofarda:['oriental','world'], iranintl:['oriental','indie'],
-  // Armenian / Caucasian
-  yerevannights:['oriental','world','chill'], radiojan:['oriental','world'],
-  // Greek
-  ertdeftero:['oriental','world','morning'], ertkosmos:['world','oriental'],
+  radiofarda:['oriental','world'],iranintl:['oriental','indie'],
+  yerevannights:['oriental','world','chill'],radiojan:['oriental','world'],
+  ertdeftero:['oriental','world','morning'],ertkosmos:['world','oriental'],
   erttrito:['classical','oriental'],
-  // Arabic / North African
-  medi1tarab:['oriental','world'], aswat:['oriental','world','morning'],
+  medi1tarab:['oriental','world'],aswat:['oriental','world','morning'],
   radioliban:['oriental','chill'],
-  // Indian / South Asian
-  somagoa:['world','oriental','groove'], ntsraga:['chill','oriental'],
-  // Flamenco / Iberian
-  radioartflam:['world','chill'], sevillanas:['world','morning'],
-  // Portuguese / Fado
-  radioamalia:['world','chill'], fadocoimbra:['world','chill'],
-  // Brazilian
-  somabossa:['world','chill','morning'], bossajazzbr:['jazz','world','morning'],
-  // Tango
-  tangopasion:['world','chill'], tangobailar:['world','groove'],
-  // Celtic / Irish
-  celticmusic:['world','chill'], irishpub:['world','morning','groove'],
+  somagoa:['world','oriental','groove'],ntsraga:['chill','oriental'],
+  radioartflam:['world','chill'],sevillanas:['world','morning'],
+  radioamalia:['world','chill'],fadocoimbra:['world','chill'],
+  somabossa:['world','chill','morning'],bossajazzbr:['jazz','world','morning'],
+  tangopasion:['world','chill'],tangobailar:['world','groove'],
+  celticmusic:['world','chill'],irishpub:['world','morning','groove'],
   somathistle:['world','chill'],
-  // Balkan
   capricebalkan:['world','oriental','groove'],
-  // French Chanson
-  icichanson:['world','chill','morning'], chantefrance:['world','chill','morning'],
-  croonerlove:['chill','morning'], radionova:['indie','world','morning'],
-  // Eclectic
-  fip:['indie','morning','world'], kexp:['indie','morning','groove'], nts1:['indie','groove'],
-  nts2:['indie','groove'], wfmu:['indie'], rp:['indie','morning'], fipnouv:['indie','morning'],
-  // Folk / World
-  fipfolk:['world','chill'], rpworld:['world','chill'],
-  radiomeuh:['world','indie','morning'], rfimusique:['world','oriental'],
-  // Reggae / Funk
-  fipreggae:['groove','world','morning'], fipgroove:['groove','morning'],
-  // European Independent
-  couleur3:['indie','morning'], bytefm:['indie'], fluxfm:['indie','morning','groove'],
+  icichanson:['world','chill','morning'],chantefrance:['world','chill','morning'],
+  croonerlove:['chill','morning'],radionova:['indie','world','morning'],
+  fip:['indie','morning','world'],kexp:['indie','morning','groove'],nts1:['indie','groove'],
+  nts2:['indie','groove'],wfmu:['indie'],rp:['indie','morning'],fipnouv:['indie','morning'],
+  fipfolk:['world','chill'],rpworld:['world','chill'],
+  radiomeuh:['world','indie','morning'],rfimusique:['world','oriental'],
+  fipreggae:['groove','world','morning'],fipgroove:['groove','morning'],
+  couleur3:['indie','morning'],bytefm:['indie'],fluxfm:['indie','morning','groove'],
   thelot:['indie','chill'],
-  // Discovery / Underground
-  dublab:['indie','chill'], resonancefm:['indie'], cashmerefm:['indie','chill'],
-  // Rock / Indie
-  rprock:['groove','morning','indie'], fiprock:['groove','indie'],
-  // Electronic
-  fipelectro:['groove','indie'], somadefcon:['groove'],
-  // Ambient / Mellow
-  rpmellow:['chill'], somagroove:['chill'], somadrone:['chill'],
-  // Talk / NPR
+  dublab:['indie','chill'],resonancefm:['indie'],cashmerefm:['indie','chill'],
+  rprock:['groove','morning','indie'],fiprock:['groove','indie'],
+  fipelectro:['groove','indie'],somadefcon:['groove'],
+  rpmellow:['chill'],somagroove:['chill'],somadrone:['chill'],
   wnyc:['morning','indie'],
-  // Electronic / Techno
   sunshinelive:['groove'],
-  // Custom
   custom:['indie'],
 };
 
 /* ======== State ======== */
-let stations = []; // populated from backend
+let stations = [];
 let selectedStation = 'wkcr';
 let isPlaying = false;
-let userStartedPlay = false; // true after user clicks play, false after explicit stop
+let userStartedPlay = false;
 let playingStationId = null;
 let serverOnline = false;
 let discoveredDevices = [];
 let saveTimeout = null;
-let favorites = []; // station IDs the user starred
-let searchQuery = ''; // current search text
+let favorites = [];
+let searchQuery = '';
+let activeDays = new Set(['mon','tue','wed','thu','fri']);
 
-// Genre groups for "All" view
 const GROUPS = [
-  { label: 'Jazz',             ids: ['wkcr','swissjazz','jazzradio','tsfjazz','abcjazz','fipjazz'] },
-  { label: 'Classical',        ids: ['swissclassic','nporadio4','classicfm','wqxr','ancientfm','wcpe','abcclassic','rai3','naim'] },
-  { label: 'Opera',            ids: ['operafm','fmopera','operavore','operamrg','capriceopera'] },
-  { label: 'Turkish',          ids: ['radyosiran','ankarahava','turkishlove'] },
-  { label: 'Persian',          ids: ['radiofarda','iranintl'] },
-  { label: 'Armenian',         ids: ['yerevannights','radiojan'] },
-  { label: 'Greek',            ids: ['ertdeftero','ertkosmos','erttrito'] },
-  { label: 'Arabic / N. Africa', ids: ['medi1tarab','aswat','radioliban'] },
-  { label: 'Indian',           ids: ['somagoa','ntsraga'] },
-  { label: 'Flamenco',         ids: ['radioartflam','sevillanas'] },
-  { label: 'Fado',             ids: ['radioamalia','fadocoimbra'] },
-  { label: 'Brazilian',        ids: ['somabossa','bossajazzbr'] },
-  { label: 'Tango',            ids: ['tangopasion','tangobailar'] },
-  { label: 'Celtic',           ids: ['celticmusic','irishpub','somathistle'] },
-  { label: 'Balkan',           ids: ['capricebalkan'] },
-  { label: 'Chanson / Love',   ids: ['icichanson','chantefrance','croonerlove','radionova'] },
-  { label: 'Eclectic',         ids: ['fip','kexp','nts1','nts2','wfmu','rp','fipnouv'] },
-  { label: 'Folk / World',     ids: ['fipfolk','rpworld','radiomeuh','rfimusique'] },
-  { label: 'Reggae / Funk',    ids: ['fipreggae','fipgroove'] },
-  { label: 'European Indie',   ids: ['couleur3','bytefm','fluxfm','thelot'] },
-  { label: 'Underground',      ids: ['dublab','resonancefm','cashmerefm'] },
-  { label: 'Rock / Indie',     ids: ['rprock','fiprock'] },
-  { label: 'Electronic',       ids: ['fipelectro','somadefcon'] },
-  { label: 'Ambient / Mellow', ids: ['rpmellow','somagroove','somadrone'] },
-  { label: 'Talk / NPR',    ids: ['wnyc'] },
-  { label: 'Techno',        ids: ['sunshinelive'] },
-  { label: 'Other',            ids: ['custom'] },
+  {label:'Jazz',ids:['wkcr','swissjazz','jazzradio','tsfjazz','abcjazz','fipjazz']},
+  {label:'Classical',ids:['swissclassic','nporadio4','classicfm','wqxr','ancientfm','wcpe','abcclassic','rai3','naim']},
+  {label:'Opera',ids:['operafm','fmopera','operavore','operamrg','capriceopera']},
+  {label:'Turkish',ids:['radyosiran','ankarahava','turkishlove']},
+  {label:'Persian',ids:['radiofarda','iranintl']},
+  {label:'Armenian',ids:['yerevannights','radiojan']},
+  {label:'Greek',ids:['ertdeftero','ertkosmos','erttrito']},
+  {label:'Arabic / N. Africa',ids:['medi1tarab','aswat','radioliban']},
+  {label:'Indian',ids:['somagoa','ntsraga']},
+  {label:'Flamenco',ids:['radioartflam','sevillanas']},
+  {label:'Fado',ids:['radioamalia','fadocoimbra']},
+  {label:'Brazilian',ids:['somabossa','bossajazzbr']},
+  {label:'Tango',ids:['tangopasion','tangobailar']},
+  {label:'Celtic',ids:['celticmusic','irishpub','somathistle']},
+  {label:'Balkan',ids:['capricebalkan']},
+  {label:'Chanson / Love',ids:['icichanson','chantefrance','croonerlove','radionova']},
+  {label:'Eclectic',ids:['fip','kexp','nts1','nts2','wfmu','rp','fipnouv']},
+  {label:'Folk / World',ids:['fipfolk','rpworld','radiomeuh','rfimusique']},
+  {label:'Reggae / Funk',ids:['fipreggae','fipgroove']},
+  {label:'European Indie',ids:['couleur3','bytefm','fluxfm','thelot']},
+  {label:'Underground',ids:['dublab','resonancefm','cashmerefm']},
+  {label:'Rock / Indie',ids:['rprock','fiprock']},
+  {label:'Electronic',ids:['fipelectro','somadefcon']},
+  {label:'Ambient / Mellow',ids:['rpmellow','somagroove','somadrone']},
+  {label:'Talk / NPR',ids:['wnyc']},
+  {label:'Techno',ids:['sunshinelive']},
+  {label:'Other',ids:['custom']},
 ];
 
 /* ======== Toast ======== */
 let toastTimer;
-function toast(msg, type='ok') {
-  const el = $('toast'); el.textContent = msg;
-  el.className = 'toast ' + type;
-  requestAnimationFrame(() => el.classList.add('visible'));
+function toast(msg, type) {
+  type = type || 'ok';
+  const el = $('toast');
+  el.textContent = msg;
+  var colors = 'bg-tertiary/10 text-tertiary border border-tertiary/20';
+  if (type === 'err') colors = 'bg-error/10 text-error border border-error/20';
+  else if (type === 'info') colors = 'bg-secondary/10 text-secondary border border-secondary/20';
+  el.className = 'fixed bottom-28 left-1/2 z-[100] px-6 py-3 rounded-xl font-label text-sm font-medium transition-all duration-300 max-w-[320px] text-center ' + colors;
+  el.style.opacity = '1';
+  el.style.transform = 'translateX(-50%) translateY(0)';
+  el.style.pointerEvents = 'none';
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('visible'), 3200);
+  toastTimer = setTimeout(function() { el.style.opacity = '0'; el.style.transform = 'translateX(-50%) translateY(10px)'; }, 3200);
 }
 
 /* ======== Server health ======== */
 async function checkServer() {
   try {
-    const r = await fetch('/health', { signal: AbortSignal.timeout(3000) });
-    const j = await r.json();
+    var r = await fetch('/health', {signal:AbortSignal.timeout(3000)});
+    var j = await r.json();
     serverOnline = j.ok === true;
-  } catch { serverOnline = false; }
-  $('serverDot').className = 'server-dot ' + (serverOnline ? 'online' : 'offline');
+  } catch(e) { serverOnline = false; }
+  var icon = $('serverDotIcon');
+  var text = $('serverStatusText');
+  if (serverOnline) {
+    icon.style.color = '#9cfbfa'; text.textContent = 'online'; text.style.color = '#9cfbfa';
+  } else {
+    icon.style.color = '#fd6f85'; text.textContent = 'offline'; text.style.color = '#fd6f85';
+  }
 }
 setInterval(checkServer, 15000);
 
 /* ======== Mood bar ======== */
 function renderMoodBar() {
-  const bar = $('moodBar');
-  bar.innerHTML = '';
-  MOODS.forEach(mood => {
-    const pill = document.createElement('div');
-    pill.className = 'mood-pill' + (activeMood === mood.id ? ' active' : '');
-    let pillLabel = (mood.emoji ? '<span class="mood-emoji">' + mood.emoji + '</span>' : '') + mood.label;
-    if (mood.id === 'favorites' && favorites.length) pillLabel += ' <span style="font-size:10px;opacity:0.7;">' + favorites.length + '</span>';
-    pill.innerHTML = pillLabel;
+  var bar = $('moodBar');
+  bar.textContent = '';
+  MOODS.forEach(function(mood) {
+    var pill = document.createElement('button');
+    var isActive = activeMood === mood.id;
+    pill.className = 'px-3.5 py-1.5 font-label text-xs font-medium rounded-full transition-all duration-200 whitespace-nowrap ' +
+      (isActive
+        ? 'bg-primary/15 text-primary border border-primary/30'
+        : 'bg-surface-container-highest/40 text-on-surface-variant border border-outline-variant/10 hover:border-outline-variant/30 hover:text-on-surface');
+    var labelText = (mood.emoji ? mood.emoji + ' ' : '') + mood.label;
+    if (mood.id === 'favorites' && favorites.length) labelText += ' ' + favorites.length;
+    pill.textContent = labelText;
     if (mood.desc) pill.title = mood.desc;
-    pill.onclick = (e) => {
-      e.stopPropagation();
-      activeMood = mood.id;
-      renderMoodBar();
-      renderStations();
-    };
+    pill.onclick = function() { activeMood = mood.id; renderMoodBar(); renderStations(); };
     bar.appendChild(pill);
   });
 }
 
 /* ======== Stations ======== */
 function getFilteredStations() {
-  let list = stations;
-  // Apply mood filter first
-  if (activeMood === 'favorites') list = list.filter(s => favorites.includes(s.id));
-  else if (activeMood !== 'all') list = list.filter(s => (STATION_MOODS[s.id] || []).includes(activeMood));
-  // Then apply search
+  var list = stations;
+  if (activeMood === 'favorites') list = list.filter(function(s) { return favorites.indexOf(s.id) >= 0; });
+  else if (activeMood !== 'all') list = list.filter(function(s) { return (STATION_MOODS[s.id]||[]).indexOf(activeMood) >= 0; });
   if (searchQuery) {
-    const q = searchQuery.toLowerCase();
-    list = list.filter(s => s.name.toLowerCase().includes(q) || (s.genre || '').toLowerCase().includes(q));
+    var q = searchQuery.toLowerCase();
+    list = list.filter(function(s) { return s.name.toLowerCase().indexOf(q) >= 0 || (s.genre||'').toLowerCase().indexOf(q) >= 0; });
   }
   return list;
 }
 
 function onSearchInput() {
-  searchQuery = ($('stationSearch').value || '').trim();
-  $('searchClear').style.display = searchQuery ? 'block' : 'none';
+  searchQuery = ($('stationSearch').value||'').trim();
+  $('searchClear').classList.toggle('hidden', !searchQuery);
   renderStations();
 }
 function clearSearch() {
   $('stationSearch').value = '';
   searchQuery = '';
-  $('searchClear').style.display = 'none';
+  $('searchClear').classList.add('hidden');
   renderStations();
 }
 
 function renderStations() {
-  const container = $('stationScroll');
-  container.innerHTML = '';
-  const filtered = getFilteredStations();
+  var container = $('stationScroll');
+  container.textContent = '';
+  var filtered = getFilteredStations();
 
   if (activeMood === 'favorites') {
     if (!filtered.length) {
-      container.innerHTML = '<div style="padding:20px 0;text-align:center;font-size:13px;color:var(--text3);">' +
-        '\u2605 Tap the star on any station to add it here</div>';
+      var empty = document.createElement('div');
+      empty.className = 'py-8 text-center text-sm text-on-surface-variant/60';
+      empty.textContent = '\u2605 Tap the star on any station to add it here';
+      container.appendChild(empty);
       return;
     }
-    filtered.forEach(s => renderStationCard(container, s));
+    filtered.forEach(function(s) { renderStationCard(container, s); });
   } else if (activeMood === 'all') {
-    // Show favorites group at top if any exist
     if (favorites.length) {
-      const favStations = filtered.filter(s => favorites.includes(s.id));
+      var favStations = filtered.filter(function(s) { return favorites.indexOf(s.id) >= 0; });
       if (favStations.length) {
-        const label = document.createElement('div');
-        label.className = 'station-group-label';
-        label.textContent = '\u2605 Favorites';
-        container.appendChild(label);
-        favStations.forEach(s => renderStationCard(container, s));
+        renderGroupLabel(container, '\u2605 Favorites');
+        favStations.forEach(function(s) { renderStationCard(container, s); });
       }
     }
-    GROUPS.forEach(group => {
-      const members = filtered.filter(s => group.ids.includes(s.id));
+    GROUPS.forEach(function(group) {
+      var members = filtered.filter(function(s) { return group.ids.indexOf(s.id) >= 0; });
       if (!members.length) return;
-      const label = document.createElement('div');
-      label.className = 'station-group-label';
-      label.textContent = group.label;
-      container.appendChild(label);
-      members.forEach(s => renderStationCard(container, s));
+      renderGroupLabel(container, group.label);
+      members.forEach(function(s) { renderStationCard(container, s); });
     });
   } else {
-    filtered.forEach(s => renderStationCard(container, s));
+    filtered.forEach(function(s) { renderStationCard(container, s); });
   }
 }
 
+function renderGroupLabel(container, text) {
+  var label = document.createElement('div');
+  label.className = 'font-label text-[9px] font-bold tracking-[0.15em] uppercase text-on-surface-variant/50 pt-4 pb-2 px-1';
+  label.textContent = text;
+  container.appendChild(label);
+}
+
 function renderStationCard(container, s) {
-  const card = document.createElement('div');
-  card.className = 'station-card' + (selectedStation === s.id ? ' active' : '');
-  const isFav = favorites.includes(s.id);
-  card.innerHTML = '<div class="station-radio"></div>' +
-    '<div class="station-info">' +
-      '<div class="station-name">' + s.name + '</div>' +
-      (s.genre ? '<div class="station-genre">' + s.genre + '</div>' : '') +
-    '</div>' +
-    (s.id !== 'custom' ? '<button class="station-fav' + (isFav ? ' on' : '') +
-      '" title="' + (isFav ? 'Remove from favorites' : 'Add to favorites') + '">' +
-      (isFav ? '\u2605' : '\u2606') + '</button>' : '');
-  // Star button handler
-  const favBtn = card.querySelector('.station-fav');
-  if (favBtn) {
-    favBtn.onclick = (e) => {
-      e.stopPropagation();
-      toggleFavorite(s.id);
-    };
+  var card = document.createElement('div');
+  var isActive = selectedStation === s.id;
+  var isFav = favorites.indexOf(s.id) >= 0;
+  var isCurrentlyPlaying = isPlaying && playingStationId === s.id;
+
+  card.className = 'group flex items-center p-3.5 rounded-xl transition-all cursor-pointer active:scale-[0.98] ' +
+    (isCurrentlyPlaying
+      ? 'bg-primary/10 border border-primary/20'
+      : isActive
+        ? 'bg-surface-container-high/60 border border-primary/10'
+        : 'bg-surface-container-high/30 hover:bg-surface-container-highest/50 border border-transparent');
+
+  // Build card content with DOM methods
+  var infoDiv = document.createElement('div');
+  infoDiv.className = 'flex-1 min-w-0 ml-1';
+
+  var nameRow = document.createElement('div');
+  nameRow.className = 'flex items-center gap-2';
+
+  var nameSpan = document.createElement('span');
+  nameSpan.className = 'font-headline font-semibold text-sm ' + (isActive ? 'text-primary' : 'text-on-surface');
+  nameSpan.textContent = s.name;
+  nameRow.appendChild(nameSpan);
+
+  if (isCurrentlyPlaying) {
+    var liveTag = document.createElement('span');
+    liveTag.className = 'text-[9px] font-bold tracking-widest uppercase bg-primary/10 text-primary px-2 py-0.5 rounded';
+    liveTag.textContent = 'Live';
+    nameRow.appendChild(liveTag);
   }
-  card.onclick = (e) => {
+  infoDiv.appendChild(nameRow);
+
+  if (s.genre) {
+    var genreP = document.createElement('p');
+    genreP.className = 'text-on-surface-variant text-xs mt-0.5 truncate';
+    genreP.textContent = s.genre;
+    infoDiv.appendChild(genreP);
+  }
+  card.appendChild(infoDiv);
+
+  // Star button
+  if (s.id !== 'custom') {
+    var favBtn = document.createElement('button');
+    favBtn.className = 'w-8 h-8 flex items-center justify-center rounded-full transition-all ' +
+      (isFav ? 'text-secondary' : 'text-on-surface-variant/30 hover:text-secondary/60');
+    var starIcon = document.createElement('span');
+    starIcon.className = 'material-symbols-outlined text-lg';
+    starIcon.style.fontVariationSettings = "'FILL' " + (isFav ? 1 : 0);
+    starIcon.textContent = 'star';
+    favBtn.appendChild(starIcon);
+    favBtn.onclick = function(e) { e.stopPropagation(); toggleFavorite(s.id); };
+    card.appendChild(favBtn);
+  }
+
+  // Play hint icon
+  var playHint = document.createElement('span');
+  playHint.className = 'material-symbols-outlined text-primary-dim opacity-0 group-hover:opacity-100 transition-opacity ml-1 text-lg';
+  playHint.style.fontVariationSettings = "'FILL' 1";
+  playHint.textContent = 'play_circle';
+  card.appendChild(playHint);
+
+  card.onclick = function(e) {
     e.stopPropagation();
-    const wasPlaying = isPlaying || userStartedPlay;
-    const prevStation = selectedStation;
+    var wasPlaying = isPlaying || userStartedPlay;
+    var prevStation = selectedStation;
     selectedStation = s.id;
-    renderStations(); updateHeader();
-    $('customUrlRow').classList.toggle('show', s.id === 'custom');
+    renderStations();
+    $('customUrlRow').classList.toggle('hidden', s.id !== 'custom');
     $('alarmStationName').textContent = getStationName();
     autoSave();
     if (wasPlaying && s.id !== prevStation && s.id !== 'custom') playNow();
-    setTimeout(() => {
-      const active = container.querySelector('.station-card.active');
-      if (active) active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }, 50);
   };
   container.appendChild(card);
 }
 
 function getStreamUrl() {
   if (selectedStation === 'custom') return $('customUrl').value.trim();
-  const s = stations.find(x => x.id === selectedStation);
+  var s = stations.find(function(x) { return x.id === selectedStation; });
   return s ? s.url : '';
 }
 function getStationName() {
-  const s = stations.find(x => x.id === selectedStation);
+  var s = stations.find(function(x) { return x.id === selectedStation; });
   return s ? s.name : '';
-}
-function updateHeader() {
-  const s = stations.find(x => x.id === selectedStation);
-  if (!s) return;
-  const el = $('headerTitle');
-  if (s.id === 'custom') { el.innerHTML = 'Custom <span class="freq">Radio</span>'; return; }
-  const parts = s.name.split(' ');
-  const last = parts.pop();
-  el.innerHTML = parts.join(' ') + ' <span class="freq">' + last + '</span>';
 }
 
 /* ======== Favorites ======== */
 async function toggleFavorite(stationId) {
-  // Optimistic update
-  const idx = favorites.indexOf(stationId);
-  if (idx >= 0) favorites.splice(idx, 1);
-  else favorites.push(stationId);
-  renderStations();
-  renderMoodBar();
-  // Persist to backend
+  var idx = favorites.indexOf(stationId);
+  if (idx >= 0) favorites.splice(idx,1); else favorites.push(stationId);
+  renderStations(); renderMoodBar();
   try {
-    await fetch('/favorite', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ station_id: stationId })
-    });
-  } catch {
-    // Revert on failure
-    if (idx >= 0) favorites.splice(idx, 0, stationId);
-    else favorites.pop();
-    renderStations();
-    toast('Cannot save favorite', 'err');
+    await fetch('/favorite', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({station_id:stationId})});
+  } catch(e) {
+    if (idx >= 0) favorites.splice(idx,0,stationId); else favorites.pop();
+    renderStations(); toast('Cannot save favorite','err');
   }
 }
 
 /* ======== Days ======== */
-const DAY_DATA = [
-  {id:'mon',l:'Mon'},{id:'tue',l:'Tue'},{id:'wed',l:'Wed'},
-  {id:'thu',l:'Thu'},{id:'fri',l:'Fri'},{id:'sat',l:'Sat'},{id:'sun',l:'Sun'}
-];
-let activeDays = new Set(['mon','tue','wed','thu','fri']);
+var DAY_DATA = [{id:'mon',l:'M'},{id:'tue',l:'T'},{id:'wed',l:'W'},{id:'thu',l:'T'},{id:'fri',l:'F'},{id:'sat',l:'S'},{id:'sun',l:'S'}];
 function renderDays() {
-  const el = $('days'); el.innerHTML = '';
-  DAY_DATA.forEach(d => {
-    const b = document.createElement('div');
-    b.className = 'day' + (activeDays.has(d.id) ? ' on' : '');
+  var el = $('days'); el.textContent = '';
+  DAY_DATA.forEach(function(d) {
+    var b = document.createElement('button');
+    var isOn = activeDays.has(d.id);
+    b.className = 'w-10 h-10 rounded-full font-label text-sm font-semibold transition-all duration-200 ' +
+      (isOn
+        ? 'bg-primary/20 text-primary border border-primary/30'
+        : 'bg-surface-container-highest/40 text-on-surface-variant/50 border border-outline-variant/10 hover:border-outline-variant/30');
     b.textContent = d.l;
-    b.onclick = (e) => {
-      e.stopPropagation();
-      activeDays.has(d.id) ? activeDays.delete(d.id) : activeDays.add(d.id);
-      renderDays(); autoSave();
-    };
+    b.onclick = function(e) { e.stopPropagation(); if (activeDays.has(d.id)) activeDays.delete(d.id); else activeDays.add(d.id); renderDays(); autoSave(); };
     el.appendChild(b);
   });
+}
+
+/* ======== Alarm toggle ======== */
+function toggleAlarm() {
+  var cb = $('enabled');
+  cb.checked = !cb.checked;
+  updateAlarmToggleUI();
+  autoSave();
+}
+function updateAlarmToggleUI() {
+  var on = $('enabled').checked;
+  var btn = $('alarmToggle');
+  var thumb = $('alarmToggleThumb');
+  var glow = $('alarmGlow');
+  if (on) {
+    btn.className = 'w-14 h-8 bg-primary rounded-full relative p-1 transition-all duration-300 shadow-[0_0_20px_rgba(225,207,255,0.3)]';
+    thumb.className = 'w-6 h-6 bg-on-primary-fixed rounded-full shadow-md transition-all duration-300 flex items-center justify-center translate-x-6';
+    var checkIcon = document.createElement('span');
+    checkIcon.className = 'material-symbols-outlined text-primary text-xs';
+    checkIcon.textContent = 'check';
+    thumb.textContent = '';
+    thumb.appendChild(checkIcon);
+    if (glow) { glow.classList.remove('opacity-0'); glow.classList.add('opacity-25'); }
+  } else {
+    btn.className = 'w-14 h-8 bg-surface-container-highest rounded-full relative p-1 transition-all duration-300';
+    thumb.className = 'w-6 h-6 bg-outline rounded-full shadow-md transition-all duration-300 flex items-center justify-center translate-x-0';
+    thumb.textContent = '';
+    if (glow) { glow.classList.remove('opacity-25'); glow.classList.add('opacity-0'); }
+  }
 }
 
 /* ======== Now Playing ======== */
 function setPlaying(playing, stationName) {
   isPlaying = playing;
   playingStationId = playing ? selectedStation : null;
-  const el = $('nowPlaying');
+  var el = $('nowPlaying');
   if (playing) {
-    const dev = $('device').value.trim();
-    $('npText').textContent = (stationName || getStationName()) + (dev ? ' on ' + dev : '');
-    el.classList.add('visible');
-  } else { el.classList.remove('visible'); }
+    var dev = $('device').value.trim();
+    $('npText').textContent = (stationName || getStationName()) + (dev ? ' \u2192 ' + dev : '');
+    el.classList.remove('hidden');
+    el.classList.add('block');
+  } else {
+    el.classList.add('hidden');
+    el.classList.remove('block');
+  }
   $('playBtn').disabled = playing;
-  $('playBtn').textContent = playing ? 'Playing\u2026' : 'Play';
+  $('playBtnText').textContent = playing ? 'Playing\u2026' : 'Play';
+  renderStations();
 }
 
 /* ======== Alarm Banner ======== */
 function updateAlarmBanner() {
-  const el = $('alarmBanner');
-  const enabled = $('enabled').checked;
-  if (!enabled || !activeDays.size) { el.classList.remove('visible'); return; }
-  const h = String(parseInt($('hour').value) || 0).padStart(2, '0');
-  const m = String(parseInt($('minute').value) || 0).padStart(2, '0');
-  const dn = {mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',sun:'Sun'};
-  const ds = Array.from(activeDays).map(d => dn[d]).filter(Boolean).join(', ');
+  var el = $('alarmBanner');
+  var enabled = $('enabled').checked;
+  if (!enabled || !activeDays.size) { el.classList.add('hidden'); el.classList.remove('block'); return; }
+  var h = String(parseInt($('hour').value)||0).padStart(2,'0');
+  var m = String(parseInt($('minute').value)||0).padStart(2,'0');
+  var dn = {mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',sun:'Sun'};
+  var ds = Array.from(activeDays).map(function(d) { return dn[d]; }).filter(Boolean).join(', ');
   $('alarmBannerText').textContent = h + ':' + m + ' \u00B7 ' + ds;
-  el.classList.add('visible');
+  el.classList.remove('hidden');
+  el.classList.add('block');
 }
 
 /* ======== Auto-save ======== */
 function autoSave() {
   clearTimeout(saveTimeout);
-  const dot = $('saveDot');
-  dot.className = 'save-dot saving';
-  saveTimeout = setTimeout(async () => {
-    const cfg = buildConfig();
+  var dot = $('saveDot');
+  dot.className = 'inline-block w-1.5 h-1.5 rounded-full bg-secondary animate-pulse-slow';
+  saveTimeout = setTimeout(async function() {
+    var cfg = buildConfig();
     try {
-      const r = await fetch('/config', {
-        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(cfg)
-      });
-      const j = await r.json();
+      var r = await fetch('/config', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
+      var j = await r.json();
       if (j.status === 'ok') {
-        dot.className = 'save-dot saved';
-        updateAlarmBanner();
-        setTimeout(() => dot.className = 'save-dot', 1500);
-      } else { dot.className = 'save-dot'; toast('Error saving', 'err'); }
-    } catch { dot.className = 'save-dot'; toast('Cannot reach server', 'err'); }
+        dot.className = 'inline-block w-1.5 h-1.5 rounded-full bg-tertiary';
+        updateAlarmBanner(); updateAlarmToggleUI();
+        setTimeout(function() { dot.className = 'inline-block w-1.5 h-1.5 rounded-full'; }, 1500);
+      } else { dot.className = ''; toast('Error saving','err'); }
+    } catch(e) { dot.className = ''; toast('Cannot reach server','err'); }
   }, 600);
 }
 
 function buildConfig() {
-  const h = String(parseInt($('hour').value) || 0).padStart(2, '0');
-  const m = String(parseInt($('minute').value) || 0).padStart(2, '0');
+  var h = String(parseInt($('hour').value)||0).padStart(2,'0');
+  var m = String(parseInt($('minute').value)||0).padStart(2,'0');
   return {
     alarm_enabled: $('enabled').checked,
     alarm_time: h + ':' + m,
@@ -984,97 +813,198 @@ function buildConfig() {
   };
 }
 
-/* ======== Speakers ======== */
+/* ======== Speakers (radio view compact) ======== */
 function renderSpeakers() {
-  const grid = $('speakerGrid');
-  grid.innerHTML = '';
-  const selected = $('device').value.trim();
-  const badge = $('speakerBadge');
+  var grid = $('speakerGrid');
+  grid.textContent = '';
+  var selected = $('device').value.trim();
+  var badge = $('speakerBadge');
+
   if (!discoveredDevices.length) {
-    grid.innerHTML = '<div class="device-item">No speakers found \u2014 hit Rescan or check WiFi</div>';
-    badge.textContent = ''; badge.className = 'badge'; return;
+    var msg = document.createElement('div');
+    msg.className = 'text-sm text-on-surface-variant/60 py-4 text-center';
+    msg.textContent = 'No speakers found \u2014 hit Rescan';
+    grid.appendChild(msg);
+    badge.textContent = ''; return;
   }
-  if (selected) { badge.textContent = selected; badge.className = 'badge badge-ok'; }
-  else { badge.textContent = 'none selected'; badge.className = 'badge badge-warn'; }
-  discoveredDevices.forEach(name => {
-    const card = document.createElement('div');
-    card.className = 'speaker-card' + (name === selected ? ' active' : '');
-    card.innerHTML = '<div class="speaker-radio"></div><span class="speaker-name">' + name + '</span>';
-    card.onclick = (e) => {
+  badge.textContent = selected || 'none';
+
+  discoveredDevices.forEach(function(name) {
+    var card = document.createElement('button');
+    var isActive = name === selected;
+    card.className = 'w-full glass-card rounded-xl p-4 text-left border transition-all active:scale-[0.98] flex items-center gap-4 ' +
+      (isActive ? 'border-primary/20 active-glow' : 'border-white/5 hover:bg-white/5');
+
+    var iconWrap = document.createElement('div');
+    iconWrap.className = 'w-10 h-10 rounded-full flex items-center justify-center ' + (isActive ? 'bg-primary/20' : 'bg-surface-container-highest');
+    var icon = document.createElement('span');
+    icon.className = 'material-symbols-outlined ' + (isActive ? 'text-primary' : 'text-on-surface-variant/60');
+    icon.style.fontVariationSettings = "'FILL' " + (isActive?1:0);
+    icon.textContent = 'speaker';
+    iconWrap.appendChild(icon);
+    card.appendChild(iconWrap);
+
+    var info = document.createElement('div');
+    info.className = 'flex-1';
+    var nameEl = document.createElement('span');
+    nameEl.className = 'font-headline font-semibold text-sm ' + (isActive ? 'text-primary' : 'text-on-surface');
+    nameEl.textContent = name;
+    info.appendChild(nameEl);
+    if (isActive) {
+      var connEl = document.createElement('p');
+      connEl.className = 'font-label text-[10px] text-primary/60 mt-0.5';
+      connEl.textContent = 'Connected';
+      info.appendChild(connEl);
+    }
+    card.appendChild(info);
+
+    card.onclick = function(e) {
       e.stopPropagation();
-      const prevDevice = $('device').value.trim();
+      var prevDevice = $('device').value.trim();
       $('device').value = name;
       renderSpeakers(); autoSave();
       syncVolumeFromSpeaker(name);
-      // If currently playing, switch playback to the new speaker
       if ((isPlaying || userStartedPlay) && name !== prevDevice) playNow();
-      setTimeout(() => { panels.speaker.open = false; updatePanel('speaker'); }, 300);
+      setTimeout(function() { toggleSection('speaker'); }, 300);
+    };
+    grid.appendChild(card);
+  });
+}
+
+/* ======== Speakers (full speakers tab) ======== */
+function renderSpeakersFull() {
+  var grid = $('speakerGridFull');
+  if (!grid) return;
+  grid.textContent = '';
+  var selected = $('device').value.trim();
+
+  var heroCard = $('activeSpeakerCard');
+  if (selected) {
+    heroCard.style.display = 'flex';
+    $('activeSpeakerName').textContent = selected;
+  } else {
+    heroCard.style.display = 'none';
+  }
+
+  if (!discoveredDevices.length) {
+    var msg = document.createElement('div');
+    msg.className = 'text-sm text-on-surface-variant/60 py-8 text-center';
+    msg.textContent = 'No speakers found';
+    grid.appendChild(msg);
+    return;
+  }
+
+  discoveredDevices.forEach(function(name) {
+    if (name === selected) return;
+    var card = document.createElement('button');
+    card.className = 'glass-card rounded-xl p-5 text-left border border-white/5 hover:bg-white/5 active:scale-[0.98] transition-all group flex items-center gap-4';
+
+    var iconWrap = document.createElement('div');
+    iconWrap.className = 'w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center group-hover:bg-primary-container/20 transition-colors';
+    var icon = document.createElement('span');
+    icon.className = 'material-symbols-outlined text-on-surface-variant/60 group-hover:text-primary transition-colors';
+    icon.textContent = 'speaker';
+    iconWrap.appendChild(icon);
+    card.appendChild(iconWrap);
+
+    var info = document.createElement('div');
+    info.className = 'flex-1';
+    var nameEl = document.createElement('h3');
+    nameEl.className = 'font-headline font-semibold text-on-surface';
+    nameEl.textContent = name;
+    info.appendChild(nameEl);
+    var hint = document.createElement('p');
+    hint.className = 'font-label text-xs text-on-surface-variant/50 mt-0.5';
+    hint.textContent = 'Tap to connect';
+    info.appendChild(hint);
+    card.appendChild(info);
+
+    card.onclick = function() {
+      var prevDevice = $('device').value.trim();
+      $('device').value = name;
+      renderSpeakers(); renderSpeakersFull(); autoSave();
+      syncVolumeFromSpeaker(name);
+      if ((isPlaying || userStartedPlay) && name !== prevDevice) playNow();
     };
     grid.appendChild(card);
   });
 }
 
 async function scanDevices() {
-  const grid = $('speakerGrid');
-  const btn = $('scanBtn');
-  btn.textContent = 'Scanning\u2026'; btn.disabled = true;
-  grid.innerHTML = '<div class="device-item">Scanning your network\u2026</div>';
-  panels.speaker.open = true; updatePanel('speaker');
+  var grid = $('speakerGrid');
+  var btn = $('scanBtn');
+  var btnFull = $('scanBtnFull');
+  var indicator = $('scanningIndicator');
+  if (btn) { btn.textContent = 'Scanning\u2026'; btn.disabled = true; }
+  if (btnFull) { btnFull.textContent = 'Scanning\u2026'; btnFull.disabled = true; }
+  if (indicator) indicator.style.display = 'flex';
+  grid.textContent = '';
+  var scanning = document.createElement('div');
+  scanning.className = 'text-sm text-on-surface-variant/60 py-4 text-center';
+  scanning.textContent = 'Scanning your network\u2026';
+  grid.appendChild(scanning);
+
+  var body = $('bodySpeaker');
+  if (body) { body.style.maxHeight = '600px'; body.style.opacity = '1'; $('chevSpeaker').style.transform = 'rotate(180deg)'; }
+
   try {
-    const r = await fetch('/discover');
-    const j = await r.json();
-    serverOnline = true; $('serverDot').className = 'server-dot online';
-    // Handle device objects {name, model} or plain strings
-    const raw = j.devices || [];
-    discoveredDevices = raw.map(d => typeof d === 'string' ? d : d.name).filter(Boolean);
+    var r = await fetch('/discover');
+    var j = await r.json();
+    serverOnline = true; checkServer();
+    var raw = j.devices || [];
+    discoveredDevices = raw.map(function(d) { return typeof d === 'string' ? d : d.name; }).filter(Boolean);
     renderSpeakers();
+    renderSpeakersFull();
     if (discoveredDevices.length && !$('device').value.trim()) {
       $('device').value = discoveredDevices[0];
-      renderSpeakers(); autoSave();
+      renderSpeakers(); renderSpeakersFull(); autoSave();
     }
-    if (discoveredDevices.length) {
-      toast('Found ' + discoveredDevices.length + ' speaker' + (discoveredDevices.length > 1 ? 's' : ''));
-    }
-    const dev = $('device').value.trim();
+    if (discoveredDevices.length) toast('Found ' + discoveredDevices.length + ' speaker' + (discoveredDevices.length>1?'s':''));
+    var dev = $('device').value.trim();
     if (dev) syncVolumeFromSpeaker(dev);
-    if (dev) {
-      setTimeout(() => { panels.speaker.open = false; updatePanel('speaker'); }, 800);
-    }
-  } catch {
-    serverOnline = false; $('serverDot').className = 'server-dot offline';
-    grid.innerHTML = '<div class="device-item">Could not reach server \u2014 is the Pi running?</div>';
+    if (dev) setTimeout(function() { if (body) { body.style.maxHeight='0px'; body.style.opacity='0'; $('chevSpeaker').style.transform='rotate(0deg)'; } }, 800);
+  } catch(e) {
+    serverOnline = false; checkServer();
+    grid.textContent = '';
+    var err = document.createElement('div');
+    err.className = 'text-sm text-on-surface-variant/60 py-4 text-center';
+    err.textContent = 'Could not reach server';
+    grid.appendChild(err);
   }
-  btn.textContent = 'Rescan network'; btn.disabled = false;
+  if (btn) { btn.textContent = 'Rescan'; btn.disabled = false; }
+  if (btnFull) { btnFull.textContent = 'Rescan Network'; btnFull.disabled = false; }
+  if (indicator) indicator.style.display = 'none';
 }
 
-/* ======== Volume sync from speaker ======== */
+/* ======== Volume sync ======== */
 async function syncVolumeFromSpeaker(deviceName) {
   try {
-    const r = await fetch('/volume-status?device_name=' + encodeURIComponent(deviceName), { signal: AbortSignal.timeout(12000) });
-    const j = await r.json();
+    var r = await fetch('/volume-status?device_name=' + encodeURIComponent(deviceName), {signal:AbortSignal.timeout(12000)});
+    var j = await r.json();
     if (j.ok && typeof j.volume === 'number') {
-      const pct = Math.round(j.volume * 100);
-      const clamped = Math.max(5, Math.min(80, pct));
+      var pct = Math.round(j.volume * 100);
+      var clamped = Math.max(5, Math.min(80, pct));
       $('volume').value = clamped;
       $('volVal').textContent = clamped + '%';
-      $('volSyncHint').style.display = 'flex';
+      $('volSyncHint').classList.remove('hidden');
       $('volSyncText').textContent = 'Synced with ' + deviceName;
-      setTimeout(() => { $('volSyncHint').style.display = 'none'; }, 4000);
+      setTimeout(function() { $('volSyncHint').classList.add('hidden'); }, 4000);
       autoSave();
     }
-  } catch {}
+  } catch(e) {}
 }
 
 /* ======== Play / Stop ======== */
 async function playNow() {
-  const dev = $('device').value.trim();
-  if (!dev) { toast('Pick a speaker first', 'err'); return; }
-  const url = getStreamUrl();
-  if (!url) { toast('Pick a station first', 'err'); return; }
-  $('playBtn').disabled = true; $('playBtn').textContent = 'Connecting\u2026';
+  var dev = $('device').value.trim();
+  if (!dev) { toast('Pick a speaker first','err'); switchTab('speakers'); return; }
+  var url = getStreamUrl();
+  if (!url) { toast('Pick a station first','err'); return; }
+  $('playBtn').disabled = true;
+  $('playBtnText').textContent = 'Connecting\u2026';
   try {
-    const r = await fetch('/play', {
-      method:'POST', headers:{'Content-Type':'application/json'},
+    var r = await fetch('/play', {
+      method:'POST',headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         station_id: selectedStation,
         device_name: dev,
@@ -1082,91 +1012,75 @@ async function playNow() {
         custom_url: selectedStation === 'custom' ? url : ''
       })
     });
-    const j = await r.json();
-    if (j.status === 'ok') { userStartedPlay = true; setTimeout(() => setPlaying(true, getStationName()), 2000); }
-    else { toast(j.message || 'Failed to play', 'err'); $('playBtn').disabled = false; $('playBtn').textContent = 'Play'; }
-  } catch { toast('Cannot reach server', 'err'); $('playBtn').disabled = false; $('playBtn').textContent = 'Play'; }
+    var j = await r.json();
+    if (j.status === 'ok') { userStartedPlay = true; setTimeout(function() { setPlaying(true, getStationName()); }, 2000); }
+    else { toast(j.message||'Failed to play','err'); $('playBtn').disabled = false; $('playBtnText').textContent = 'Play'; }
+  } catch(e) { toast('Cannot reach server','err'); $('playBtn').disabled = false; $('playBtnText').textContent = 'Play'; }
 }
 
 async function stopNow() {
-  const dev = $('device').value.trim();
+  var dev = $('device').value.trim();
   try {
-    const r = await fetch('/stop', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ device_name: dev })});
-    const j = await r.json();
+    var r = await fetch('/stop', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({device_name:dev})});
+    var j = await r.json();
     if (j.status === 'ok') { userStartedPlay = false; setPlaying(false); toast('Stopped'); }
-    else toast(j.message || 'Failed', 'err');
-  } catch { toast('Cannot reach server', 'err'); }
+    else toast(j.message||'Failed','err');
+  } catch(e) { toast('Cannot reach server','err'); }
 }
 
-/* ======== Now Playing polling ======== */
+/* ======== Polling ======== */
 async function pollNowPlaying() {
   try {
-    const r = await fetch('/now-playing', { signal: AbortSignal.timeout(3000) });
-    const j = await r.json();
+    var r = await fetch('/now-playing', {signal:AbortSignal.timeout(3000)});
+    var j = await r.json();
     if (j.station_id && !j.in_grace_period) {
       if (!isPlaying) setPlaying(true, j.station_name);
     } else if (!j.station_id && isPlaying && !j.in_grace_period) {
       setPlaying(false);
     }
-  } catch {}
+  } catch(e) {}
 }
 setInterval(pollNowPlaying, 10000);
 
 /* ======== Real-time volume ======== */
-let volTimeout;
+var volTimeout;
 $('volume').addEventListener('input', function(e) {
   e.stopPropagation();
   $('volVal').textContent = this.value + '%';
   clearTimeout(volTimeout);
-  volTimeout = setTimeout(() => {
-    const dev = $('device').value.trim();
+  var self = this;
+  volTimeout = setTimeout(function() {
+    var dev = $('device').value.trim();
     if (!dev) return;
-    fetch('/volume', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ device_name: dev, volume: parseInt($('volume').value) })
-    }).catch(() => {});
+    fetch('/volume', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({device_name:dev,volume:parseInt(self.value)})}).catch(function(){});
     autoSave();
   }, 200);
 });
 
 /* ======== Auto-save listeners ======== */
-$('enabled').addEventListener('change', autoSave);
 $('hour').addEventListener('change', autoSave);
 $('minute').addEventListener('change', autoSave);
-$('hour').addEventListener('blur', function() {
-  this.value = Math.min(23, Math.max(0, parseInt(this.value) || 0)); autoSave();
-});
-$('minute').addEventListener('blur', function() {
-  this.value = String(Math.min(59, Math.max(0, parseInt(this.value) || 0))).padStart(2, '0'); autoSave();
-});
-
-/* ======== Sticky bar ======== */
-window.addEventListener('scroll', () => {
-  $('statusBar').classList.toggle('scrolled', window.scrollY > 8);
-}, { passive: true });
+$('hour').addEventListener('blur', function() { this.value = Math.min(23,Math.max(0,parseInt(this.value)||0)); autoSave(); });
+$('minute').addEventListener('blur', function() { this.value = String(Math.min(59,Math.max(0,parseInt(this.value)||0))).padStart(2,'0'); autoSave(); });
 
 /* ======== Init ======== */
 async function load() {
   checkServer();
+  switchTab('radio');
   try {
-    // GET /config returns {config, stations, discovered}
-    const r = await fetch('/config');
-    const j = await r.json();
-    const cfg = j.config || {};
+    var r = await fetch('/config');
+    var j = await r.json();
+    var cfg = j.config || {};
     stations = j.stations || [];
+    var rawDisc = j.discovered || [];
+    discoveredDevices = rawDisc.map(function(d) { return typeof d === 'string' ? d : d.name; }).filter(Boolean);
 
-    // Populate discovered devices from initial response
-    const rawDisc = j.discovered || [];
-    discoveredDevices = rawDisc.map(d => typeof d === 'string' ? d : d.name).filter(Boolean);
-
-    // Apply config to UI
     $('enabled').checked = !!cfg.alarm_enabled;
-    const timeParts = (cfg.alarm_time || '07:00').split(':');
-    $('hour').value = parseInt(timeParts[0]) || 7;
-    $('minute').value = String(parseInt(timeParts[1]) || 0).padStart(2, '0');
+    var timeParts = (cfg.alarm_time||'07:00').split(':');
+    $('hour').value = parseInt(timeParts[0])||7;
+    $('minute').value = String(parseInt(timeParts[1])||0).padStart(2,'0');
 
-    // Volume: normalize to integer
-    let vol = cfg.volume || 35;
+    var vol = cfg.volume || 35;
     if (typeof vol === 'number' && vol <= 1.0 && vol > 0) vol = Math.round(vol * 100);
     vol = Math.max(5, Math.min(80, vol));
     $('volume').value = vol;
@@ -1179,26 +1093,31 @@ async function load() {
     selectedStation = cfg.station || cfg.alarm_station || 'wkcr';
     if (selectedStation === 'custom' && cfg.custom_url) {
       $('customUrl').value = cfg.custom_url;
-      $('customUrlRow').classList.add('show');
+      $('customUrlRow').classList.remove('hidden');
     }
 
     renderMoodBar();
     renderStations();
-    updateHeader();
     renderSpeakers();
+    renderSpeakersFull();
     $('alarmStationName').textContent = getStationName();
     updateAlarmBanner();
-    serverOnline = true; $('serverDot').className = 'server-dot online';
+    updateAlarmToggleUI();
+    serverOnline = true; checkServer();
 
-    // Collapse panels if returning user (config has a device)
-    if (cfg.device_name) collapseAll();
-  } catch {
-    toast('Cannot reach server \u2014 is the Pi running?', 'err');
-    serverOnline = false; $('serverDot').className = 'server-dot offline';
-    // Load with empty stations, render mood bar anyway
+    if (cfg.device_name) {
+      $('bodySpeaker').style.maxHeight = '0px';
+      $('bodySpeaker').style.opacity = '0';
+    } else {
+      $('bodySpeaker').style.maxHeight = '600px';
+      $('bodySpeaker').style.opacity = '1';
+      $('chevSpeaker').style.transform = 'rotate(180deg)';
+    }
+  } catch(e) {
+    toast('Cannot reach server \u2014 is the Pi running?','err');
+    serverOnline = false; checkServer();
     renderMoodBar();
   }
-  // Only scan if startup discovery hasn't found speakers yet
   if (!discoveredDevices.length) scanDevices();
 }
 
