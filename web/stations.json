@@ -432,12 +432,6 @@
     "url": "https://rtvelivestream.rtve.es/rtvesec/rne/rne_r3_main.m3u8"
   },
   {
-    "id": "francemusiqueopera",
-    "name": "France Musique Opéra",
-    "genre": "Opera & vocal — Radio France",
-    "url": "https://icecast.radiofrance.fr/francemusiqueopera-hifi.aac"
-  },
-  {
     "id": "operavore",
     "name": "WQXR Operavore",
     "genre": "Opera 24/7 — New York",

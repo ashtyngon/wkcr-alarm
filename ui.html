@@ -585,55 +585,75 @@ const MOODS = [
   {id:'jazz',emoji:'\u266B',label:'Jazz',desc:'Swing, bebop, cool'},
   {id:'classical',emoji:'\u266A',label:'Classical',desc:'Symphonies, baroque'},
   {id:'opera',emoji:'\u2726',label:'Opera',desc:'Arias, overtures'},
-  {id:'oriental',emoji:'\u2736',label:'Oriental',desc:'Turkish, Persian, Arabic'},
-  {id:'world',emoji:'\u25C7',label:'World',desc:'Folk, Latin, Celtic'},
-  {id:'indie',emoji:'\u25CE',label:'Indie',desc:'Alternative, eclectic'},
-  {id:'groove',emoji:'\u25CF',label:'Groove',desc:'Reggae, funk, electronic'},
+  {id:'folk',emoji:'\u2698',label:'Folk',desc:'Traditional & cultural'},
+  {id:'world',emoji:'\u25C7',label:'World',desc:'Diaspora, regional pop'},
+  {id:'eclectic',emoji:'\u25D3',label:'Curated',desc:'DJ-driven, genre-spanning'},
+  {id:'indie',emoji:'\u25CE',label:'Indie',desc:'Alternative rock/pop'},
   {id:'chill',emoji:'~',label:'Chill',desc:'Ambient, downtempo'},
+  {id:'electronic',emoji:'\u25A0',label:'Electronic',desc:'Techno, house, electronica'},
+  {id:'reggae',emoji:'\u25CF',label:'Reggae',desc:'Roots, dub, lovers'},
+  {id:'talk',emoji:'\u2689',label:'Talk & News',desc:'NPR, public radio'},
   {id:'morning',emoji:'\u2600',label:'Morning',desc:'Bright picks'},
 ];
 let activeMood = 'all';
 
 const STATION_MOODS = {
-  wkcr:['jazz','morning','indie'],swissjazz:['jazz','chill'],jazzradio:['jazz'],
+  // Jazz
+  wkcr:['jazz','morning'],swissjazz:['jazz','chill'],jazzradio:['jazz'],
   tsfjazz:['jazz','morning'],abcjazz:['jazz','morning'],fipjazz:['jazz','chill'],
+  wwoz:['jazz','folk'],wbgo:['jazz','morning'],bossajazzbr:['jazz','world'],
+  // Classical & orchestral
   swissclassic:['classical','chill'],nporadio4:['classical','world'],classicfm:['classical','morning'],
-  wqxr:['classical','opera'],ancientfm:['classical','world','chill'],wcpe:['classical','morning'],
+  wqxr:['classical','opera','morning'],ancientfm:['classical','folk','chill'],wcpe:['classical','morning'],
   abcclassic:['classical','morning'],rai3:['classical','opera'],naim:['classical','chill'],
-  operafm:['opera'],fmopera:['opera'],operavore:['opera','classical'],
-  operamrg:['opera'],capriceopera:['opera','world'],
-  radyosiran:['oriental','world'],ankarahava:['oriental','world','morning'],
-  turkishlove:['oriental','chill'],
-  radiofarda:['oriental','world'],iranintl:['oriental','indie'],
-  yerevannights:['oriental','world','chill'],radiojan:['oriental','world'],
-  ertdeftero:['oriental','world','morning'],ertkosmos:['world','oriental'],
-  erttrito:['classical','oriental'],
-  medi1tarab:['oriental','world'],aswat:['oriental','world','morning'],
-  radioliban:['oriental','chill'],
-  somagoa:['world','oriental','groove'],ntsraga:['chill','oriental'],
-  radioartflam:['world','chill'],sevillanas:['world','morning'],
-  radioamalia:['world','chill'],fadocoimbra:['world','chill'],
-  somabossa:['world','chill','morning'],bossajazzbr:['jazz','world','morning'],
-  tangopasion:['world','chill'],tangobailar:['world','groove'],
-  celticmusic:['world','chill'],irishpub:['world','morning','groove'],
-  somathistle:['world','chill'],
-  capricebalkan:['world','oriental','groove'],
-  icichanson:['world','chill','morning'],chantefrance:['world','chill','morning'],
-  croonerlove:['chill','morning'],radionova:['indie','world','morning'],
-  fip:['indie','morning','world'],kexp:['indie','morning','groove'],nts1:['indie','groove'],
-  nts2:['indie','groove'],wfmu:['indie'],rp:['indie','morning'],fipnouv:['indie','morning'],
-  fipfolk:['world','chill'],rpworld:['world','chill'],
-  radiomeuh:['world','indie','morning'],rfimusique:['world','oriental'],
-  fipreggae:['groove','world','morning'],fipgroove:['groove','morning'],
-  couleur3:['indie','morning'],bytefm:['indie'],fluxfm:['indie','morning','groove'],
-  thelot:['chill','groove'],
-  dublab:['indie','chill'],resonancefm:['indie'],cashmerefm:['indie','chill'],
-  rprock:['groove','morning','indie'],fiprock:['groove','indie'],
-  fipelectro:['groove','indie'],somadefcon:['groove'],
+  srp2:['classical','folk','morning'],erttrito:['classical','chill'],
+  // Opera
+  operafm:['opera','classical'],fmopera:['opera','classical'],operavore:['opera','classical','morning'],
+  operamrg:['opera'],capriceopera:['opera','world'],klassikopera:['opera','classical'],
+  // Folk & Traditional
+  gugakfm:['folk','classical'],dankoradio:['folk','world'],brheimat:['folk','world'],
+  folklorica:['folk','world'],rnag:['folk','world'],pikan:['folk','world'],
+  trtturku:['folk','world'],trtnagme:['folk','classical'],ocora:['folk','world','classical'],
+  fado:['folk','chill'],fadocoimbra:['folk','chill'],la2x4:['folk','chill'],
+  radyosiran:['folk','world'],somathistle:['folk','chill'],
+  celticmusic:['folk','world','chill'],irishpub:['folk','world','morning'],
+  radioamalia:['folk','chill'],radioartflam:['folk','chill'],sevillanas:['folk'],
+  tangopasion:['folk','chill'],tangobailar:['folk'],
+  // World & Diaspora
+  ankarahava:['world','morning'],turkishlove:['world','chill'],
+  radiofarda:['world'],iranintl:['world'],
+  yerevannights:['world','chill'],radiojan:['world'],
+  ertdeftero:['world','folk','morning'],ertkosmos:['world'],
+  medi1tarab:['world'],aswat:['world','morning'],radioliban:['world'],
+  somagoa:['world','chill'],ntsraga:['world','chill'],
+  somabossa:['world','chill'],capricebalkan:['world'],
+  sheger:['world','jazz'],rne3:['world','indie'],
+  fipfolk:['world','folk'],rpworld:['world','chill'],
+  radiomeuh:['world','indie'],rfimusique:['world'],
+  iriefm:['reggae','world','chill'],
+  // Curator & Eclectic
+  fip:['eclectic','chill'],nts1:['eclectic'],nts2:['eclectic'],
+  wfmu:['eclectic'],kexp:['indie','morning'],
+  dublab:['eclectic','chill'],eclectic24:['eclectic'],
+  wwfm:['eclectic','world'],cbcmusic:['eclectic','morning'],
+  resonancefm:['eclectic'],cashmerefm:['eclectic'],
+  thelot:['chill','eclectic'],couleur3:['eclectic','indie'],
+  // French Radio
+  icichanson:['indie','chill'],chantefrance:['chill','indie'],
+  croonerlove:['chill'],radionova:['eclectic','indie'],
+  fipgroove:['eclectic'],
+  // Indie & alt
+  bytefm:['indie','morning'],fluxfm:['indie'],rp:['indie','chill'],
+  fipnouv:['indie','morning'],rprock:['indie'],fiprock:['indie'],
+  // Reggae
+  fipreggae:['reggae','chill'],
+  // Electronic
+  fipelectro:['electronic'],somadefcon:['electronic'],sunshinelive:['electronic'],
+  // Chill / Ambient
   rpmellow:['chill'],somagroove:['chill'],somadrone:['chill'],
-  wnyc:['morning','indie'],
-  sunshinelive:['groove'],
-  custom:['indie'],
+  // Talk & News  (FIXED: was incorrectly 'indie')
+  wnyc:['talk','news','morning'],
+  custom:[],
 };
 
 /* ======== State ======== */
@@ -650,34 +670,43 @@ let favorites = [];
 let searchQuery = '';
 let activeDays = new Set(['mon','tue','wed','thu','fri']);
 
+// GROUPS reorganized with Nielsen Norman chunking:
+// - Opera/Jazz/Classical kept at the top (user preference)
+// - Large categories (Folk, World) use region subgroups for scannability
+// - Each station appears in exactly one group
 const GROUPS = [
-  {label:'Jazz',ids:['wkcr','swissjazz','jazzradio','tsfjazz','abcjazz','fipjazz']},
-  {label:'Classical',ids:['swissclassic','nporadio4','classicfm','wqxr','ancientfm','wcpe','abcclassic','rai3','naim']},
-  {label:'Opera',ids:['operafm','fmopera','operavore','operamrg','capriceopera']},
-  {label:'Turkish',ids:['radyosiran','ankarahava','turkishlove']},
-  {label:'Persian',ids:['radiofarda','iranintl']},
-  {label:'Armenian',ids:['yerevannights','radiojan']},
-  {label:'Greek',ids:['ertdeftero','ertkosmos','erttrito']},
-  {label:'Arabic / N. Africa',ids:['medi1tarab','aswat','radioliban']},
-  {label:'Indian',ids:['somagoa','ntsraga']},
-  {label:'Flamenco',ids:['radioartflam','sevillanas']},
-  {label:'Fado',ids:['radioamalia','fadocoimbra']},
-  {label:'Brazilian',ids:['somabossa','bossajazzbr']},
-  {label:'Tango',ids:['tangopasion','tangobailar']},
-  {label:'Celtic',ids:['celticmusic','irishpub','somathistle']},
-  {label:'Balkan',ids:['capricebalkan']},
-  {label:'Chanson / Love',ids:['icichanson','chantefrance','croonerlove','radionova']},
-  {label:'Eclectic',ids:['fip','kexp','nts1','nts2','wfmu','rp','fipnouv']},
-  {label:'Folk / World',ids:['fipfolk','rpworld','radiomeuh','rfimusique']},
-  {label:'Reggae / Funk',ids:['fipreggae','fipgroove']},
-  {label:'European Indie',ids:['couleur3','bytefm','fluxfm']},
-  {label:'Underground',ids:['dublab','resonancefm','cashmerefm']},
-  {label:'Rock / Indie',ids:['rprock','fiprock']},
-  {label:'Electronic',ids:['fipelectro','somadefcon']},
-  {label:'Ambient / Mellow',ids:['rpmellow','somagroove','somadrone']},
-  {label:'Talk / NPR',ids:['wnyc']},
-  {label:'Techno',ids:['sunshinelive']},
-  {label:'Other',ids:['custom']},
+  {label:'Jazz', ids:['wkcr','wwoz','wbgo','swissjazz','jazzradio','tsfjazz','abcjazz','fipjazz','bossajazzbr']},
+  {label:'Classical', ids:['swissclassic','nporadio4','classicfm','wqxr','ancientfm','wcpe','abcclassic','rai3','naim','srp2','erttrito']},
+  {label:'Opera', ids:['operavore','fmopera','operafm','operamrg','capriceopera','klassikopera']},
+  // Folk & Traditional — organized by region
+  {label:'Folk: European', ids:['dankoradio','brheimat','rnag','celticmusic','irishpub','somathistle']},
+  {label:'Folk: Asian & Anatolian', ids:['gugakfm','trtturku','trtnagme','radyosiran']},
+  {label:'Folk: Latin American', ids:['folklorica']},
+  {label:'Folk: Fado & Tango', ids:['fado','fadocoimbra','radioamalia','la2x4','tangopasion','tangobailar']},
+  {label:'Folk: Flamenco', ids:['radioartflam','sevillanas']},
+  {label:'Folk: Island & Maloya', ids:['pikan']},
+  {label:'Folk: Ethnographic', ids:['ocora']},
+  // World & Diaspora — organized by region
+  {label:'World: Middle East', ids:['ankarahava','turkishlove','radiofarda','iranintl','yerevannights','radiojan','radioliban','medi1tarab','aswat']},
+  {label:'World: Mediterranean', ids:['ertdeftero','ertkosmos','capricebalkan']},
+  {label:'World: Africa', ids:['sheger']},
+  {label:'World: South Asian', ids:['somagoa','ntsraga']},
+  {label:'World: Brazilian', ids:['somabossa']},
+  {label:'World: Iberian & Latin', ids:['rne3']},
+  {label:'World: Global mix', ids:['fipfolk','rpworld','radiomeuh','rfimusique']},
+  // Curator & Eclectic
+  {label:'Curator & Eclectic', ids:['fip','nts1','nts2','wfmu','kexp','dublab','eclectic24','wwfm','cbcmusic','resonancefm','cashmerefm','thelot','couleur3','rp','fipgroove']},
+  // Indie & alt
+  {label:'Indie & Alternative', ids:['bytefm','fluxfm','fipnouv','rprock','fiprock']},
+  // French Radio
+  {label:'French Radio', ids:['icichanson','chantefrance','croonerlove','radionova']},
+  // Specific genres
+  {label:'Reggae & Dub', ids:['iriefm','fipreggae']},
+  {label:'Electronic', ids:['sunshinelive','fipelectro','somadefcon']},
+  {label:'Chill & Ambient', ids:['rpmellow','somagroove','somadrone']},
+  // Talk & News at bottom
+  {label:'Talk & News', ids:['wnyc']},
+  {label:'Other', ids:['custom']},
 ];
 
 /* ======== Toast ======== */

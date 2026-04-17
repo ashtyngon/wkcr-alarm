@@ -233,79 +233,154 @@ let sleepTimerInterval = null;
 let favorites = JSON.parse(localStorage.getItem(LS.favs) || '[]');
 
 // --- Mood system (copied from main app) ---
-// Kept in requested order: Opera/Jazz/Classical up front, then the bigger
-// catalog flows into Folk/World/Curator/Genre. A 'folk' mood was added since
-// the station set now includes ~15 traditional music stations.
+// Information architecture principles applied:
+// 1. Mood pills = user intent filters (single-select, mutually exclusive)
+// 2. Groups = visual organization within the filtered set (always shown)
+// 3. Sub-groups = regional chunks when a group has too many items (8+)
+// 4. Every station appears in exactly ONE primary group (no doubling)
+// 5. Moods may overlap (a station can be jazz+chill, for filtering)
+
+// MOODS — single-select filter pills. Kept to 13 + All so horizontal
+// scroll stays manageable. 'Morning' retained because the app started life
+// as an alarm clock and users still want wake-up-friendly filtering.
 const MOODS = [
-  { id:'all',       label:'All' },
-  { id:'favorites', label:'★ Favorites' },
-  { id:'jazz',      label:'Jazz' },
-  { id:'classical', label:'Classical' },
-  { id:'opera',     label:'Opera' },
-  { id:'folk',      label:'Folk' },
-  { id:'world',     label:'World' },
-  { id:'eclectic',  label:'Eclectic' },
-  { id:'indie',     label:'Indie' },
-  { id:'groove',    label:'Groove' },
-  { id:'chill',     label:'Chill' },
-  { id:'morning',   label:'Morning' },
+  { id:'all',         label:'All' },
+  { id:'favorites',   label:'★ Favorites' },
+  { id:'classical',   label:'Classical' },
+  { id:'opera',       label:'Opera' },
+  { id:'jazz',        label:'Jazz' },
+  { id:'folk',        label:'Folk' },
+  { id:'world',       label:'World' },
+  { id:'eclectic',    label:'Curated' },
+  { id:'indie',       label:'Indie' },
+  { id:'chill',       label:'Chill' },
+  { id:'electronic',  label:'Electronic' },
+  { id:'reggae',      label:'Reggae' },
+  { id:'talk',        label:'Talk & News' },
+  { id:'morning',     label:'Morning' },
 ];
+
+// STATION_MOODS — multi-label tags used ONLY for mood-pill filtering.
+// Must use IDs that actually exist in stations.json. FIXED from the
+// previous version where WNYC was incorrectly tagged 'indie'; it's now
+// 'talk' + 'news'. Each station gets 1-3 meaningful tags max — avoid
+// overloading or the filter becomes useless.
 const STATION_MOODS = {
-  wkcr:['jazz','morning'],swissjazz:['jazz','chill'],jazzradio:['jazz'],tsfjazz:['jazz'],
-  abcjazz:['jazz'],fipjazz:['jazz','groove'],wwoz:['jazz','folk','groove'],wbgo:['jazz','morning'],
-  swissclassic:['classical','chill','morning'],
-  classicfm:['classical'],wqxr:['classical','morning'],ancientfm:['classical','chill'],
-  wcpe:['classical'],abcclassical:['classical'],naim:['classical'],
-  classicalradio:['classical'],srp2:['classical','folk','morning'],
-  operafm:['opera'],francemusiqueopera:['opera'],klassikopera:['opera'],
-  operavore:['opera','classical','morning'],
-  fip:['indie','groove','chill'],fiprock:['indie','groove'],fippop:['indie','groove'],
-  fipgroove:['groove'],fipnouveautes:['indie','morning'],fipworld:['world','groove'],
-  fipreggae:['world','chill'],fipelectro:['groove'],
-  chantefrance:['indie','chill'],radionova:['groove','indie'],icichanson:['indie'],croonerlove:['chill','indie'],
-  kexp:['indie','morning'],bytefm:['indie','morning'],thelot:['chill','groove'],
-  koolfm:['indie','world'],dublab:['chill','groove','eclectic'],
-  nts1:['eclectic','groove'],nts2:['eclectic','groove'],wfmu:['eclectic','indie'],
-  eclectic24:['eclectic','groove'],wwfm:['eclectic','world','groove'],cbcmusic:['eclectic','morning'],
-  erttrito:['classical','chill'],radiocaprice:['classical'],
-  egyptianpop:['world','groove'],radioegypt:['world'],radioarthebrew:['world'],
-  ictyunus:['world'],kayahan:['world'],trtfm:['world'],trtturku:['world','folk'],trtnagme:['world','classical'],
-  radiolebanon:['world'],ictvradio:['world'],ocora:['world','folk','classical'],
-  gugakfm:['folk','world','classical'],dankoradio:['folk','world'],brheimat:['folk','world'],
-  folklorica:['folk','world'],rnag:['folk','world'],pikan:['folk','world','groove'],
-  la2x4:['world','chill'],fado:['world','chill'],sheger:['world','jazz'],rne3:['world','eclectic'],
-  iriefm:['world','groove','chill'],
-  wnyc:['morning','indie'],sunshinelive:['groove'],
+  // Jazz
+  swissjazz:['jazz','chill'], jazzradio:['jazz'], tsfjazz:['jazz','morning'],
+  abcjazz:['jazz','morning'], fipjazz:['jazz','chill'],
+  wwoz:['jazz','folk'], wbgo:['jazz','morning'], bossajazzbr:['jazz','world'],
+  // Classical & orchestral
+  swissclassic:['classical','chill','morning'], nporadio4:['classical'],
+  classicfm:['classical'], wqxr:['classical','morning'],
+  ancientfm:['classical','folk','chill'], wcpe:['classical'],
+  abcclassic:['classical'], srp2:['classical','folk','morning'],
+  erttrito:['classical','chill'],
+  // Opera
+  operavore:['opera','classical','morning'], fmopera:['opera','classical'],
+  operafm:['opera','classical'], klassikopera:['opera','classical'],
+  // Folk & Traditional
+  gugakfm:['folk','classical'], dankoradio:['folk','world'],
+  brheimat:['folk','world'], folklorica:['folk','world'],
+  rnag:['folk','world'], pikan:['folk','world'],
+  trtturku:['folk','world'], trtnagme:['folk','classical'],
+  ocora:['folk','world','classical'], fado:['folk','chill'],
+  fadocoimbra:['folk','chill'], la2x4:['folk','chill'],
+  somathistle:['folk','chill'], radyosiran:['folk','world'],
+  // World & Diaspora
+  turkishlove:['world','chill'], iranintl:['world'], radiojan:['world'],
+  radioliban:['world'], ertdeftero:['world','folk'], ertkosmos:['world'],
+  somagoa:['world','chill'], ntsraga:['world','chill'],
+  somabossa:['world','chill'], sheger:['world','jazz'],
+  rne3:['world','indie'], fipfolk:['world','folk'], rpworld:['world','chill'],
+  // Curator & Eclectic
+  nts1:['eclectic'], nts2:['eclectic'], wfmu:['eclectic'],
+  dublab:['eclectic','chill'], eclectic24:['eclectic'],
+  wwfm:['eclectic','world'], cbcmusic:['eclectic','morning'],
+  resonancefm:['eclectic'], cashmerefm:['eclectic'],
+  thelot:['chill','eclectic'], couleur3:['eclectic','indie'],
+  // Indie & alternative
+  kexp:['indie','morning'], bytefm:['indie','morning'],
+  fluxfm:['indie'], fipnouv:['indie','morning'], fiprock:['indie'],
+  // French Radio
+  fip:['eclectic','chill'], fipgroove:['eclectic'], icichanson:['indie','chill'],
+  // Chill & Ambient
+  somagroove:['chill'], somadrone:['chill'],
+  // Reggae
+  iriefm:['reggae','chill'], fipreggae:['reggae','chill'],
+  // Electronic
+  sunshinelive:['electronic'], fipelectro:['electronic'], somadefcon:['electronic'],
+  // Talk & News
+  wnyc:['talk','news','morning'],
 };
-// Groups are the visual order within a filtered list. Opera/Jazz/Classical
-// stay at the top as requested; newer categories fall below.
+
+// GROUPS — visual sections in the station list, shown in this order.
+// Each station appears in exactly ONE group. Groups with 6+ stations
+// use regional subgroups to avoid a wall of text (Nielsen Norman chunking).
+// "Opera", "Jazz", "Classical" kept at the top per the original ask.
 const GROUPS = [
-  { label:'Jazz',                   ids:['wkcr','wwoz','wbgo','swissjazz','jazzradio','tsfjazz','abcjazz','fipjazz'] },
-  { label:'Classical',              ids:['swissclassic','classicfm','wqxr','ancientfm','wcpe','abcclassical','naim','classicalradio','srp2'] },
-  { label:'Opera',                  ids:['operavore','francemusiqueopera','operafm','klassikopera'] },
-  { label:'Folk & Traditional',     ids:['gugakfm','dankoradio','brheimat','folklorica','rnag','pikan','trtturku','trtnagme','ocora'] },
-  { label:'Fado & Tango',           ids:['fado','la2x4'] },
-  { label:'Curator & Eclectic',     ids:['nts1','nts2','wfmu','dublab','eclectic24','wwfm','cbcmusic'] },
-  { label:'FIP family',             ids:['fip','fiprock','fippop','fipgroove','fipnouveautes','fipworld','fipreggae','fipelectro'] },
-  { label:'French & Chanson',       ids:['chantefrance','radionova','icichanson','croonerlove'] },
-  { label:'World: Middle East',     ids:['egyptianpop','radioegypt','radioarthebrew','ictyunus','kayahan','trtfm','radiolebanon','ictvradio','radiocaprice','sheger'] },
-  { label:'World: Iberian & Latin', ids:['rne3'] },
-  { label:'Reggae & Dub',           ids:['iriefm'] },
-  { label:'Indie & Underground',    ids:['kexp','bytefm','koolfm'] },
-  { label:'Chill',                  ids:['thelot'] },
-  { label:'Electronic',             ids:['sunshinelive'] },
-  { label:'Eclectic Greek',         ids:['erttrito'] },
-  { label:'Talk & NPR',             ids:['wnyc'] },
+  { id:'jazz', label:'Jazz',
+    ids:['wwoz','wbgo','swissjazz','jazzradio','tsfjazz','abcjazz','fipjazz','bossajazzbr'] },
+  { id:'classical', label:'Classical',
+    ids:['swissclassic','nporadio4','classicfm','wqxr','ancientfm','wcpe','abcclassic','srp2','erttrito'] },
+  { id:'opera', label:'Opera',
+    ids:['operavore','fmopera','operafm','klassikopera'] },
+  // Folk & Traditional — chunked by region (14 stations total)
+  { id:'folk', label:'Folk & Traditional',
+    subgroups:[
+      { label:'European folk',      ids:['dankoradio','brheimat','rnag','somathistle'] },
+      { label:'Asian traditional',  ids:['gugakfm','trtturku','trtnagme'] },
+      { label:'Anatolian folk',     ids:['radyosiran'] },
+      { label:'Latin American',     ids:['folklorica'] },
+      { label:'Fado & Tango',       ids:['fado','fadocoimbra','la2x4'] },
+      { label:'Island & maloya',    ids:['pikan'] },
+      { label:'Ethnographic',       ids:['ocora'] },
+    ] },
+  // World & Diaspora — chunked by region (14 stations total)
+  { id:'world', label:'World & Diaspora',
+    subgroups:[
+      { label:'Middle East & Levant', ids:['turkishlove','iranintl','radiojan','radioliban'] },
+      { label:'Mediterranean',        ids:['ertdeftero','ertkosmos'] },
+      { label:'Africa',               ids:['sheger'] },
+      { label:'South Asian',          ids:['somagoa','ntsraga'] },
+      { label:'Brazilian',            ids:['somabossa'] },
+      { label:'Iberian & Latin',      ids:['rne3'] },
+      { label:'Global mix',           ids:['fipfolk','rpworld'] },
+    ] },
+  // Curator & Eclectic — DJ-driven, genre-agnostic
+  { id:'curator', label:'Curator & Eclectic',
+    ids:['nts1','nts2','wfmu','dublab','eclectic24','wwfm','cbcmusic','resonancefm','cashmerefm','thelot','couleur3'] },
+  // Indie & alternative rock/pop
+  { id:'indie', label:'Indie & Alternative',
+    ids:['kexp','bytefm','fluxfm','fipnouv','fiprock'] },
+  // French-language programming (chanson + FIP flagship)
+  { id:'french', label:'French Radio',
+    ids:['fip','fipgroove','icichanson'] },
+  // Chill / Ambient specialists
+  { id:'chill', label:'Chill & Ambient',
+    ids:['somagroove','somadrone'] },
+  // Reggae & Dub
+  { id:'reggae', label:'Reggae & Dub',
+    ids:['iriefm','fipreggae'] },
+  // Electronic
+  { id:'electronic', label:'Electronic',
+    ids:['sunshinelive','fipelectro','somadefcon'] },
+  // Talk & News (kept at bottom — different user intent than music browsing)
+  { id:'talk', label:'Talk & News',
+    ids:['wnyc'] },
 ];
 const STATION_COLORS = {
-  jazz:['#c8475d','#362459'],classical:['#544178','#006161'],opera:['#8a1632','#332300'],
-  folk:['#765600','#006161'],world:['#006262','#332300'],eclectic:['#69558d','#eaaf00'],
-  indie:['#69558d','#c8475d'],groove:['#eaaf00','#c8475d'],
-  chill:['#006161','#544178'],morning:['#fbbc00','#69558d'],
+  jazz:['#c8475d','#362459'], classical:['#544178','#006161'], opera:['#8a1632','#332300'],
+  folk:['#765600','#006161'], world:['#006262','#332300'],     eclectic:['#69558d','#eaaf00'],
+  indie:['#69558d','#c8475d'], chill:['#006161','#544178'],    morning:['#fbbc00','#69558d'],
+  electronic:['#4b386e','#c8475d'], reggae:['#006141','#eaaf00'],
+  talk:['#464850','#544178'], news:['#464850','#544178'],
 };
 const STATION_ICONS = {
-  jazz:'music_note',classical:'piano',opera:'mic',world:'public',folk:'forest',
-  eclectic:'graphic_eq',indie:'headphones',groove:'equalizer',chill:'spa',morning:'wb_sunny',
+  jazz:'music_note', classical:'piano', opera:'mic', world:'public', folk:'forest',
+  eclectic:'graphic_eq', indie:'headphones', chill:'spa', morning:'wb_sunny',
+  electronic:'graphic_eq', reggae:'self_improvement',
+  talk:'campaign', news:'campaign',
 };
 function getStationVisual(s) {
   const moods = STATION_MOODS[s.id] || ['indie'];
@@ -355,42 +430,103 @@ function getFiltered() {
   return list;
 }
 
+// Flatten a group to a list of ids (whether it has ids[] or subgroups[]).
+function _groupAllIds(g) {
+  if (g.ids) return g.ids.slice();
+  if (g.subgroups) return g.subgroups.flatMap(sg => sg.ids);
+  return [];
+}
+
 function renderStations() {
   const container = $('stationList'); container.textContent = '';
   const filtered = getFiltered();
-  $('stationCount').textContent = filtered.length + ' stations';
+  const filteredIds = new Set(filtered.map(s => s.id));
+  $('stationCount').textContent = filtered.length + ' station' + (filtered.length === 1 ? '' : 's');
 
   const renderList = (items) => items.forEach(s => container.appendChild(renderStationRow(s)));
 
-  if (activeMood === 'all') {
-    if (favorites.length) {
-      const favs = filtered.filter(s => favorites.includes(s.id));
-      if (favs.length) {
-        container.appendChild(makeGroupLabel('★ Favorites'));
-        renderList(favs);
-      }
+  // Empty state for Favorites mood
+  if (activeMood === 'favorites' && !filtered.length) {
+    const e = document.createElement('div');
+    e.className = 'py-8 text-center text-xs text-on-surface-variant/40';
+    e.textContent = '★ Tap the star on any station to add it here';
+    container.appendChild(e);
+    return;
+  }
+
+  // Empty state for any filter with no matches
+  if (!filtered.length) {
+    const e = document.createElement('div');
+    e.className = 'py-8 text-center text-xs text-on-surface-variant/40';
+    e.textContent = 'No stations match — try another filter or search term';
+    container.appendChild(e);
+    return;
+  }
+
+  // Favorites band at top (when showing 'all' or any mood, if user has favs)
+  if (activeMood !== 'favorites' && favorites.length) {
+    const favs = filtered.filter(s => favorites.includes(s.id));
+    if (favs.length) {
+      container.appendChild(makeGroupLabel('★ Favorites', favs.length));
+      renderList(favs);
     }
-    GROUPS.forEach(g => {
-      const members = filtered.filter(s => g.ids.includes(s.id));
+  }
+
+  // Groups and sub-groups. Each group is only shown if it contains at
+  // least one station that matches the current filter — so when mood is
+  // 'jazz', only the Jazz group appears; when mood is 'world', only the
+  // World group (with its regional subheaders) appears; etc. This gives
+  // users consistent visual organization regardless of filter choice.
+  GROUPS.forEach(g => {
+    if (g.subgroups) {
+      // Gather matching stations per subgroup
+      const subs = g.subgroups.map(sg => ({
+        label: sg.label,
+        members: sg.ids.filter(id => filteredIds.has(id)).map(id => filtered.find(s => s.id === id))
+      })).filter(sg => sg.members.length);
+      if (!subs.length) return;
+      const totalInGroup = subs.reduce((n, sg) => n + sg.members.length, 0);
+      container.appendChild(makeGroupLabel(g.label, totalInGroup));
+      subs.forEach(sg => {
+        container.appendChild(makeSubgroupLabel(sg.label));
+        sg.members.forEach(s => container.appendChild(renderStationRow(s)));
+      });
+    } else {
+      const members = (g.ids || []).filter(id => filteredIds.has(id)).map(id => filtered.find(s => s.id === id));
       if (!members.length) return;
-      container.appendChild(makeGroupLabel(g.label));
+      container.appendChild(makeGroupLabel(g.label, members.length));
       renderList(members);
-    });
-  } else if (activeMood === 'favorites') {
-    if (!filtered.length) {
-      const e = document.createElement('div');
-      e.className = 'py-8 text-center text-xs text-on-surface-variant/40';
-      e.textContent = '★ Tap the star on any station to add it here';
-      container.appendChild(e);
-    } else renderList(filtered);
-  } else {
-    renderList(filtered);
+    }
+  });
+
+  // Orphan stations — exist in data but no group assigned. Safety net.
+  const allGrouped = new Set(GROUPS.flatMap(_groupAllIds));
+  const orphans = filtered.filter(s => !allGrouped.has(s.id));
+  if (orphans.length) {
+    container.appendChild(makeGroupLabel('Other', orphans.length));
+    renderList(orphans);
   }
 }
 
-function makeGroupLabel(text) {
+function makeGroupLabel(text, count) {
   const el = document.createElement('div');
-  el.className = 'font-label text-[9px] font-bold tracking-[0.18em] uppercase text-on-surface-variant/40 pt-5 pb-2 px-1';
+  el.className = 'flex items-baseline justify-between pt-5 pb-2 px-1';
+  const label = document.createElement('span');
+  label.className = 'font-label text-[10px] font-bold tracking-[0.2em] uppercase text-on-surface-variant/50';
+  label.textContent = text;
+  el.appendChild(label);
+  if (typeof count === 'number') {
+    const c = document.createElement('span');
+    c.className = 'font-label text-[10px] tracking-[0.15em] uppercase text-on-surface-variant/25';
+    c.textContent = count;
+    el.appendChild(c);
+  }
+  return el;
+}
+
+function makeSubgroupLabel(text) {
+  const el = document.createElement('div');
+  el.className = 'font-label text-[9px] tracking-[0.15em] uppercase text-on-surface-variant/30 pt-2 pb-1 pl-4 italic';
   el.textContent = text;
   return el;
 }

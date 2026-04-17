@@ -123,6 +123,38 @@ STATIONS = [
     {"id": "wnyc",          "name": "WNYC 93.9",              "genre": "NPR & public radio — New York City",           "url": "https://fm939.wnyc.org/wnycfm"},
     # --- Electronic / Techno ---
     {"id": "sunshinelive",  "name": "Sunshine Live",           "genre": "Techno, house & trance — Germany",             "url": "https://stream.sunshine-live.de/live/mp3-192/"},
+    # --- Jazz additions ---
+    {"id": "wwoz",          "name": "WWOZ 90.7",              "genre": "Jazz, heritage & Creole — New Orleans",         "url": "https://wwoz-sc.streamguys1.com/wwoz-hi.mp3"},
+    {"id": "wbgo",          "name": "WBGO",                   "genre": "Public jazz radio — Newark, NJ",                "url": "https://ais-sa8.cdnstream1.com/3629_128.mp3"},
+    # --- Curator & Eclectic ---
+    {"id": "nts1",          "name": "NTS Radio 1",            "genre": "Eclectic curator radio — London",               "url": "https://stream-relay-geo.ntslive.net/stream"},
+    {"id": "nts2",          "name": "NTS Radio 2",            "genre": "Eclectic curator radio — London",               "url": "https://stream-relay-geo.ntslive.net/stream2"},
+    {"id": "wfmu",          "name": "WFMU",                   "genre": "Freeform independent radio — Jersey City, NJ",  "url": "https://stream0.wfmu.org/freeform-extrahigh-primary.aac"},
+    {"id": "dublab",        "name": "Dublab",                 "genre": "Future roots & progressive arts — Los Angeles", "url": "https://dublab.out.airtime.pro/dublab_a"},
+    {"id": "eclectic24",    "name": "KCRW Eclectic24",        "genre": "24/7 DJ-curated eclectic — Los Angeles",        "url": "https://streams.kcrw.com/e24_mp3"},
+    {"id": "wwfm",          "name": "Worldwide FM",           "genre": "Global eclectic, Gilles Peterson — London",     "url": "https://worldwide-fm.radiocult.fm/stream"},
+    {"id": "cbcmusic",      "name": "CBC Music Radio 2",      "genre": "Canadian public eclectic — Toronto",            "url": "https://cbcradiolive.akamaized.net/hls/live/2041057/ES_R2ETR/master.m3u8"},
+    # --- Folk & Traditional ---
+    {"id": "gugakfm",       "name": "KBS Gugak FM",           "genre": "Korean traditional court & folk — Seoul",       "url": "https://mgugaklive.nowcdn.co.kr/gugakradio/gugakradio.stream/playlist.m3u8"},
+    {"id": "dankoradio",    "name": "Dankó Rádió",            "genre": "Hungarian folk, Romani & operetta — Budapest",  "url": "https://mr-stream.connectmedia.hu/4748/mr7.mp3"},
+    {"id": "brheimat",      "name": "BR Heimat",              "genre": "Bavarian Alpine folk — Munich",                 "url": "https://dispatcher.rndfnk.com/br/brheimat/live/mp3/128/stream.mp3"},
+    {"id": "folklorica",    "name": "Nacional Folklórica",    "genre": "Argentine folk — Buenos Aires",                 "url": "https://sa.mp3.icecast.magma.edge-access.net/sc_rad38"},
+    {"id": "rnag",          "name": "Raidió na Gaeltachta",   "genre": "Irish Gaelic & trad — Ireland",                 "url": "https://liveaudio.rte.ie/hls-radio/rnag/chunklist.m3u8"},
+    {"id": "srp2",          "name": "Sveriges Radio P2",      "genre": "Swedish classical & folk — Stockholm",          "url": "https://edge1.sr.se/p2-aac-320"},
+    {"id": "pikan",         "name": "Radio Pikan",            "genre": "Maloya & sega — Réunion Island",                "url": "https://stream4.vestaradio.com/RADIOPIKAN"},
+    {"id": "ocora",         "name": "Ocora Couleurs du Monde","genre": "Ethnographic & traditional — Radio France",     "url": "https://icecast.radiofrance.fr/francemusiqueocoramonde-hifi.aac"},
+    {"id": "trtturku",      "name": "TRT Türkü",              "genre": "Turkish folk 24/7 — Ankara",                    "url": "https://rd-trtturku.medya.trt.com.tr/master_128.m3u8"},
+    {"id": "trtnagme",      "name": "TRT Nağme",              "genre": "Turkish classical (sanat) — Ankara",            "url": "https://rd-trtnagme.medya.trt.com.tr/master.m3u8"},
+    # --- Fado & Tango ---
+    {"id": "fado",          "name": "Antena 1 Fado",          "genre": "Portuguese fado 24/7 — Lisbon",                 "url": "https://streaming-live.rtp.pt/liveradio/antena1fado80a/playlist.m3u8"},
+    {"id": "la2x4",         "name": "La 2x4 FM 92.7",         "genre": "Tango 24/7 — Buenos Aires",                     "url": "https://media.radios.ar:9270/"},
+    # --- Opera (HTTPS) ---
+    {"id": "operavore",     "name": "WQXR Operavore",         "genre": "Opera 24/7 — New York",                         "url": "https://stream.wqxr.org/operavore-tunein"},
+    {"id": "klassikopera",  "name": "Klassik Radio Oper",     "genre": "Opera highlights — Germany",                    "url": "https://stream.klassikradio.de/opera/mp3-192/"},
+    # --- World additions ---
+    {"id": "sheger",        "name": "Sheger FM 102.1",        "genre": "Ethio-jazz & cultural — Addis Ababa",           "url": "https://stream.zeno.fm/y91n1vtbaw5tv"},
+    {"id": "iriefm",        "name": "IRIE FM",                "genre": "Reggae, roots & dub — Jamaica",                 "url": "https://usa19.fastcast4u.com:7430/stream"},
+    {"id": "rne3",          "name": "Radio 3 RNE",            "genre": "Alternative & world — Madrid",                  "url": "https://rtvelivestream.rtve.es/rtvesec/rne/rne_r3_main.m3u8"},
     # --- Custom ---
     {"id": "custom",        "name": "Custom URL",             "genre": "Paste any stream URL",                          "url": ""},
 ]
