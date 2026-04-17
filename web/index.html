@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0d0e12"/>
+<title>Sensory Radio</title>
+<meta name="description" content="A beautiful web radio player. Curated stations, sleep timer, free to use on any device."/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📻%3C/text%3E%3C/svg%3E"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary-container":"#d6beff","error":"#fd6f85","background":"#0d0e12",
+          "on-surface-variant":"#aaaab4","on-background":"#e4e5ef","surface-dim":"#0d0e12",
+          "surface-container-low":"#121318","tertiary":"#9cfbfa","surface-container-high":"#1e1f26",
+          "surface-container-highest":"#23252d","on-surface":"#e4e5ef","surface-container-lowest":"#000",
+          "primary-dim":"#c8b1f0","surface-tint":"#e1cfff","tertiary-fixed":"#8dedec",
+          "secondary-container":"#332300","secondary":"#fbbc00","surface-variant":"#23252d",
+          "tertiary-container":"#8dedec","primary-fixed":"#d6beff","surface-container":"#18191f",
+          "surface":"#0d0e12","outline":"#74757e","primary":"#e1cfff","outline-variant":"#464850",
+          "on-primary-fixed":"#362459","on-primary":"#544178","error-dim":"#c8475d",
+        },
+        fontFamily: {"headline":["Space Grotesk"],"body":["Manrope"],"label":["Manrope"]},
+        borderRadius: {"DEFAULT":"1rem","lg":"2rem","xl":"3rem","full":"9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  body { background-color: #0d0e12; color: #e4e5ef; min-height: 100dvh; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .living-gradient {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(225,207,255,0.12) 0%, transparent 55%),
+      radial-gradient(circle at 80% 70%, rgba(156,251,250,0.06) 0%, transparent 55%),
+      radial-gradient(circle at 50% 50%, rgba(54,36,89,0.18) 0%, transparent 100%);
+  }
+  .aura-breathe { animation: breathe 12s ease-in-out infinite; }
+  @keyframes breathe { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.08);opacity:1} }
+  .glass-card {
+    background: rgba(35,37,45,0.4);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+  .station-row { transition: background-color .2s, transform .2s; }
+  .station-row:active { transform: scale(0.98); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+  /* Pulse dots for "live" indicator */
+  .live-dot { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 0.4 } 50% { opacity: 1 } }
+  /* Toast */
+  .toast {
+    position: fixed; bottom: calc(env(safe-area-inset-bottom, 0) + 120px);
+    left: 50%; transform: translateX(-50%);
+    padding: 10px 18px; border-radius: 999px;
+    background: rgba(35,37,45,0.85); backdrop-filter: blur(12px);
+    border: 1px solid rgba(200,177,240,0.15);
+    font-family: Manrope, sans-serif; font-size: 13px;
+    z-index: 100; opacity: 0; pointer-events: none;
+    transition: opacity .25s;
+  }
+  .toast.show { opacity: 1; }
+  /* Safe areas */
+  @supports (padding-top: env(safe-area-inset-top)) {
+    header { padding-top: calc(env(safe-area-inset-top) + 12px); }
+    .bottom-bar { padding-bottom: calc(env(safe-area-inset-bottom) + 16px); }
+  }
+  /* Desktop — center column */
+  @media (min-width: 640px) {
+    body {
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(225,207,255,0.05) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 100%, rgba(225,207,255,0.04) 0%, transparent 55%),
+        #0d0e12;
+    }
+    main, header.fixed, .bottom-bar { max-width: 440px; margin-left: auto; margin-right: auto; }
+    header.fixed, .bottom-bar { left: 50% !important; transform: translateX(-50%); width: 100%; }
+    main { box-shadow: -1px 0 0 rgba(200,177,240,0.06), 1px 0 0 rgba(200,177,240,0.06); background: rgba(13,14,18,0.4); backdrop-filter: blur(8px); }
+  }
+</style>
+</head>
+<body class="font-body selection:bg-primary-container selection:text-on-primary">
+
+<div class="living-gradient"></div>
+<div class="fixed top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-primary/10 blur-[120px] aura-breathe pointer-events-none"></div>
+<div class="fixed bottom-[-10%] right-[-10%] w-[70%] h-[70%] rounded-full bg-secondary/5 blur-[150px] aura-breathe pointer-events-none" style="animation-delay:-6s"></div>
+
+<!-- TOP BAR -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 pt-4 pb-3 bg-transparent">
+  <div class="w-10 flex items-center">
+    <span class="material-symbols-outlined text-primary-dim text-xl" style="font-variation-settings:'FILL' 1" id="liveIndicator" style="display:none;">graphic_eq</span>
+  </div>
+  <h1 class="font-headline font-bold text-xl tracking-tight text-on-surface">Sensory Radio</h1>
+  <button class="w-10 flex items-center justify-end text-on-surface-variant hover:text-primary-dim transition-colors" onclick="toggleSleepTimer()" title="Sleep timer">
+    <span class="material-symbols-outlined text-xl" id="timerIcon">bedtime</span>
+  </button>
+</header>
+
+<!-- MAIN -->
+<main class="flex-col relative z-10 pt-16 pb-44 min-h-screen">
+
+  <!-- Now Playing Hero -->
+  <section class="px-5 mt-4 mb-6">
+    <div class="text-center">
+      <p class="font-label text-[10px] tracking-[0.25em] uppercase text-on-surface-variant/40 mb-2" id="heroLabel">Pick a station</p>
+      <h2 class="font-headline font-bold text-3xl leading-tight text-on-surface px-2" id="heroStation">—</h2>
+      <p class="font-body text-on-surface-variant/50 text-sm mt-1.5 px-2 line-clamp-2" id="heroGenre"></p>
+    </div>
+
+    <!-- Play button -->
+    <div class="relative mt-6 flex items-center justify-center">
+      <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div class="w-32 h-32 rounded-full bg-primary/8 blur-3xl" id="playAura"></div>
+      </div>
+      <button id="heroPlayBtn" onclick="togglePlay()"
+        class="relative z-10 w-20 h-20 bg-primary/15 border border-primary/30 rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 shadow-[0_0_50px_rgba(225,207,255,0.15)]"
+        aria-label="Play/Pause">
+        <span class="material-symbols-outlined text-primary text-4xl" id="heroPlayIcon" style="font-variation-settings:'FILL' 1">play_arrow</span>
+      </button>
+    </div>
+
+    <!-- Sleep timer badge (hidden by default) -->
+    <div class="flex justify-center mt-4" id="sleepTimerBadge" style="display:none;">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-tertiary/15 border border-tertiary/30 rounded-full">
+        <span class="material-symbols-outlined text-tertiary-fixed-dim text-sm" style="font-variation-settings:'FILL' 1">bedtime</span>
+        <span class="font-label text-xs text-tertiary-fixed-dim" id="sleepTimerText">Sleep in 30m</span>
+        <button onclick="cancelSleepTimer()" class="ml-1 text-tertiary-fixed-dim/60 hover:text-tertiary-fixed-dim">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Station Browser -->
+  <section class="px-4">
+    <div class="glass-card rounded-t-[2rem] rounded-b-2xl p-5 pt-3 border border-white/5">
+      <div class="flex justify-center mb-3">
+        <div class="w-10 h-1 rounded-full bg-on-surface-variant/20"></div>
+      </div>
+      <div class="flex items-center justify-between mb-4">
+        <span class="font-headline font-bold text-xl text-on-surface">Stations</span>
+        <span class="font-label text-[9px] tracking-[0.15em] uppercase text-on-surface-variant/30" id="stationCount"></span>
+      </div>
+
+      <!-- Search -->
+      <div class="bg-surface-container-lowest/40 rounded-2xl flex items-center px-4 py-3 mb-4 border border-outline-variant/10 focus-within:border-primary/20 transition-colors">
+        <span class="material-symbols-outlined text-on-surface-variant/40 mr-3 text-lg">search</span>
+        <input id="stationSearch" type="text" placeholder="Search stations, genres…"
+          class="bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-outline/30 w-full font-body text-sm outline-none"/>
+        <button id="searchClear" class="hidden text-on-surface-variant/50 hover:text-primary ml-2">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <!-- Mood pills -->
+      <div id="moodBar" class="flex gap-1.5 flex-nowrap overflow-x-auto pb-3 mb-1 no-scrollbar" style="-webkit-overflow-scrolling:touch"></div>
+
+      <!-- Station list -->
+      <div id="stationList" class="max-h-[55vh] overflow-y-auto"></div>
+    </div>
+  </section>
+</main>
+
+<!-- BOTTOM: subtle attribution -->
+<div class="bottom-bar fixed bottom-0 left-0 w-full z-40 flex justify-center px-5 pt-3 pb-4 pointer-events-none">
+  <p class="font-label text-[10px] tracking-[0.15em] uppercase text-on-surface-variant/25">Sensory Radio · Listen anywhere</p>
+</div>
+
+<!-- Sleep timer modal -->
+<div id="sleepModal" class="fixed inset-0 z-[60] items-center justify-center px-6 bg-black/60 backdrop-blur-sm" style="display:none;">
+  <div class="glass-card rounded-2xl p-6 w-full max-w-xs border border-white/10">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-headline font-bold text-lg">Sleep timer</h3>
+      <button onclick="closeSleepModal()" class="text-on-surface-variant/50 hover:text-primary-dim">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <p class="font-body text-xs text-on-surface-variant/60 mb-4">Stop playing after:</p>
+    <div class="grid grid-cols-3 gap-2 mb-3">
+      <button onclick="setSleepTimer(15)" class="py-3 rounded-xl bg-surface-container-high/40 border border-outline-variant/15 hover:bg-primary/10 hover:border-primary/30 transition-all font-headline font-semibold text-on-surface">15m</button>
+      <button onclick="setSleepTimer(30)" class="py-3 rounded-xl bg-surface-container-high/40 border border-outline-variant/15 hover:bg-primary/10 hover:border-primary/30 transition-all font-headline font-semibold text-on-surface">30m</button>
+      <button onclick="setSleepTimer(45)" class="py-3 rounded-xl bg-surface-container-high/40 border border-outline-variant/15 hover:bg-primary/10 hover:border-primary/30 transition-all font-headline font-semibold text-on-surface">45m</button>
+      <button onclick="setSleepTimer(60)" class="py-3 rounded-xl bg-surface-container-high/40 border border-outline-variant/15 hover:bg-primary/10 hover:border-primary/30 transition-all font-headline font-semibold text-on-surface">1h</button>
+      <button onclick="setSleepTimer(90)" class="py-3 rounded-xl bg-surface-container-high/40 border border-outline-variant/15 hover:bg-primary/10 hover:border-primary/30 transition-all font-headline font-semibold text-on-surface">1.5h</button>
+      <button onclick="setSleepTimer(120)" class="py-3 rounded-xl bg-surface-container-high/40 border border-outline-variant/15 hover:bg-primary/10 hover:border-primary/30 transition-all font-headline font-semibold text-on-surface">2h</button>
+    </div>
+    <button onclick="cancelSleepTimer();closeSleepModal()" id="sleepCancelBtn" class="w-full py-2.5 rounded-xl text-error/80 border border-error/20 hover:bg-error/10 transition-all font-label text-sm" style="display:none;">Cancel timer</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- Hidden audio element -->
+<audio id="player" crossorigin="anonymous" preload="none"></audio>
+
+<script>
+// ================================================================
+// Sensory Radio — Web Player
+// ================================================================
+const $ = id => document.getElementById(id);
+const LS = { favs: 'sr:favorites', last: 'sr:lastStation' };
+
+// --- State ---
+let stations = [];
+let activeMood = 'all';
+let searchQuery = '';
+let selectedId = null;
+let isPlaying = false;
+let sleepDeadline = 0;
+let sleepTimerInterval = null;
+let favorites = JSON.parse(localStorage.getItem(LS.favs) || '[]');
+
+// --- Mood system (copied from main app) ---
+const MOODS = [
+  { id:'all',       label:'All' },
+  { id:'favorites', label:'★ Favorites' },
+  { id:'jazz',      label:'Jazz' },
+  { id:'classical', label:'Classical' },
+  { id:'opera',     label:'Opera' },
+  { id:'world',     label:'World' },
+  { id:'indie',     label:'Indie' },
+  { id:'groove',    label:'Groove' },
+  { id:'chill',     label:'Chill' },
+  { id:'morning',   label:'Morning' },
+];
+const STATION_MOODS = {
+  wkcr:['jazz','morning'],swissjazz:['jazz','chill'],jazzradio:['jazz'],tsfjazz:['jazz'],
+  abcjazz:['jazz'],fipjazz:['jazz','groove'],swissclassic:['classical','chill','morning'],
+  classicfm:['classical'],wqxr:['classical','morning'],ancientfm:['classical','chill'],
+  wcpe:['classical'],abcclassical:['classical'],naim:['classical'],
+  classicalradio:['classical'],operafm:['opera'],francemusiqueopera:['opera'],
+  operavore:['opera','classical','morning'],operamrg:['opera'],capriceopera:['opera'],
+  fip:['indie','groove','chill'],fiprock:['indie','groove'],fippop:['indie','groove'],
+  fipgroove:['groove'],fipnouveautes:['indie','morning'],fipworld:['world','groove'],
+  fipreggae:['world','chill'],fipelectro:['groove'],chantefrance:['indie','chill'],
+  radionova:['groove','indie'],icichanson:['indie'],croonerlove:['chill','indie'],
+  kexp:['indie','morning'],bytefm:['indie','morning'],thelot:['indie'],
+  koolfm:['indie','world'],dublab:['chill','groove'],erttrito:['classical','chill'],
+  radiocaprice:['classical'],egyptianpop:['world','groove'],radioegypt:['world'],
+  radioarthebrew:['world'],ictyunus:['world'],kayahan:['world'],
+  trtfm:['world'],radiolebanon:['world'],ictvradio:['world'],
+  wnyc:['morning','indie'],sunshinelive:['groove'],
+};
+const GROUPS = [
+  { label:'Jazz',      ids:['wkcr','swissjazz','jazzradio','tsfjazz','abcjazz','fipjazz'] },
+  { label:'Classical', ids:['swissclassic','classicfm','wqxr','ancientfm','wcpe','abcclassical','naim','classicalradio'] },
+  { label:'Opera',     ids:['operafm','francemusiqueopera','operavore','operamrg','capriceopera'] },
+  { label:'FIP family',ids:['fip','fiprock','fippop','fipgroove','fipnouveautes','fipworld','fipreggae','fipelectro'] },
+  { label:'Chanson',   ids:['chantefrance','radionova','icichanson','croonerlove'] },
+  { label:'Indie',     ids:['kexp','bytefm','thelot','koolfm','dublab'] },
+  { label:'World',     ids:['erttrito','radiocaprice','egyptianpop','radioegypt','radioarthebrew','ictyunus','kayahan','trtfm','radiolebanon','ictvradio'] },
+  { label:'Talk',      ids:['wnyc'] },
+  { label:'Electronic',ids:['sunshinelive'] },
+];
+const STATION_COLORS = {
+  jazz:['#c8475d','#362459'],classical:['#544178','#006161'],opera:['#8a1632','#332300'],
+  world:['#006262','#332300'],indie:['#69558d','#c8475d'],groove:['#eaaf00','#c8475d'],
+  chill:['#006161','#544178'],morning:['#fbbc00','#69558d'],
+};
+const STATION_ICONS = {
+  jazz:'music_note',classical:'piano',opera:'mic',world:'public',
+  indie:'headphones',groove:'equalizer',chill:'spa',morning:'wb_sunny',
+};
+function getStationVisual(s) {
+  const moods = STATION_MOODS[s.id] || ['indie'];
+  const primary = moods[0] || 'indie';
+  const colors = STATION_COLORS[primary] || ['#544178','#006161'];
+  const icon = STATION_ICONS[primary] || 'radio';
+  const hash = s.id.split('').reduce((a,c) => a + c.charCodeAt(0), 0);
+  const angle = (hash % 360);
+  return { gradient: `linear-gradient(${angle}deg, ${colors[0]}, ${colors[1]})`, icon };
+}
+
+// --- Toast ---
+function toast(msg, ms = 2400) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._tmr);
+  t._tmr = setTimeout(() => t.classList.remove('show'), ms);
+}
+
+// --- Mood Bar ---
+function renderMoodBar() {
+  const bar = $('moodBar'); bar.textContent = '';
+  MOODS.forEach(m => {
+    if (m.id === 'favorites' && !favorites.length) return;
+    const b = document.createElement('button');
+    const active = activeMood === m.id;
+    b.className = 'px-3.5 py-1.5 rounded-full text-xs font-label font-semibold whitespace-nowrap transition-all active:scale-95 ' +
+      (active
+        ? 'bg-primary/20 text-primary border border-primary/30'
+        : 'bg-surface-container-high/30 text-on-surface-variant/60 border border-outline-variant/10 hover:border-outline-variant/30');
+    b.textContent = m.label;
+    b.onclick = () => { activeMood = m.id; renderMoodBar(); renderStations(); };
+    bar.appendChild(b);
+  });
+}
+
+// --- Station list ---
+function getFiltered() {
+  let list = stations;
+  if (activeMood === 'favorites') list = list.filter(s => favorites.includes(s.id));
+  else if (activeMood !== 'all') list = list.filter(s => (STATION_MOODS[s.id]||[]).includes(activeMood));
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    list = list.filter(s => s.name.toLowerCase().includes(q) || (s.genre||'').toLowerCase().includes(q));
+  }
+  return list;
+}
+
+function renderStations() {
+  const container = $('stationList'); container.textContent = '';
+  const filtered = getFiltered();
+  $('stationCount').textContent = filtered.length + ' stations';
+
+  const renderList = (items) => items.forEach(s => container.appendChild(renderStationRow(s)));
+
+  if (activeMood === 'all') {
+    if (favorites.length) {
+      const favs = filtered.filter(s => favorites.includes(s.id));
+      if (favs.length) {
+        container.appendChild(makeGroupLabel('★ Favorites'));
+        renderList(favs);
+      }
+    }
+    GROUPS.forEach(g => {
+      const members = filtered.filter(s => g.ids.includes(s.id));
+      if (!members.length) return;
+      container.appendChild(makeGroupLabel(g.label));
+      renderList(members);
+    });
+  } else if (activeMood === 'favorites') {
+    if (!filtered.length) {
+      const e = document.createElement('div');
+      e.className = 'py-8 text-center text-xs text-on-surface-variant/40';
+      e.textContent = '★ Tap the star on any station to add it here';
+      container.appendChild(e);
+    } else renderList(filtered);
+  } else {
+    renderList(filtered);
+  }
+}
+
+function makeGroupLabel(text) {
+  const el = document.createElement('div');
+  el.className = 'font-label text-[9px] font-bold tracking-[0.18em] uppercase text-on-surface-variant/40 pt-5 pb-2 px-1';
+  el.textContent = text;
+  return el;
+}
+
+function renderStationRow(s) {
+  const row = document.createElement('div');
+  const isSel = selectedId === s.id;
+  const isLive = isPlaying && isSel;
+  const isFav = favorites.includes(s.id);
+
+  row.className = 'station-row flex items-center py-3.5 px-1 cursor-pointer relative';
+
+  if (isSel || isLive) {
+    const accent = document.createElement('div');
+    accent.className = 'absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-full ' + (isLive ? 'h-8 bg-error' : 'h-6 bg-primary');
+    row.appendChild(accent);
+  }
+
+  const visual = getStationVisual(s);
+  const iconWrap = document.createElement('div');
+  iconWrap.className = 'w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ml-3 shadow-lg';
+  iconWrap.style.background = visual.gradient;
+  const iconEl = document.createElement('span');
+  iconEl.className = 'material-symbols-outlined text-white/90 text-xl';
+  iconEl.style.fontVariationSettings = "'FILL' 1";
+  iconEl.textContent = visual.icon;
+  iconWrap.appendChild(iconEl);
+  row.appendChild(iconWrap);
+
+  const info = document.createElement('div');
+  info.className = 'flex-1 min-w-0 ml-4';
+  const name = document.createElement('span');
+  name.className = 'font-headline font-semibold text-[15px] block truncate ' +
+    (isLive ? 'text-error' : isSel ? 'text-primary' : 'text-on-surface');
+  name.textContent = s.name;
+  info.appendChild(name);
+  if (s.genre) {
+    const g = document.createElement('p');
+    g.className = 'text-on-surface-variant/45 text-[12px] mt-0.5 truncate font-body';
+    g.textContent = s.genre;
+    info.appendChild(g);
+  }
+  row.appendChild(info);
+
+  const favBtn = document.createElement('button');
+  favBtn.className = 'w-10 h-10 flex items-center justify-center rounded-full transition-all active:scale-90 mr-1 ' +
+    (isFav ? 'text-secondary' : 'text-on-surface-variant/20 hover:text-secondary/50');
+  const star = document.createElement('span');
+  star.className = 'material-symbols-outlined text-lg';
+  star.style.fontVariationSettings = "'FILL' " + (isFav ? 1 : 0);
+  star.textContent = 'star';
+  favBtn.appendChild(star);
+  favBtn.onclick = e => { e.stopPropagation(); toggleFav(s.id); };
+  row.appendChild(favBtn);
+
+  row.onclick = () => selectStation(s.id);
+  return row;
+}
+
+function toggleFav(id) {
+  const i = favorites.indexOf(id);
+  if (i >= 0) favorites.splice(i, 1); else favorites.push(id);
+  localStorage.setItem(LS.favs, JSON.stringify(favorites));
+  renderStations(); renderMoodBar();
+}
+
+// --- Player ---
+function selectStation(id) {
+  const prev = selectedId;
+  selectedId = id;
+  const s = stations.find(x => x.id === id);
+  if (!s) return;
+  localStorage.setItem(LS.last, id);
+  updateHero(s);
+  renderStations();
+  // If we were already playing, start this one immediately; otherwise just select
+  if (isPlaying || prev === id) play();
+}
+
+function updateHero(s) {
+  $('heroLabel').textContent = isPlaying ? 'Now Streaming' : 'Ready to play';
+  $('heroStation').textContent = s ? s.name : '—';
+  $('heroGenre').textContent = s ? (s.genre || '') : '';
+}
+
+function togglePlay() {
+  if (!selectedId) {
+    toast('Pick a station first');
+    return;
+  }
+  if (isPlaying) stop();
+  else play();
+}
+
+function play() {
+  const s = stations.find(x => x.id === selectedId);
+  if (!s) return;
+  const player = $('player');
+  player.src = s.url;
+  // Optimistic UI
+  isPlaying = true;
+  updatePlayButton();
+  updateHero(s);
+  renderStations();
+  player.play().catch(e => {
+    // Browser blocked autoplay, or stream failed
+    isPlaying = false;
+    updatePlayButton();
+    updateHero(s);
+    toast(e.name === 'NotAllowedError' ? 'Tap play again to start' : 'Stream failed — try another station');
+    console.error('play error:', e);
+  });
+}
+
+function stop() {
+  const player = $('player');
+  player.pause();
+  player.src = '';
+  isPlaying = false;
+  updatePlayButton();
+  const s = stations.find(x => x.id === selectedId);
+  updateHero(s);
+  renderStations();
+}
+
+function updatePlayButton() {
+  const btn = $('heroPlayBtn');
+  const icon = $('heroPlayIcon');
+  const aura = $('playAura');
+  if (isPlaying) {
+    btn.className = 'relative z-10 w-20 h-20 bg-error/15 border border-error/30 rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 shadow-[0_0_50px_rgba(253,111,133,0.2)]';
+    icon.textContent = 'stop';
+    icon.className = 'material-symbols-outlined text-error text-4xl';
+    aura.className = 'w-32 h-32 rounded-full bg-error/8 blur-3xl';
+    document.title = '▶ ' + ($('heroStation').textContent) + ' · Sensory Radio';
+  } else {
+    btn.className = 'relative z-10 w-20 h-20 bg-primary/15 border border-primary/30 rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 shadow-[0_0_50px_rgba(225,207,255,0.15)]';
+    icon.textContent = 'play_arrow';
+    icon.className = 'material-symbols-outlined text-primary text-4xl';
+    aura.className = 'w-32 h-32 rounded-full bg-primary/8 blur-3xl';
+    document.title = 'Sensory Radio';
+  }
+}
+
+// --- Audio element events ---
+function initAudioEvents() {
+  const player = $('player');
+  player.addEventListener('playing', () => {
+    isPlaying = true; updatePlayButton();
+    const s = stations.find(x => x.id === selectedId);
+    updateHero(s); renderStations();
+  });
+  player.addEventListener('pause', () => {
+    if (!player.src) return; // our own stop()
+    isPlaying = false; updatePlayButton();
+  });
+  player.addEventListener('error', () => {
+    if (isPlaying) {
+      isPlaying = false; updatePlayButton();
+      toast('Stream unreachable — try another');
+    }
+  });
+  player.addEventListener('stalled', () => {
+    // Show brief indicator but don't stop
+  });
+}
+
+// --- Sleep timer ---
+function toggleSleepTimer() {
+  $('sleepModal').style.display = sleepDeadline ? 'flex' : 'flex';
+  $('sleepCancelBtn').style.display = sleepDeadline ? 'block' : 'none';
+}
+function closeSleepModal() { $('sleepModal').style.display = 'none'; }
+function setSleepTimer(minutes) {
+  cancelSleepTimer();
+  sleepDeadline = Date.now() + minutes * 60 * 1000;
+  tickSleepTimer();
+  sleepTimerInterval = setInterval(tickSleepTimer, 1000);
+  $('sleepTimerBadge').style.display = 'flex';
+  closeSleepModal();
+  toast(`Sleep timer set for ${minutes >= 60 ? (minutes/60) + 'h' : minutes + 'm'}`);
+}
+function cancelSleepTimer() {
+  sleepDeadline = 0;
+  clearInterval(sleepTimerInterval); sleepTimerInterval = null;
+  $('sleepTimerBadge').style.display = 'none';
+}
+function tickSleepTimer() {
+  if (!sleepDeadline) return;
+  const left = sleepDeadline - Date.now();
+  if (left <= 0) {
+    stop();
+    cancelSleepTimer();
+    toast('Sleep timer ended — playback stopped');
+    return;
+  }
+  const mins = Math.floor(left / 60000);
+  const secs = Math.floor((left % 60000) / 1000);
+  $('sleepTimerText').textContent = mins >= 1
+    ? `Stops in ${mins + 1}m`  // round up while we have minutes left
+    : `Stops in ${secs}s`;
+}
+
+// --- Search ---
+function onSearch() {
+  searchQuery = $('stationSearch').value.trim();
+  $('searchClear').classList.toggle('hidden', !searchQuery);
+  renderStations();
+}
+function clearSearch() {
+  $('stationSearch').value = '';
+  searchQuery = '';
+  $('searchClear').classList.add('hidden');
+  renderStations();
+}
+$('stationSearch').addEventListener('input', onSearch);
+$('searchClear').addEventListener('click', clearSearch);
+
+// --- Init ---
+async function load() {
+  try {
+    const r = await fetch('./stations.json');
+    stations = await r.json();
+  } catch (e) {
+    console.error('Failed to load stations.json:', e);
+    toast('Failed to load stations');
+    return;
+  }
+
+  // Restore last station
+  const last = localStorage.getItem(LS.last);
+  if (last && stations.find(s => s.id === last)) {
+    selectedId = last;
+    updateHero(stations.find(s => s.id === last));
+  }
+
+  renderMoodBar();
+  renderStations();
+  initAudioEvents();
+}
+
+load();
+</script>
+</body>
+</html>

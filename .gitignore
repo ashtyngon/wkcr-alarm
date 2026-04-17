@@ -1,3 +1,12 @@
 __pycache__/
 *.pyc
 .DS_Store
+
+# Local Claude Code settings (session-specific)
+.claude/settings.local.json
+
+# Node.js
+matter_bridge/node_modules/
+
+# Local runtime state
+config.json

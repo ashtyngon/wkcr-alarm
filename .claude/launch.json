@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "flask-radio",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["app.py"],
+      "port": 8550
+    },
+    {
+      "name": "matter-bridge",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["bridge.js"],
+      "port": 5540
+    },
+    {
+      "name": "web-radio",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8081", "--directory", "web"],
+      "port": 8081
+    }
+  ]
+}

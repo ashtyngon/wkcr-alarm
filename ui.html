@@ -102,18 +102,59 @@ tailwind.config = {
   @keyframes breathe { 0%,100%{transform:scale(1);opacity:0.15} 50%{transform:scale(1.08);opacity:0.25} }
   .aura-breathe { animation: breathe 6s ease-in-out infinite; }
 
-  /* Time inputs */
-  .time-input {
-    width: 80px; background: #000; border: 1px solid #464850;
-    border-radius: 14px; color: #e4e5ef;
-    font-family: 'Space Grotesk', monospace;
-    font-size: 36px; font-weight: 600; text-align: center;
-    padding: 14px 4px; outline: none; transition: border-color 0.3s;
+  /* Wheel time picker (iOS-style) */
+  .wheel-wrap {
+    position: relative;
+    width: 96px; height: 180px;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
   }
-  .time-input:focus { border-color: #e1cfff; box-shadow: 0 0 20px rgba(225,207,255,0.15); }
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-  input[type="number"] { -moz-appearance: textfield; }
+  .wheel-track {
+    height: 100%;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 60px 0;
+  }
+  .wheel-track::-webkit-scrollbar { display: none; }
+  .wheel-item {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 300;
+    font-size: 48px;
+    color: rgba(228,229,239,0.35);
+    scroll-snap-align: center;
+    transition: color 0.2s, font-weight 0.2s, transform 0.2s;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+  }
+  .wheel-item.is-selected {
+    color: #e4e5ef;
+    font-weight: 500;
+    transform: scale(1.02);
+  }
+  .wheel-center-band {
+    position: absolute;
+    top: 50%; left: 0; right: 0;
+    height: 60px;
+    transform: translateY(-50%);
+    border-top: 1px solid rgba(200,177,240,0.12);
+    border-bottom: 1px solid rgba(200,177,240,0.12);
+    pointer-events: none;
+  }
+  .wheel-colon {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 42px;
+    font-weight: 300;
+    color: rgba(228,229,239,0.25);
+    padding: 0 4px;
+  }
 
   /* Bottom sheet */
   .bottom-sheet {
@@ -129,6 +170,61 @@ tailwind.config = {
   @supports (padding-top: env(safe-area-inset-top)) {
     header { padding-top: calc(env(safe-area-inset-top) + 12px); }
     nav.bottom-nav { padding-bottom: calc(env(safe-area-inset-bottom) + 20px); }
+  }
+
+  /* ======================================================================
+     Desktop layout: constrain to phone width, center, decorate margins
+     ====================================================================== */
+  @media (min-width: 640px) {
+    body {
+      /* Ambient backdrop fills the margins on either side of the app column */
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(225,207,255,0.05) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 100%, rgba(225,207,255,0.04) 0%, transparent 55%),
+        #0d0e12;
+    }
+
+    /* The phone-sized column that centers the whole app */
+    .tab-view,
+    header.fixed {
+      max-width: 440px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    header.fixed {
+      left: 50% !important;
+      right: auto;
+      transform: translateX(-50%);
+      width: 100%;
+    }
+
+    nav.bottom-nav {
+      max-width: 440px;
+      left: 50% !important;
+      right: auto;
+      transform: translateX(-50%);
+      width: calc(100% - 16px);
+    }
+
+    /* Soft side-rails so the column feels deliberate, not clipped */
+    .tab-view {
+      box-shadow:
+        -1px 0 0 rgba(200,177,240,0.06),
+        1px 0 0 rgba(200,177,240,0.06);
+      background: rgba(13,14,18,0.4);
+      backdrop-filter: blur(8px);
+    }
+  }
+
+  /* Larger desktop: a touch of breathing room, keep same column width */
+  @media (min-width: 1024px) {
+    body {
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(225,207,255,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 50% 100%, rgba(156,251,250,0.03) 0%, transparent 60%),
+        #0a0b0f;
+    }
   }
 </style>
 </head>
@@ -242,25 +338,29 @@ tailwind.config = {
       </div>
     </div>
 
-    <!-- Search & Browse -->
-    <div class="glass-card rounded-2xl p-4 border border-white/5">
-      <div class="flex items-center justify-between mb-3">
-        <span class="font-headline font-bold text-lg text-on-surface">Stations</span>
-        <span class="font-label text-[9px] tracking-[0.15em] uppercase text-on-surface-variant/40" id="stationCount"></span>
+    <!-- Station Browser -->
+    <div class="glass-card rounded-t-[2rem] rounded-b-2xl p-5 pt-3 border border-white/5">
+      <!-- Handle bar -->
+      <div class="flex justify-center mb-3">
+        <div class="w-10 h-1 rounded-full bg-on-surface-variant/20"></div>
+      </div>
+      <div class="flex items-center justify-between mb-4">
+        <span class="font-headline font-bold text-xl text-on-surface">Stations</span>
+        <span class="font-label text-[9px] tracking-[0.15em] uppercase text-on-surface-variant/30" id="stationCount"></span>
       </div>
       <!-- Search -->
-      <div class="relative mb-3">
-        <div class="bg-surface-container-lowest/40 rounded-xl flex items-center px-3.5 py-2.5 border border-outline-variant/10 focus-within:border-primary/20 transition-colors">
-          <span class="material-symbols-outlined text-on-surface-variant/50 mr-2.5 text-lg">search</span>
-          <input class="bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-outline/40 w-full font-body text-sm outline-none"
-            placeholder="Search stations…" type="text" id="stationSearch" oninput="onSearchInput()"/>
+      <div class="relative mb-4">
+        <div class="bg-surface-container-lowest/40 rounded-2xl flex items-center px-4 py-3 border border-outline-variant/10 focus-within:border-primary/20 transition-colors">
+          <span class="material-symbols-outlined text-on-surface-variant/40 mr-3 text-lg">search</span>
+          <input class="bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-outline/30 w-full font-body text-sm outline-none"
+            placeholder="Search stations, genres…" type="text" id="stationSearch" oninput="onSearchInput()"/>
           <button class="material-symbols-outlined text-on-surface-variant/50 ml-2 text-lg hidden hover:text-primary transition-colors" id="searchClear" onclick="clearSearch()">close</button>
         </div>
       </div>
       <!-- Mood Pills -->
-      <div class="flex gap-1.5 flex-nowrap overflow-x-auto pb-2 -mx-1 px-1 mb-2 no-scrollbar" id="moodBar" style="-webkit-overflow-scrolling:touch;scrollbar-width:none;"></div>
+      <div class="flex gap-1.5 flex-nowrap overflow-x-auto pb-3 -mx-1 px-1 mb-1 no-scrollbar" id="moodBar" style="-webkit-overflow-scrolling:touch;scrollbar-width:none;"></div>
       <!-- Station List -->
-      <div class="station-scroll max-h-[45vh] overflow-y-auto space-y-1" id="stationScroll"></div>
+      <div class="station-scroll max-h-[50vh] overflow-y-auto" id="stationScroll"></div>
       <!-- Custom URL -->
       <div class="hidden mt-3" id="customUrlRow">
         <div class="bg-surface-container-lowest/40 rounded-xl flex items-center px-3.5 py-2.5 border border-outline-variant/10">
@@ -271,7 +371,7 @@ tailwind.config = {
       </div>
       <!-- Play Controls -->
       <div class="flex gap-2.5 mt-4 pt-3.5 border-t border-outline-variant/8">
-        <button class="flex-1 py-3 rounded-xl font-label font-semibold text-sm tracking-wider bg-primary text-on-primary-fixed flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.97] transition-all disabled:opacity-40 disabled:cursor-not-allowed" id="playBtn" onclick="playNow()">
+        <button class="flex-1 py-3 rounded-xl font-label font-semibold text-sm tracking-wider bg-primary/20 text-primary border border-primary/30 flex items-center justify-center gap-2 hover:bg-primary/25 active:scale-[0.97] transition-all disabled:opacity-40 disabled:cursor-not-allowed" id="playBtn" onclick="playNow()">
           <span class="material-symbols-outlined text-lg" style="font-variation-settings:'FILL' 1;">play_arrow</span>
           <span id="playBtnText">Play</span>
         </button>
@@ -309,18 +409,44 @@ tailwind.config = {
         </button>
         <input type="checkbox" id="enabled" class="hidden"/>
       </div>
-      <!-- Time Input -->
-      <div class="flex items-center gap-3 mb-6">
-        <input class="time-input" id="hour" type="number" min="0" max="23" value="7" inputmode="numeric"/>
-        <span class="font-headline text-3xl text-outline-variant/40 font-light select-none">:</span>
-        <input class="time-input" id="minute" type="number" min="0" max="59" value="0" inputmode="numeric"/>
+      <!-- Time Input (wheel picker) -->
+      <div class="flex items-center justify-center gap-1 mb-6 py-2">
+        <div class="wheel-wrap">
+          <div class="wheel-track" id="wheelHour" data-value="7" data-min="0" data-max="23"></div>
+          <div class="wheel-center-band"></div>
+        </div>
+        <span class="wheel-colon select-none">:</span>
+        <div class="wheel-wrap">
+          <div class="wheel-track" id="wheelMinute" data-value="0" data-min="0" data-max="59"></div>
+          <div class="wheel-center-band"></div>
+        </div>
       </div>
+      <!-- Hidden inputs kept for compatibility with existing save logic -->
+      <input id="hour" type="hidden" value="7"/>
+      <input id="minute" type="hidden" value="0"/>
       <!-- Day Pills -->
       <div class="flex gap-2 mb-5" id="days"></div>
-      <!-- Alarm Station -->
-      <div class="flex items-center gap-2.5 pt-4 border-t border-outline-variant/8">
-        <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1;">radio</span>
-        <span class="font-body text-on-surface-variant text-sm" id="alarmStationName">—</span>
+      <!-- Alarm Station (tappable picker) -->
+      <div class="pt-4 border-t border-outline-variant/8">
+        <button class="w-full flex items-center justify-between gap-2.5 py-1 transition-colors" id="alarmStationBtn" onclick="toggleAlarmPicker()" type="button">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="material-symbols-outlined text-secondary text-sm flex-shrink-0" style="font-variation-settings:'FILL' 1;">radio</span>
+            <span class="font-label text-[9px] tracking-[0.15em] uppercase text-on-surface-variant/50 flex-shrink-0">Plays</span>
+            <span class="font-body text-on-surface text-sm truncate" id="alarmStationName">—</span>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant/40 text-base transition-transform duration-300 flex-shrink-0" id="alarmStationChev">expand_more</span>
+        </button>
+        <!-- Inline picker (hidden by default) -->
+        <div class="overflow-hidden transition-all duration-300" id="alarmPicker" style="max-height:0;opacity:0;">
+          <div class="mt-3 bg-surface-container-lowest/30 rounded-xl p-2 border border-outline-variant/8">
+            <div class="bg-surface-container-lowest/50 rounded-lg flex items-center px-3 py-2 mb-2 border border-outline-variant/5">
+              <span class="material-symbols-outlined text-on-surface-variant/40 mr-2 text-base">search</span>
+              <input type="text" class="bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-outline/30 w-full font-body text-sm outline-none"
+                placeholder="Search stations…" id="alarmStationSearch" oninput="renderAlarmPicker()"/>
+            </div>
+            <div class="max-h-[45vh] overflow-y-auto" id="alarmPickerList"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -668,9 +794,30 @@ function renderStations() {
 
 function renderGroupLabel(container, text) {
   const label = document.createElement('div');
-  label.className = 'font-label text-[8px] font-bold tracking-[0.18em] uppercase text-on-surface-variant/40 pt-4 pb-1.5 px-1';
+  label.className = 'font-label text-[9px] font-bold tracking-[0.18em] uppercase text-on-surface-variant/40 pt-5 pb-2 px-1';
   label.textContent = text;
   container.appendChild(label);
+}
+
+/* Station icon color palettes by genre */
+const STATION_COLORS = {
+  jazz:['#c8475d','#362459'],classical:['#544178','#006161'],opera:['#8a1632','#332300'],
+  oriental:['#765600','#544178'],world:['#006262','#332300'],indie:['#69558d','#c8475d'],
+  groove:['#eaaf00','#c8475d'],chill:['#006161','#544178'],morning:['#fbbc00','#69558d'],
+};
+const STATION_ICONS = {
+  jazz:'music_note',classical:'piano',opera:'mic',oriental:'self_improvement',
+  world:'public',indie:'headphones',groove:'equalizer',chill:'spa',morning:'wb_sunny',
+};
+function getStationVisual(s) {
+  const moods = STATION_MOODS[s.id] || ['indie'];
+  const primary = moods[0] || 'indie';
+  const colors = STATION_COLORS[primary] || ['#544178','#006161'];
+  const icon = STATION_ICONS[primary] || 'radio';
+  // Generate a unique rotation per station for variety
+  const hash = s.id.split('').reduce((a,c) => a + c.charCodeAt(0), 0);
+  const angle = (hash % 360);
+  return { gradient: `linear-gradient(${angle}deg, ${colors[0]}, ${colors[1]})`, icon };
 }
 
 function renderStationCard(container, s) {
@@ -679,35 +826,41 @@ function renderStationCard(container, s) {
   const isFav = favorites.indexOf(s.id) >= 0;
   const isCurrentlyPlaying = isPlaying && playingStationId === s.id;
 
-  card.className = 'group flex items-center p-3 rounded-xl transition-all cursor-pointer active:scale-[0.98] ' +
-    (isCurrentlyPlaying
-      ? 'bg-primary/8 border border-primary/15'
-      : isActive
-        ? 'bg-surface-container-high/50 border border-primary/8'
-        : 'bg-surface-container-high/20 hover:bg-surface-container-highest/40 border border-transparent');
+  card.className = 'group flex items-center py-3.5 px-1 transition-all cursor-pointer active:scale-[0.98] relative';
 
+  // Active accent line (left border)
+  if (isActive || isCurrentlyPlaying) {
+    const accent = document.createElement('div');
+    accent.className = 'absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-full ' +
+      (isCurrentlyPlaying ? 'h-8 bg-error' : 'h-6 bg-primary');
+    card.appendChild(accent);
+  }
+
+  // Circular station icon
+  const visual = getStationVisual(s);
+  const iconWrap = document.createElement('div');
+  iconWrap.className = 'w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ml-3 shadow-lg';
+  iconWrap.style.background = visual.gradient;
+  const iconEl = document.createElement('span');
+  iconEl.className = 'material-symbols-outlined text-white/90 text-xl';
+  iconEl.style.fontVariationSettings = "'FILL' 1";
+  iconEl.textContent = visual.icon;
+  iconWrap.appendChild(iconEl);
+  card.appendChild(iconWrap);
+
+  // Station info
   const infoDiv = document.createElement('div');
-  infoDiv.className = 'flex-1 min-w-0 ml-1';
-
-  const nameRow = document.createElement('div');
-  nameRow.className = 'flex items-center gap-2';
+  infoDiv.className = 'flex-1 min-w-0 ml-4';
 
   const nameSpan = document.createElement('span');
-  nameSpan.className = 'font-headline font-semibold text-sm truncate ' + (isCurrentlyPlaying ? 'text-yellow-400' : isActive ? 'text-primary' : 'text-on-surface');
+  nameSpan.className = 'font-headline font-semibold text-[15px] block truncate ' +
+    (isCurrentlyPlaying ? 'text-error' : isActive ? 'text-primary' : 'text-on-surface');
   nameSpan.textContent = s.name;
-  nameRow.appendChild(nameSpan);
-
-  if (isCurrentlyPlaying) {
-    const liveTag = document.createElement('span');
-    liveTag.className = 'text-[8px] font-bold tracking-widest uppercase bg-primary/10 text-primary px-1.5 py-0.5 rounded flex-shrink-0';
-    liveTag.textContent = 'Live';
-    nameRow.appendChild(liveTag);
-  }
-  infoDiv.appendChild(nameRow);
+  infoDiv.appendChild(nameSpan);
 
   if (s.genre) {
     const genreP = document.createElement('p');
-    genreP.className = 'text-on-surface-variant/50 text-[11px] mt-0.5 truncate';
+    genreP.className = 'text-on-surface-variant/45 text-[12px] mt-0.5 truncate font-body';
     genreP.textContent = s.genre;
     infoDiv.appendChild(genreP);
   }
@@ -716,8 +869,8 @@ function renderStationCard(container, s) {
   // Star button
   if (s.id !== 'custom') {
     const favBtn = document.createElement('button');
-    favBtn.className = 'w-9 h-9 flex items-center justify-center rounded-full transition-all active:scale-90 ' +
-      (isFav ? 'text-secondary' : 'text-on-surface-variant/25 hover:text-secondary/50');
+    favBtn.className = 'w-10 h-10 flex items-center justify-center rounded-full transition-all active:scale-90 mr-1 ' +
+      (isFav ? 'text-secondary' : 'text-on-surface-variant/20 hover:text-secondary/50');
     const starIcon = document.createElement('span');
     starIcon.className = 'material-symbols-outlined text-lg';
     starIcon.style.fontVariationSettings = "'FILL' " + (isFav ? 1 : 0);
@@ -732,10 +885,11 @@ function renderStationCard(container, s) {
     const wasPlaying = isPlaying || userStartedPlay;
     const prevStation = selectedStation;
     selectedStation = s.id;
-    alarmStation = s.id;
+    // Note: alarmStation is deliberately NOT updated here — it is only
+    // changed from the Alarm tab picker. This keeps your alarm independent
+    // from casual browsing.
     renderStations();
     $('customUrlRow').classList.toggle('hidden', s.id !== 'custom');
-    $('alarmStationName').textContent = getStationName();
     autoSave();
     if (wasPlaying && s.id !== prevStation && s.id !== 'custom') playNow();
   };
@@ -752,6 +906,118 @@ function getStationName() {
   return s ? s.name : '';
 }
 
+/* ======== Alarm Station Picker ======== */
+let alarmPickerOpen = false;
+function toggleAlarmPicker() {
+  alarmPickerOpen = !alarmPickerOpen;
+  const panel = $('alarmPicker');
+  const chev = $('alarmStationChev');
+  if (alarmPickerOpen) {
+    panel.style.maxHeight = '60vh';
+    panel.style.opacity = '1';
+    chev.style.transform = 'rotate(180deg)';
+    renderAlarmPicker();
+    setTimeout(() => { const si = $('alarmStationSearch'); if (si) si.focus(); }, 200);
+  } else {
+    panel.style.maxHeight = '0';
+    panel.style.opacity = '0';
+    chev.style.transform = 'rotate(0deg)';
+  }
+}
+
+function renderAlarmPicker() {
+  const list = $('alarmPickerList');
+  if (!list) return;
+  list.textContent = '';
+  const q = (($('alarmStationSearch')||{}).value||'').trim().toLowerCase();
+  const filtered = stations.filter(s => s.id !== 'custom' &&
+    (!q || s.name.toLowerCase().indexOf(q) >= 0 || (s.genre||'').toLowerCase().indexOf(q) >= 0));
+  // Favorites first, then the rest
+  const favList = filtered.filter(s => favorites.indexOf(s.id) >= 0);
+  const restList = filtered.filter(s => favorites.indexOf(s.id) < 0);
+  if (favList.length) {
+    const hdr = document.createElement('div');
+    hdr.className = 'font-label text-[9px] font-bold tracking-[0.18em] uppercase text-on-surface-variant/40 pt-2 pb-1 px-2';
+    hdr.textContent = '\u2605 Favorites';
+    list.appendChild(hdr);
+    favList.forEach(s => list.appendChild(renderAlarmPickerRow(s)));
+  }
+  if (restList.length) {
+    if (favList.length) {
+      const hdr = document.createElement('div');
+      hdr.className = 'font-label text-[9px] font-bold tracking-[0.18em] uppercase text-on-surface-variant/40 pt-3 pb-1 px-2';
+      hdr.textContent = 'All Stations';
+      list.appendChild(hdr);
+    }
+    restList.forEach(s => list.appendChild(renderAlarmPickerRow(s)));
+  }
+  if (!filtered.length) {
+    const empty = document.createElement('div');
+    empty.className = 'py-6 text-center text-xs text-on-surface-variant/40';
+    empty.textContent = 'No stations match';
+    list.appendChild(empty);
+  }
+}
+
+function renderAlarmPickerRow(s) {
+  const row = document.createElement('button');
+  const isPicked = alarmStation === s.id;
+  row.type = 'button';
+  row.className = 'w-full flex items-center gap-3 py-2.5 px-2 rounded-lg text-left transition-colors active:scale-[0.98] ' +
+    (isPicked ? 'bg-primary/10' : 'hover:bg-surface-container-highest/40');
+  // Small circular icon to match station list aesthetic
+  const visual = (typeof getStationVisual === 'function') ? getStationVisual(s) : null;
+  const iconWrap = document.createElement('div');
+  iconWrap.className = 'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0';
+  if (visual) {
+    iconWrap.style.background = visual.gradient;
+    const iconEl = document.createElement('span');
+    iconEl.className = 'material-symbols-outlined text-white/90 text-sm';
+    iconEl.style.fontVariationSettings = "'FILL' 1";
+    iconEl.textContent = visual.icon;
+    iconWrap.appendChild(iconEl);
+  } else {
+    iconWrap.className += ' bg-surface-container-highest/50';
+    const iconEl = document.createElement('span');
+    iconEl.className = 'material-symbols-outlined text-on-surface-variant/60 text-sm';
+    iconEl.textContent = 'radio';
+    iconWrap.appendChild(iconEl);
+  }
+  row.appendChild(iconWrap);
+  const info = document.createElement('div');
+  info.className = 'flex-1 min-w-0';
+  const name = document.createElement('div');
+  name.className = 'font-headline font-semibold text-sm truncate ' + (isPicked ? 'text-primary' : 'text-on-surface');
+  name.textContent = s.name;
+  info.appendChild(name);
+  if (s.genre) {
+    const g = document.createElement('div');
+    g.className = 'text-on-surface-variant/40 text-[11px] truncate';
+    g.textContent = s.genre;
+    info.appendChild(g);
+  }
+  row.appendChild(info);
+  if (isPicked) {
+    const check = document.createElement('span');
+    check.className = 'material-symbols-outlined text-primary text-base flex-shrink-0';
+    check.style.fontVariationSettings = "'FILL' 1";
+    check.textContent = 'check_circle';
+    row.appendChild(check);
+  }
+  row.onclick = () => setAlarmStation(s.id);
+  return row;
+}
+
+function setAlarmStation(id) {
+  alarmStation = id;
+  const s = stations.find(x => x.id === id);
+  $('alarmStationName').textContent = s ? s.name : '—';
+  renderAlarmPicker();
+  autoSave();
+  // Collapse the picker after a short delay for feedback
+  setTimeout(() => { if (alarmPickerOpen) toggleAlarmPicker(); }, 250);
+}
+
 /* ======== Favorites ======== */
 async function toggleFavorite(stationId) {
   const idx = favorites.indexOf(stationId);
@@ -762,6 +1028,85 @@ async function toggleFavorite(stationId) {
   } catch(e) {
     if (idx >= 0) favorites.splice(idx,0,stationId); else favorites.pop();
     renderStations(); toast('Cannot save favorite','err');
+  }
+}
+
+/* ======== Wheel Time Picker ======== */
+const WHEEL_ITEM_H = 60;  // matches .wheel-item height
+const _wheelState = { hour: 7, minute: 0, scrollTimer: {} };
+
+function buildWheel(id, min, max, initialValue, onChange) {
+  const el = $(id);
+  if (!el) return;
+  el.textContent = '';
+  for (let i = min; i <= max; i++) {
+    const item = document.createElement('div');
+    item.className = 'wheel-item';
+    item.textContent = String(i).padStart(2, '0');
+    item.dataset.index = (i - min);
+    item.onclick = () => {
+      el.scrollTo({ top: (i - min) * WHEEL_ITEM_H, behavior: 'smooth' });
+    };
+    el.appendChild(item);
+  }
+  // Position to initial value without animation
+  el.scrollTop = (initialValue - min) * WHEEL_ITEM_H;
+  updateWheelSelection(el, min);
+
+  // Track scrolling and snap
+  el.addEventListener('scroll', () => {
+    updateWheelSelection(el, min);
+    clearTimeout(_wheelState.scrollTimer[id]);
+    _wheelState.scrollTimer[id] = setTimeout(() => {
+      const idx = Math.round(el.scrollTop / WHEEL_ITEM_H);
+      const val = min + idx;
+      // Snap smoothly to final position
+      el.scrollTo({ top: idx * WHEEL_ITEM_H, behavior: 'smooth' });
+      el.dataset.value = val;
+      updateWheelSelection(el, min);
+      onChange(val);
+    }, 150);
+  }, { passive: true });
+}
+
+function updateWheelSelection(el, min) {
+  const idx = Math.round(el.scrollTop / WHEEL_ITEM_H);
+  const items = el.children;
+  for (let i = 0; i < items.length; i++) {
+    items[i].classList.toggle('is-selected', i === idx);
+  }
+}
+
+function initTimeWheels() {
+  // Read current values from hidden inputs (set by config load)
+  const h = parseInt($('hour').value) || 7;
+  const m = parseInt($('minute').value) || 0;
+  _wheelState.hour = h;
+  _wheelState.minute = m;
+
+  buildWheel('wheelHour', 0, 23, h, (val) => {
+    _wheelState.hour = val;
+    $('hour').value = val;
+    autoSave();
+  });
+  buildWheel('wheelMinute', 0, 59, m, (val) => {
+    _wheelState.minute = val;
+    $('minute').value = val;
+    autoSave();
+  });
+}
+
+function setWheelValues(hour, minute) {
+  $('hour').value = hour;
+  $('minute').value = minute;
+  const hEl = $('wheelHour'), mEl = $('wheelMinute');
+  if (hEl && hEl.children.length) {
+    hEl.scrollTo({ top: hour * WHEEL_ITEM_H, behavior: 'auto' });
+    updateWheelSelection(hEl, 0);
+  }
+  if (mEl && mEl.children.length) {
+    mEl.scrollTo({ top: minute * WHEEL_ITEM_H, behavior: 'auto' });
+    updateWheelSelection(mEl, 0);
   }
 }
 
@@ -795,17 +1140,18 @@ function updateAlarmToggleUI() {
   const thumb = $('alarmToggleThumb');
   const glow = $('alarmGlow');
   if (on) {
-    btn.className = 'w-14 h-8 bg-primary rounded-full relative p-1 transition-all duration-300 shadow-[0_0_20px_rgba(225,207,255,0.3)]';
-    thumb.className = 'w-6 h-6 bg-on-primary-fixed rounded-full shadow-md transition-all duration-300 flex items-center justify-center translate-x-6';
+    // Muted translucent fill with subtle glow — matches the bottom-nav active pattern
+    btn.className = 'w-14 h-8 bg-primary/20 border border-primary/30 rounded-full relative p-1 transition-all duration-300 shadow-[0_0_16px_rgba(225,207,255,0.15)]';
+    thumb.className = 'w-6 h-6 bg-primary-dim rounded-full shadow-md transition-all duration-300 flex items-center justify-center translate-x-6';
     const checkIcon = document.createElement('span');
-    checkIcon.className = 'material-symbols-outlined text-primary text-xs';
+    checkIcon.className = 'material-symbols-outlined text-on-primary-fixed text-xs';
     checkIcon.textContent = 'check';
     thumb.textContent = '';
     thumb.appendChild(checkIcon);
     if (glow) { glow.classList.remove('opacity-0'); glow.classList.add('opacity-25'); }
   } else {
-    btn.className = 'w-14 h-8 bg-surface-container-highest rounded-full relative p-1 transition-all duration-300';
-    thumb.className = 'w-6 h-6 bg-outline rounded-full shadow-md transition-all duration-300 flex items-center justify-center translate-x-0';
+    btn.className = 'w-14 h-8 bg-surface-container-highest/60 border border-outline-variant/20 rounded-full relative p-1 transition-all duration-300';
+    thumb.className = 'w-6 h-6 bg-on-surface-variant/40 rounded-full shadow-md transition-all duration-300 flex items-center justify-center translate-x-0';
     thumb.textContent = '';
     if (glow) { glow.classList.remove('opacity-25'); glow.classList.add('opacity-0'); }
   }
@@ -817,12 +1163,16 @@ function updateHeroButton() {
   const icon = $('heroPlayIcon');
   const aura = $('playAura');
   if (isPlaying) {
-    btn.className = 'relative z-10 w-20 h-20 bg-error/80 rounded-full flex items-center justify-center transition-all duration-500 active:scale-90 shadow-[0_0_40px_rgba(253,111,133,0.3)]';
+    // Muted red tint for stop — readable but not shouting
+    btn.className = 'relative z-10 w-20 h-20 bg-error/15 border border-error/30 rounded-full flex items-center justify-center transition-all duration-500 active:scale-90 shadow-[0_0_50px_rgba(253,111,133,0.2)]';
     icon.textContent = 'stop';
-    aura.className = 'absolute inset-0 bg-error/10 rounded-full blur-3xl scale-150 pointer-events-none';
+    icon.className = 'material-symbols-outlined text-error text-4xl';
+    aura.className = 'absolute inset-0 bg-error/8 rounded-full blur-3xl scale-150 pointer-events-none';
   } else {
-    btn.className = 'relative z-10 w-20 h-20 bg-primary rounded-full flex items-center justify-center transition-all duration-500 active:scale-90 shadow-[0_0_40px_rgba(225,207,255,0.25)]';
+    // Muted translucent lavender with a gentle glow — no more pure-white glare
+    btn.className = 'relative z-10 w-20 h-20 bg-primary/15 border border-primary/30 rounded-full flex items-center justify-center transition-all duration-500 active:scale-90 shadow-[0_0_50px_rgba(225,207,255,0.2)]';
     icon.textContent = 'play_arrow';
+    icon.className = 'material-symbols-outlined text-primary text-4xl';
     aura.className = 'absolute inset-0 bg-primary/8 rounded-full blur-3xl scale-150 pointer-events-none';
   }
 }
@@ -1088,8 +1438,19 @@ async function playNow() {
   if (!dev) { toast('Pick a speaker first','err'); switchTab('speakers'); return; }
   const url = getStreamUrl();
   if (!url) { toast('Pick a station first','err'); return; }
-  $('playBtn').disabled = true;
+
+  // --- Optimistic UI: update immediately, don't wait for the server ---
+  // Remember previous state in case we need to roll back
+  const prevPlaying = isPlaying;
+  const prevStationId = playingStationId;
+  const prevStationName = (stations.find(s => s.id === prevStationId)||{}).name;
+
+  userStartedPlay = true;
+  playingStationId = selectedStation;
+  setPlaying(true, getStationName());
+  // A subtle "connecting" hint on the button without blocking or greying out
   $('playBtnText').textContent = 'Connecting\u2026';
+
   try {
     const r = await fetch('/play', {
       method:'POST',headers:{'Content-Type':'application/json'},
@@ -1101,20 +1462,50 @@ async function playNow() {
       })
     });
     const j = await r.json();
-    if (j.status === 'ok') { userStartedPlay = true; playingStationId = selectedStation; setTimeout(() => setPlaying(true, getStationName()), 2000); }
-    else { toast(j.message||'Failed to play','err'); $('playBtn').disabled = false; $('playBtnText').textContent = 'Play'; }
-  } catch(e) { toast('Cannot reach server','err'); $('playBtn').disabled = false; $('playBtnText').textContent = 'Play'; }
+    if (j.status === 'ok') {
+      // Stream is on its way — reflect "Playing" label
+      $('playBtnText').textContent = 'Playing';
+    } else {
+      // Server rejected it — roll back the optimistic state
+      playingStationId = prevStationId;
+      setPlaying(prevPlaying, prevStationName);
+      $('playBtnText').textContent = 'Play';
+      toast(j.message||'Failed to play','err');
+    }
+  } catch(e) {
+    playingStationId = prevStationId;
+    setPlaying(prevPlaying, prevStationName);
+    $('playBtnText').textContent = 'Play';
+    toast('Cannot reach server','err');
+  }
 }
 
 async function stopNow() {
   const dev = $('device').value.trim();
   if (!dev) { toast('No speaker selected','info'); return; }
+
+  // --- Optimistic UI: stop visual immediately, reconcile with server after ---
+  const prevPlaying = isPlaying;
+  const prevStationId = playingStationId;
+  const prevStationName = (stations.find(s => s.id === prevStationId)||{}).name;
+
+  userStartedPlay = false;
+  setPlaying(false);
+
   try {
     const r = await fetch('/stop', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({device_name:dev})});
     const j = await r.json();
-    if (j.status === 'ok') { userStartedPlay = false; setPlaying(false); toast('Stopped'); }
-    else toast(j.message||'Failed','err');
-  } catch(e) { toast('Cannot reach server','err'); }
+    if (j.status !== 'ok') {
+      // Roll back
+      playingStationId = prevStationId;
+      setPlaying(prevPlaying, prevStationName);
+      toast(j.message||'Failed','err');
+    }
+  } catch(e) {
+    playingStationId = prevStationId;
+    setPlaying(prevPlaying, prevStationName);
+    toast('Cannot reach server','err');
+  }
 }
 
 /* ======== Polling ======== */
@@ -1152,11 +1543,9 @@ $('volume').addEventListener('input', function(e) {
   }, 200);
 });
 
-/* ======== Auto-save listeners ======== */
-$('hour').addEventListener('change', autoSave);
-$('minute').addEventListener('change', autoSave);
-$('hour').addEventListener('blur', function() { this.value = Math.min(23,Math.max(0,parseInt(this.value)||0)); autoSave(); });
-$('minute').addEventListener('blur', function() { this.value = String(Math.min(59,Math.max(0,parseInt(this.value)||0))).padStart(2,'0'); autoSave(); });
+/* ======== Auto-save listeners ========
+   The hour/minute hidden inputs are now controlled by the wheel picker,
+   which calls autoSave() directly on value change. No blur handlers needed. */
 
 /* ======== Init ======== */
 async function load() {
@@ -1174,6 +1563,7 @@ async function load() {
     const timeParts = (cfg.alarm_time||'07:00').split(':');
     $('hour').value = parseInt(timeParts[0])||7;
     $('minute').value = String(parseInt(timeParts[1])||0).padStart(2,'0');
+    initTimeWheels();
 
     let vol = cfg.volume || 35;
     if (typeof vol === 'number' && vol <= 1.0 && vol > 0) vol = Math.round(vol * 100);

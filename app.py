@@ -144,6 +144,14 @@ _cast_cache = {}
 _cast_lock = threading.Lock()
 _discovered = []
 
+# Per-device state used to avoid redundant Chromecast round-trips.
+# _cast_last_ok[name] = monotonic timestamp of last confirmed-healthy contact
+# _cast_last_vol[name] = integer volume (0-100) last successfully set
+# _cast_last_url[name] = last stream URL we told this device to play
+_cast_last_ok = {}
+_cast_last_vol = {}
+_cast_last_url = {}
+
 # --- Alarm state ---
 _alarm_last_triggered_minute = None
 
@@ -258,19 +266,43 @@ def play_station(station_id, device_name, vol, custom_url=""):
         return False
 
     try:
-        # Ensure cast is fully connected (may have gone stale since caching)
-        cast.wait()
+        # Skip cast.wait() if we had confirmed-healthy contact with this cast
+        # within the last 60s — the connection is known alive, so the blocking
+        # handshake is pure overhead and adds 100-3000ms per switch.
+        last_ok = _cast_last_ok.get(device_name, 0)
+        needs_wait = (time.monotonic() - last_ok) > 60
+        if needs_wait:
+            try:
+                cast.wait(timeout=3)
+            except Exception:
+                LOG.info(f"Stale connection to '{device_name}', re-discovering")
+                with _cast_lock:
+                    _cast_cache.pop(device_name, None)
+                _cast_last_ok.pop(device_name, None)
+                _cast_last_vol.pop(device_name, None)
+                _cast_last_url.pop(device_name, None)
+                cast = _get_cast(device_name)
+                if not cast:
+                    return False
+                cast.wait(timeout=5)
         mc = cast.media_controller
 
         # Normalize volume: ensure integer 0-100, convert to 0.0-1.0 for Chromecast
         if isinstance(vol, float) and vol <= 1.0:
             vol = int(vol * 100)  # Was stored as fraction, convert to percent
         vol = max(0, min(100, int(vol)))
-        cast.set_volume(vol / 100.0)
+
+        # Skip redundant set_volume — saves ~500-1000ms per switch when the
+        # user is just flipping stations without touching the slider.
+        if _cast_last_vol.get(device_name) != vol:
+            cast.set_volume(vol / 100.0)
+            _cast_last_vol[device_name] = vol
 
         # Detect correct MIME type and tell Chromecast this is a LIVE stream
         mime = _guess_mime(stream_url)
         mc.play_media(stream_url, mime, stream_type="LIVE")
+        _cast_last_url[device_name] = stream_url
+        _cast_last_ok[device_name] = time.monotonic()
 
         # Update shared state
         with _play_lock:
@@ -279,10 +311,12 @@ def play_station(station_id, device_name, vol, custom_url=""):
             _playing_device = device_name
             _stop_grace_until = 0
 
-        LOG.info(f"Now playing: {station['name']} on {device_name} at volume {vol}% (mime={mime})")
+        LOG.info(f"Now playing: {station['name']} on {device_name} at volume {vol}% (mime={mime}, skipVol={_cast_last_vol.get(device_name)==vol and not needs_wait})")
         return True
     except Exception as e:
         LOG.error(f"Error playing station: {e}")
+        # Connection may have failed mid-call; invalidate so next call re-checks
+        _cast_last_ok.pop(device_name, None)
         return False
 
 
@@ -339,7 +373,8 @@ def stop_playback(device_name):
 def check_alarm():
     """
     Check if alarm should trigger.
-    Runs every 30 seconds, checks time and day, prevents re-trigger within same minute.
+    Runs every 30 seconds. Uses a unique per-day key (YYYY-MM-DD HH:MM) so
+    the debounce doesn't persist across days.
     """
     global _alarm_last_triggered_minute
 
@@ -349,31 +384,32 @@ def check_alarm():
         return
 
     now = datetime.now()
-    current_minute = (now.hour * 60) + now.minute
     current_day = now.weekday()  # 0=Monday, 6=Sunday
 
     alarm_time_str = cfg.get("alarm_time", "07:00")
     try:
         alarm_hour, alarm_minute = map(int, alarm_time_str.split(":"))
-        alarm_minute_of_day = (alarm_hour * 60) + alarm_minute
     except:
         LOG.warning(f"Invalid alarm_time format: {alarm_time_str}")
         return
 
     alarm_days = cfg.get("alarm_days", [])
 
-    # Check if it's time to trigger
-    if (current_minute == alarm_minute_of_day and
-        current_day in alarm_days and
-        _alarm_last_triggered_minute != current_minute):
+    # Unique key per calendar minute (e.g. "2026-04-17 06:30") — prevents
+    # double-fire within a minute but still fires the same time the next day.
+    trigger_key = now.strftime("%Y-%m-%d %H:%M")
 
-        _alarm_last_triggered_minute = current_minute
+    if (now.hour == alarm_hour and now.minute == alarm_minute and
+            current_day in alarm_days and
+            _alarm_last_triggered_minute != trigger_key):
+
+        _alarm_last_triggered_minute = trigger_key
 
         device_name = cfg.get("device_name", "Living Room")
         alarm_station = cfg.get("alarm_station", cfg.get("station", "wkcr"))
         volume = cfg.get("volume", 50)
 
-        LOG.info(f"Triggering alarm: {alarm_station} on {device_name}")
+        LOG.info(f"Triggering alarm: {alarm_station} on {device_name} (key={trigger_key})")
         play_station(alarm_station, device_name, volume)
 
 
@@ -385,6 +421,46 @@ def alarm_thread_worker():
         except Exception as e:
             LOG.error(f"Error in alarm thread: {e}")
         time.sleep(30)
+
+
+def cast_keepalive_worker():
+    """
+    Periodically exercise each cached Chromecast connection so its socket
+    doesn't go stale. This prevents the 'first tap takes 30 seconds because
+    pychromecast has to reconnect' problem that users experience when the
+    connection has been idle.
+
+    Runs every 90 seconds. If a cast is unreachable, we drop it from the cache
+    so the next _get_cast() call triggers a fresh discovery rather than
+    blocking on cast.wait() for a dead socket.
+    """
+    while True:
+        time.sleep(90)
+        try:
+            with _cast_lock:
+                names = list(_cast_cache.keys())
+            for name in names:
+                try:
+                    with _cast_lock:
+                        cast = _cast_cache.get(name)
+                    if cast is None:
+                        continue
+                    # Touch the connection. Any of these will fail fast if the
+                    # socket is dead. We pick .status which is a lightweight
+                    # property access that goes over the existing connection.
+                    _ = cast.status
+                    # Mark this cast as known-healthy so the next user action
+                    # can skip the cast.wait() handshake.
+                    _cast_last_ok[name] = time.monotonic()
+                except Exception as e:
+                    LOG.warning(f"Keep-alive: dropping stale cast '{name}': {e}")
+                    with _cast_lock:
+                        _cast_cache.pop(name, None)
+                    _cast_last_ok.pop(name, None)
+                    _cast_last_vol.pop(name, None)
+                    _cast_last_url.pop(name, None)
+        except Exception as e:
+            LOG.error(f"Error in keep-alive thread: {e}")
 
 
 # --- Routes ---
@@ -539,7 +615,12 @@ def set_volume():
         if isinstance(volume, float) and volume <= 1.0:
             volume = int(volume * 100)
         volume = max(0, min(100, int(volume)))
-        cast.set_volume(volume / 100.0)
+        # Skip if already at this level — prevents slider-drag from spamming
+        # the Chromecast and keeps our cache accurate.
+        if _cast_last_vol.get(device_name) != volume:
+            cast.set_volume(volume / 100.0)
+            _cast_last_vol[device_name] = volume
+            _cast_last_ok[device_name] = time.monotonic()
         return jsonify({"status": "ok", "volume": volume})
     except Exception as e:
         LOG.error(f"Error setting volume: {e}")
@@ -631,6 +712,11 @@ if __name__ == "__main__":
     alarm_thread = threading.Thread(target=alarm_thread_worker, daemon=True)
     alarm_thread.start()
     LOG.info("Alarm thread started")
+
+    # Start cast keep-alive thread — prevents stale-connection delays
+    ka_thread = threading.Thread(target=cast_keepalive_worker, daemon=True)
+    ka_thread.start()
+    LOG.info("Cast keep-alive thread started")
 
     # Start background discovery
     disc_thread = threading.Thread(target=_startup_discovery, daemon=True)
