@@ -2,8 +2,10 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "sensory-radio",
   "compatibility_date": "2026-04-17",
+  "main": "worker.js",
   "assets": {
     "directory": "./web",
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   },
   "observability": {

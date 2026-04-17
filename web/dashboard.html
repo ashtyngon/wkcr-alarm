@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Greenpoint · dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ──────────────────────────────────────────────────────────────────
+   Wall dashboard — Greenpoint, 11222.
+   Shows clock, current weather, 6-hour forecast, and L-train times
+   for the three closest stations, each calibrated to YOUR walking
+   time so "Leave now" means "start walking this second or miss it".
+   ────────────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #fafafa;
+  --surface:   #ffffff;
+  --ink:       #111827;
+  --ink-2:     #374151;
+  --muted:     #6b7280;
+  --line:      #e5e7eb;
+  --accent:    #0a66ff;   /* go */
+  --warn:      #d97706;   /* almost */
+  --danger:    #dc2626;   /* miss */
+  --ok:        #059669;   /* plenty of time */
+}
+body[data-theme="dark"] {
+  --bg:        #0b1020;
+  --surface:   #111827;
+  --ink:       #f3f4f6;
+  --ink-2:     #d1d5db;
+  --muted:     #9ca3af;
+  --line:      #1f2937;
+  --accent:    #60a5fa;
+  --warn:      #f59e0b;
+  --danger:    #f87171;
+  --ok:        #34d399;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 16px;
+  font-feature-settings: "ss01", "cv11", "tnum";
+  -webkit-font-smoothing: antialiased;
+  transition: background .6s ease, color .6s ease;
+}
+
+.stage {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 28px;
+  height: 100vh;
+  padding: 36px 48px 28px;
+}
+
+/* ── Top bar ───────────────────────────────────────────────────── */
+.topbar {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px; letter-spacing: 0.08em;
+  color: var(--muted); text-transform: uppercase;
+}
+.topbar .status { color: var(--ink-2); }
+.topbar .dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--ok); margin-right: 8px; vertical-align: middle;
+}
+
+/* ── Hero: time + current weather side by side ─────────────────── */
+.hero {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.time-block { min-width: 0; }
+.time-now {
+  font-size: clamp(90px, 13vw, 200px);
+  font-weight: 300;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.time-now .ampm {
+  font-size: 0.28em;
+  font-weight: 500;
+  color: var(--muted);
+  margin-left: 12px;
+  letter-spacing: 0;
+  vertical-align: 0.9em;
+}
+.time-date {
+  margin-top: 4px;
+  font-size: 20px; font-weight: 500;
+  color: var(--ink-2);
+}
+.time-sub {
+  margin-top: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px; letter-spacing: 0.12em;
+  color: var(--muted); text-transform: uppercase;
+}
+
+/* Weather block (right side of hero) */
+.wx { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.wx-row {
+  display: flex; align-items: baseline; gap: 20px;
+}
+.wx-temp {
+  font-size: clamp(80px, 11vw, 160px);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.wx-temp .deg { color: var(--muted); font-weight: 300; }
+.wx-caption {
+  display: flex; flex-direction: column; gap: 2px;
+  padding-bottom: 12px;
+}
+.wx-caption .label {
+  font-size: 22px; font-weight: 600;
+  color: var(--ink); line-height: 1.15;
+}
+.wx-caption .feels {
+  font-size: 14px; color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.wx-summary {
+  font-size: 17px; color: var(--ink-2);
+  max-width: 42ch;
+  line-height: 1.4;
+}
+
+/* 6-hour forecast strip */
+.forecast {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0;
+  margin-top: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+.fc-cell {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 0 8px;
+  border-left: 1px solid var(--line);
+}
+.fc-cell:first-child { border-left: none; padding-left: 0; }
+.fc-cell .hr {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.1em;
+  color: var(--muted); text-transform: uppercase;
+}
+.fc-cell .t {
+  font-size: 22px; font-weight: 500; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.fc-cell .c {
+  font-size: 12px; color: var(--muted);
+}
+
+/* ── Trains ────────────────────────────────────────────────────── */
+.trains {
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr;
+  gap: 24px 36px;
+  align-items: stretch;
+}
+.trains-head {
+  display: flex; flex-direction: column; gap: 8px;
+  padding-right: 20px;
+  border-right: 1px solid var(--line);
+}
+.trains-head .L {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: #a7a9ac; /* MTA L grey */
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 28px; letter-spacing: -0.02em;
+}
+.trains-head .hl {
+  font-size: 13px; font-weight: 500;
+  color: var(--ink-2);
+}
+.trains-head .ts {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; color: var(--muted);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+.stop {
+  display: flex; flex-direction: column; gap: 6px;
+  min-width: 0;
+}
+.stop-name {
+  font-size: 18px; font-weight: 600;
+  color: var(--ink);
+}
+.stop-walk {
+  font-size: 12px; color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.stop-verdict {
+  margin-top: 6px;
+  font-size: 22px; font-weight: 600;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.stop-verdict.go     { color: var(--accent); }
+.stop-verdict.soon   { color: var(--warn); }
+.stop-verdict.plenty { color: var(--ok); }
+.stop-verdict.miss   { color: var(--danger); }
+
+.stop-detail {
+  font-size: 14px; color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+.stop-detail .k {
+  color: var(--ink-2); font-weight: 500;
+}
+.stop-detail .ret {
+  display: block; margin-top: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.06em;
+  color: var(--muted); text-transform: uppercase;
+}
+</style>
+</head>
+<body data-theme="light">
+
+<div class="stage">
+
+  <!-- TOP META BAR -->
+  <div class="topbar">
+    <span><span class="dot" id="livedot"></span><span id="location">Greenpoint · 11222</span></span>
+    <span class="status" id="statusRight">updating…</span>
+  </div>
+
+  <!-- HERO: TIME + WEATHER -->
+  <section class="hero">
+
+    <div class="time-block">
+      <div class="time-now">
+        <span id="bigClock">—</span><span class="ampm" id="ampm">—</span>
+      </div>
+      <div class="time-date" id="dateLabel">—</div>
+      <div class="time-sub" id="dateSub">—</div>
+      <!-- hidden compat spans for any consumers that still read these IDs -->
+      <span id="seconds" style="display:none"></span>
+      <span id="weatherIcon" style="display:none"></span>
+    </div>
+
+    <div class="wx">
+      <div class="wx-row">
+        <div class="wx-temp"><span id="tempNow">—</span><span class="deg">°</span></div>
+        <div class="wx-caption">
+          <div class="label" id="weatherDesc">loading…</div>
+          <div class="feels" id="feelsLike">—</div>
+        </div>
+      </div>
+      <div class="wx-summary" id="weatherAdvice">—</div>
+
+      <div class="forecast" id="forecastStrip"></div>
+    </div>
+
+  </section>
+
+  <!-- TRAINS -->
+  <section class="trains">
+    <div class="trains-head">
+      <div class="L">L</div>
+      <div class="hl">Next train, Manhattan-bound</div>
+      <div class="ts" id="trainsUpdated">—</div>
+    </div>
+    <div id="trainTiles" style="display:contents"></div>
+  </section>
+
+</div>
+
+<script>
+// ═════════════════════════════════════════════════════════════════
+// CONFIG — walking time from the apartment to each L station.
+// Update WALK_MIN if you move or want to calibrate verdicts.
+// ═════════════════════════════════════════════════════════════════
+const WALK_MIN = {
+  'Nassau Av':  4,
+  'Graham Av':  10,
+  'Bedford Av': 18,
+};
+
+// ═════════════════════════════════════════════════════════════════
+// SAFE DOM HELPERS (never assign innerHTML from API data)
+// ═════════════════════════════════════════════════════════════════
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = String(text);
+  return e;
+}
+
+// ═════════════════════════════════════════════════════════════════
+// CLOCK — 12-hour with AM/PM, updates every second.
+// Auto-dims to dark theme between 10pm and 7am.
+// ═════════════════════════════════════════════════════════════════
+function tickClock() {
+  const now = new Date();
+  let h = now.getHours();
+  const m = now.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  const mm = String(m).padStart(2, '0');
+
+  document.getElementById('bigClock').textContent = h + ':' + mm;
+  document.getElementById('ampm').textContent = ampm;
+  document.getElementById('seconds').textContent = String(now.getSeconds()).padStart(2,'0');
+
+  const weekday = now.toLocaleDateString('en-US', { weekday: 'long' });
+  const md = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  const yr = now.getFullYear();
+  document.getElementById('dateLabel').textContent = weekday + ', ' + md;
+  document.getElementById('dateSub').textContent = yr + '';
+
+  // Auto-switch theme by hour
+  const hr24 = now.getHours();
+  document.body.setAttribute('data-theme', (hr24 >= 22 || hr24 < 7) ? 'dark' : 'light');
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+// ═════════════════════════════════════════════════════════════════
+// WEATHER — practical language, no metaphors.
+// Headline states what it is. Summary tells you what to do.
+// ═════════════════════════════════════════════════════════════════
+const WMO_LABEL = {
+  0:  { short: 'Clear',          long: 'Clear skies' },
+  1:  { short: 'Mostly clear',   long: 'Mostly clear' },
+  2:  { short: 'Partly cloudy',  long: 'Partly cloudy' },
+  3:  { short: 'Overcast',       long: 'Overcast' },
+  45: { short: 'Fog',            long: 'Fog' },
+  48: { short: 'Freezing fog',   long: 'Freezing fog' },
+  51: { short: 'Light drizzle',  long: 'Light drizzle' },
+  53: { short: 'Drizzle',        long: 'Drizzle' },
+  55: { short: 'Heavy drizzle',  long: 'Heavy drizzle' },
+  61: { short: 'Light rain',     long: 'Light rain' },
+  63: { short: 'Rain',           long: 'Rain' },
+  65: { short: 'Heavy rain',     long: 'Heavy rain' },
+  71: { short: 'Light snow',     long: 'Light snow' },
+  73: { short: 'Snow',           long: 'Snow' },
+  75: { short: 'Heavy snow',     long: 'Heavy snow' },
+  77: { short: 'Snow grains',    long: 'Snow grains' },
+  80: { short: 'Showers',        long: 'Rain showers' },
+  81: { short: 'Showers',        long: 'Heavy showers' },
+  82: { short: 'Downpour',       long: 'Violent showers' },
+  85: { short: 'Snow showers',   long: 'Snow showers' },
+  86: { short: 'Snow showers',   long: 'Heavy snow showers' },
+  95: { short: 'Thunderstorm',   long: 'Thunderstorm' },
+  96: { short: 'Thunderstorm',   long: 'Thunderstorm with hail' },
+  99: { short: 'Severe storm',   long: 'Severe storm with hail' },
+};
+
+// Short practical sentence — what the day is actually going to be like.
+function weatherSummary(code, tempF, windMph, precipIn, isDay) {
+  const hot = tempF >= 85;
+  const warm = tempF >= 70 && tempF < 85;
+  const mild = tempF >= 55 && tempF < 70;
+  const cool = tempF >= 40 && tempF < 55;
+  const cold = tempF < 40;
+  const windy = windMph >= 15;
+
+  if ([95,96,99].includes(code))
+    return 'Thunderstorms expected. Stay inside if you can, and unplug anything you care about.';
+  if ([65,82].includes(code))
+    return 'Heavy rain. Umbrella is not optional — take the full jacket.';
+  if ([61,63,80,81].includes(code))
+    return 'Rain on and off. Grab an umbrella on the way out.';
+  if ([51,53,55].includes(code))
+    return 'Light drizzle. A hood or light jacket should handle it.';
+  if ([71,73,75,77,85,86].includes(code))
+    return 'Snow is falling. Boots and gloves — and give yourself extra time.';
+  if ([45,48].includes(code))
+    return 'Foggy. Visibility is low, so walk with care and add a few minutes to any trip.';
+
+  if (code === 3)
+    return 'Overcast but dry. No umbrella needed — a sweater is usually enough.';
+  if (code === 2)
+    return 'Partly cloudy. Pleasant mix of sun and shade today.';
+  if (code === 1)
+    return 'Mostly sunny with a few clouds. An easy day to be outside.';
+
+  // Clear sky — depends on temp
+  if (hot)   return 'Clear and hot. Sunscreen, hat, and carry water.';
+  if (warm)  return 'Clear and comfortable. Great day to be outside.';
+  if (mild)  return 'Clear and mild. A light layer is plenty.';
+  if (cool)  return 'Clear but cool. A jacket is a good idea.';
+  if (cold)  return 'Clear and cold. Heavy coat and gloves.';
+  return 'Clear skies today.';
+}
+
+function feelsLikeLine(tempF, apparentF, humidity, windMph) {
+  const diff = Math.round(apparentF - tempF);
+  const parts = [];
+  parts.push('Feels like ' + Math.round(apparentF) + '°');
+  if (Math.abs(diff) >= 3) {
+    parts.push(diff > 0 ? '(' + diff + '° warmer)' : '(' + Math.abs(diff) + '° cooler)');
+  }
+  if (windMph != null) parts.push('· ' + Math.round(windMph) + ' mph wind');
+  if (humidity != null) parts.push('· ' + Math.round(humidity) + '% humidity');
+  return parts.join(' ');
+}
+
+async function refreshWeather() {
+  try {
+    const r = await fetch('/api/weather');
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error);
+    const d = j.data, cur = d.current;
+
+    const code = cur.weather_code;
+    const label = (WMO_LABEL[code] && WMO_LABEL[code].long) || 'Weather';
+    const tempF = cur.temperature_2m;
+    const apparentF = cur.apparent_temperature;
+    const wind = cur.wind_speed_10m;
+    const humidity = cur.relative_humidity_2m;
+
+    document.getElementById('tempNow').textContent = Math.round(tempF);
+    document.getElementById('weatherDesc').textContent = label;
+    document.getElementById('feelsLike').textContent =
+      feelsLikeLine(tempF, apparentF, humidity, wind);
+    document.getElementById('weatherAdvice').textContent =
+      weatherSummary(code, tempF, wind, cur.precipitation, cur.is_day);
+    document.getElementById('weatherIcon').textContent = 'wmo:' + code;
+
+    // Forecast strip — next 6 hours
+    const strip = document.getElementById('forecastStrip');
+    strip.textContent = '';
+    const nowMs = Date.now();
+    const picks = d.hourly.time
+      .map((t, idx) => ({ ms: new Date(t).getTime(), idx }))
+      .filter(x => x.ms > nowMs)
+      .slice(0, 6);
+    picks.forEach(p => {
+      const dt = new Date(d.hourly.time[p.idx]);
+      let h = dt.getHours();
+      const ap = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      const cell = el('div', 'fc-cell');
+      cell.appendChild(el('span', 'hr', h + ap));
+      cell.appendChild(el('span', 't', Math.round(d.hourly.temperature_2m[p.idx]) + '°'));
+      const wmo = d.hourly.weather_code[p.idx];
+      const short = (WMO_LABEL[wmo] && WMO_LABEL[wmo].short) || '';
+      cell.appendChild(el('span', 'c', short));
+      strip.appendChild(cell);
+    });
+  } catch (e) {
+    console.warn('weather', e);
+    document.getElementById('weatherDesc').textContent = 'Weather unavailable';
+    document.getElementById('weatherAdvice').textContent = 'Could not reach weather service. Will retry automatically.';
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════
+// TRAINS — verdict = arrival minutes MINUS your walk time.
+// Every station uses its own walk value so advice actually fits.
+// ═════════════════════════════════════════════════════════════════
+function fmtClock(date) {
+  let h = date.getHours();
+  const m = String(date.getMinutes()).padStart(2, '0');
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return h + ':' + m + ' ' + ap;
+}
+
+function verdictForStation(stopName, trains) {
+  const walk = WALK_MIN[stopName] ?? 5;
+  if (!trains || !trains.length) {
+    return { klass: '', text: 'No trains', detail: 'Nothing scheduled right now. Check back in a minute.' };
+  }
+
+  // Find the soonest train you can actually catch given your walking time.
+  // Add 1-minute buffer so you're not literally sprinting onto a closing door.
+  const catchable = trains.find(m => m >= walk + 1);
+
+  // Feed doesn't show anything catchable yet — explain clearly.
+  if (catchable == null) {
+    const soonest = trains[0];
+    return {
+      klass: 'soon',
+      text: 'Wait — trains too close',
+      detail: 'Nearest ' + trains.length + ' trains are ' +
+              trains.join(', ') + ' min out. None give you enough time to walk ' +
+              walk + ' min. Refreshes every 20 sec.'
+    };
+  }
+
+  // Headline: "Catch the 3:47 PM train"
+  const arriveAt = new Date(Date.now() + catchable * 60_000);
+  const leaveAt = new Date(Date.now() + (catchable - walk) * 60_000);
+  const leaveIn = catchable - walk;
+
+  let klass;
+  let action;
+  if (leaveIn <= 0)      { klass = 'go';     action = 'Leave now'; }
+  else if (leaveIn <= 2) { klass = 'go';     action = 'Leave in ' + leaveIn + ' min'; }
+  else if (leaveIn <= 6) { klass = 'soon';   action = 'Leave in ' + leaveIn + ' min'; }
+  else                   { klass = 'plenty'; action = 'Leave in ' + leaveIn + ' min'; }
+
+  // Trains after the one we're catching — show a couple so you know your backups.
+  const backups = trains.filter(m => m > catchable).slice(0, 3);
+  const detailParts = [];
+  detailParts.push(action + ' for the ' + fmtClock(arriveAt) + ' train');
+  detailParts.push('(' + catchable + ' min away · walk ' + walk + ' min · leave by ' + fmtClock(leaveAt) + ')');
+  if (backups.length) {
+    detailParts.push('After that: ' + backups.map(x => x + ' min').join(', '));
+  }
+
+  return {
+    klass,
+    text: 'Catch the ' + fmtClock(arriveAt) + ' train',
+    detail: detailParts.join(' · ')
+  };
+}
+
+function buildStop(s) {
+  const wrap = el('div', 'stop');
+  wrap.appendChild(el('div', 'stop-name', s.name));
+  const walk = WALK_MIN[s.name];
+  wrap.appendChild(el('div', 'stop-walk', (walk != null ? walk + ' min walk' : '')));
+
+  const v = verdictForStation(s.name, s.manhattan_bound);
+  const vDiv = el('div', 'stop-verdict ' + v.klass, v.text);
+  wrap.appendChild(vDiv);
+
+  wrap.appendChild(el('div', 'stop-detail', v.detail));
+
+  // Return trains — small return label (Canarsie-bound = coming home)
+  const back = s.canarsie_bound;
+  if (back && back.length) {
+    const ret = el('div', 'stop-detail');
+    const span = el('span', 'ret', 'Return (Canarsie): ' + back.slice(0, 3).map(x => x + ' min').join(', '));
+    ret.appendChild(span);
+    wrap.appendChild(ret);
+  }
+
+  return wrap;
+}
+
+async function refreshTrains() {
+  try {
+    const r = await fetch('/api/trains');
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error);
+    const host = document.getElementById('trainTiles');
+    host.textContent = '';
+    const stations = (j.data && j.data.stations) || [];
+    if (!stations.length) {
+      host.appendChild(el('div', 'stop', 'No train data'));
+      return;
+    }
+    stations.forEach(s => host.appendChild(buildStop(s)));
+
+    const t = new Date();
+    let th = t.getHours();
+    const tm = String(t.getMinutes()).padStart(2,'0');
+    const ts = String(t.getSeconds()).padStart(2,'0');
+    const tap = th >= 12 ? 'PM' : 'AM';
+    th = th % 12 || 12;
+    document.getElementById('trainsUpdated').textContent = 'Updated ' + th + ':' + tm + ':' + ts + ' ' + tap;
+    document.getElementById('statusRight').textContent = 'Live';
+  } catch (e) {
+    console.warn('trains', e);
+    const host = document.getElementById('trainTiles');
+    host.textContent = '';
+    const box = el('div', 'stop');
+    box.appendChild(el('div', 'stop-name', 'MTA feed unavailable'));
+    box.appendChild(el('div', 'stop-detail', 'Retrying in a few seconds.'));
+    host.appendChild(box);
+    document.getElementById('statusRight').textContent = 'Retrying';
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════
+// KICKOFF
+// ═════════════════════════════════════════════════════════════════
+refreshWeather();
+setInterval(refreshWeather, 10 * 60 * 1000);
+refreshTrains();
+setInterval(refreshTrains, 20 * 1000);
+</script>
+</body>
+</html>

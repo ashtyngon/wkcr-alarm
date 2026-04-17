@@ -10,3 +10,5 @@ matter_bridge/node_modules/
 
 # Local runtime state
 config.json
+node_modules/
+.wrangler/
