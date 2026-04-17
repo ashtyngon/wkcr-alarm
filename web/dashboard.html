@@ -8,76 +8,50 @@
 <meta name="apple-mobile-web-app-title" content="Dashboard"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="mobile-web-app-capable" content="yes"/>
-<meta name="theme-color" content="#f0e4c8"/>
+<meta name="theme-color" content="#0a0a0a"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,500..700,0..100;1,9..144,500..700,0..100&family=PT+Mono&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet"/>
 <style>
 /* ──────────────────────────────────────────────────────────────────
-   Soviet magazine dashboard, v5.
-   Inspired by Krokodil (Крокодил) №3, Sept 1922 — aged newsprint,
-   black ink + single-accent red, typographic hierarchy doing the
-   separation instead of heavy color blocks. Sleeker than v4.
+   Wall dashboard v5 — "Direction C"
+   Soviet-editorial aesthetic, but every panel is intentionally sparse
+   so type can get huge. One station fills the whole middle; the 7-day
+   forecast lives on its own rotating screen.
    ────────────────────────────────────────────────────────────────── */
 :root {
-  --paper:   #f0e4c8;
-  --paper-2: #e5d8b8;
-  --ink:     #141210;
-  --ink-2:   #2f2a24;
-  --muted:   rgba(20, 18, 16, 0.55);
-  --mute-2:  rgba(20, 18, 16, 0.35);
-  --hair:    rgba(20, 18, 16, 0.18);  /* hairline rules */
-  --red:     #c02020;
+  --paper:   #f3e8cd;
+  --paper-2: #e5d8b6;
+  --ink:     #0a0a0a;
+  --muted:   #7a7365;
+  --hair:    rgba(10,10,10,0.18);
+  --red:     #c4201e;
   --red-2:   #8a1513;
-  --ochre:   #c79033;
+  --ochre:   #d4a017;
 
-  --uv-low:    #4a7c41;
-  --uv-mod:    #c79033;
-  --uv-high:   #d4620e;
-  --uv-vhigh:  #c02020;
+  --uv-low:    #2e7d32;
+  --uv-mod:    #d4a017;
+  --uv-high:   #e65100;
+  --uv-vhigh:  #c4201e;
   --uv-extrm:  #6a1b9a;
 }
 * { box-sizing: border-box; }
-html, body {
-  margin: 0; padding: 0; height: 100%; overflow: hidden;
-}
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
 body {
   background: var(--paper);
   color: var(--ink);
-  font-family: 'Oswald', Arial, sans-serif;
-  font-size: 18px;
-  font-weight: 500;
+  font-family: 'PT Sans', Arial, sans-serif;
+  font-size: 20px;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  /* Warm radial lighting — like worn paper */
   background-image:
-    radial-gradient(ellipse at 15% 10%, rgba(210, 180, 120, 0.22), transparent 60%),
-    radial-gradient(ellipse at 90% 95%, rgba(140, 90, 60, 0.14), transparent 55%);
-}
-
-/* PAPER GRAIN — subtle fractal noise, slightly yellowed */
-body::before {
-  content: "";
-  position: fixed; inset: 0; pointer-events: none; z-index: 1;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='9'/><feColorMatrix values='0 0 0 0 0.25  0 0 0 0 0.18  0 0 0 0 0.10  0 0 0 0.20 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  mix-blend-mode: multiply;
-  opacity: 0.55;
-}
-/* HALFTONE — tiny dot pattern, print-reproduction artifact */
-body::after {
-  content: "";
-  position: fixed; inset: 0; pointer-events: none; z-index: 2;
-  background-image:
-    radial-gradient(circle, rgba(20, 18, 16, 0.065) 0.6px, transparent 1px);
-  background-size: 3px 3px;
-  mix-blend-mode: multiply;
+    radial-gradient(ellipse at 70% 10%, rgba(0,0,0,0.04), transparent 60%),
+    radial-gradient(ellipse at 10% 90%, rgba(196, 32, 30, 0.06), transparent 55%);
 }
 .frame {
-  position: relative; z-index: 3;
   display: grid;
   grid-template-rows: auto auto auto 1fr auto auto;
   height: 100vh;
-  padding: 22px 40px;
+  padding: 18px 28px;
   gap: 14px;
 }
 .top           { grid-row: 1; }
@@ -88,197 +62,148 @@ body::after {
 .footer        { grid-row: 6; }
 
 /* ══════════════════════════════════════════════════════════════
-   MASTHEAD — newspaper header, not a poster block.
-   Thick/thin rule pair above, editorial metadata ribbon, then
-   the big numerals on paper with red accents.
+   TOP STRIP — time, current weather, UV NOW (always visible)
    ══════════════════════════════════════════════════════════════ */
 .top {
-  border-top: 6px solid var(--ink);
-  border-bottom: 1px solid var(--ink);
-  padding: 0;
-  position: relative;
-}
-.top::after {
-  content: "";
-  position: absolute;
-  left: 0; right: 0; bottom: -6px;
-  height: 2px;
-  background: var(--ink);
-}
-
-/* Thin metadata ribbon running along the very top */
-.masthead-meta {
-  display: flex; justify-content: space-between; align-items: center;
-  gap: 18px;
-  padding: 6px 2px 10px;
-  border-bottom: 1px dashed var(--hair);
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--muted);
-  font-weight: 500;
-  margin-bottom: 10px;
-}
-.masthead-meta .left,
-.masthead-meta .center,
-.masthead-meta .right {
-  display: flex; gap: 18px; align-items: center;
-}
-.masthead-meta .ornament {
-  color: var(--red); font-weight: 700; letter-spacing: 0;
-}
-
-/* Main masthead row */
-.top-main {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: 32px;
-  align-items: center;
-  padding: 4px 2px 12px;
+  align-items: stretch;
+  border: 3px solid var(--ink);
+  background: var(--paper);
 }
 .time-box {
-  display: flex; align-items: baseline; gap: 14px;
-  padding-right: 28px;
-  border-right: 1px solid var(--ink);
+  background: var(--red);
+  color: var(--paper);
+  padding: 10px 28px 14px;
+  display: flex; align-items: baseline; gap: 18px;
 }
 .time-box .nums {
   font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
   font-weight: 700;
-  font-size: clamp(78px, 8.6vw, 146px);
-  line-height: 0.9;
+  font-size: clamp(76px, 8vw, 140px);
+  line-height: 0.92;
   letter-spacing: -0.02em;
-  color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 .time-box .ampm {
   font-family: 'PT Sans', Arial, sans-serif;
-  font-size: clamp(26px, 2.4vw, 40px);
-  color: var(--red);
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  font-size: clamp(22px, 2vw, 32px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.9;
 }
-
-.wx-row {
-  display: flex; align-items: center; gap: 28px;
-  min-width: 0;
-}
-.wx-temp-block {
-  display: flex; flex-direction: column;
+.wx-box {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 12px 26px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px;
   align-items: center;
   min-width: 0;
 }
-.wx-temp {
+.wx-box .temp-col { display: flex; flex-direction: column; align-items: center; }
+.wx-box .temp {
   font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
   font-weight: 700;
-  font-size: clamp(72px, 7.4vw, 130px);
+  font-size: clamp(60px, 6.8vw, 110px);
   line-height: 0.9;
-  letter-spacing: -0.02em;
-  color: var(--ink);
   font-variant-numeric: tabular-nums;
   display: flex; align-items: flex-start;
 }
-.wx-temp .deg { color: var(--red); font-size: 0.75em; }
-.wx-temp-c {
+.wx-box .temp .deg { color: var(--red); font-size: 0.78em; }
+.wx-box .temp-c {
   font-family: 'PT Mono', ui-monospace, monospace;
   font-size: clamp(13px, 1.1vw, 16px);
-  letter-spacing: 0.1em;
-  color: var(--muted); font-weight: 500;
-  margin-top: -2px;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
+  margin-top: -6px;
 }
-.wx-caption {
-  min-width: 0;
-  display: flex; flex-direction: column; gap: 5px;
-  padding-left: 8px;
-  border-left: 1px solid var(--hair);
-  padding-left: 20px;
-}
-.wx-caption .day-label {
+.wx-box .caption { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.wx-box .caption .day-label {
   font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: clamp(11px, 0.95vw, 13px);
-  letter-spacing: 0.26em; text-transform: uppercase;
-  color: var(--red); font-weight: 700; line-height: 1;
-  margin-bottom: 2px;
+  font-size: clamp(11px, 1vw, 14px);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ochre);
+  font-weight: 700;
+  line-height: 1;
 }
-.wx-caption .label {
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-size: clamp(28px, 3.0vw, 48px);
-  letter-spacing: 0;
-  line-height: 1.02; color: var(--ink);
+.wx-box .caption .label {
+  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(26px, 2.6vw, 42px);
+  line-height: 1.02;
 }
-.wx-caption .sub {
+.wx-box .caption .sub {
   font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: clamp(12px, 0.95vw, 14px);
-  letter-spacing: 0.08em; font-weight: 500;
-  color: var(--muted); text-transform: uppercase;
+  font-size: clamp(12px, 1.05vw, 15px);
+  letter-spacing: 0.06em;
+  opacity: 0.8;
 }
-.wx-caption .advice {
+.wx-box .caption .advice {
   font-family: 'PT Sans', Arial, sans-serif;
   font-weight: 500;
   font-size: clamp(15px, 1.3vw, 20px);
-  line-height: 1.3;
-  color: var(--ink-2); max-width: 54ch;
+  line-height: 1.25;
+  opacity: 0.92;
+  max-width: 52ch;
 }
-
-/* UV — inline, not a box */
-.uv-stack {
-  display: flex; flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  padding-left: 24px;
-  border-left: 1px solid var(--ink);
-  min-width: 160px;
-}
-.uv-stack .k {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 11px; letter-spacing: 0.24em;
-  text-transform: uppercase; font-weight: 600;
-  color: var(--muted);
-}
-.uv-stack .v {
-  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(48px, 4.2vw, 66px);
-  line-height: 0.9; color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-.uv-stack .level {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-size: clamp(18px, 1.6vw, 22px);
+.uv-box {
+  padding: 10px 20px;
+  min-width: 150px;
+  background: var(--paper);
+  border-left: 3px solid var(--ink);
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 4px;
   color: var(--ink);
 }
-.uv-stack .level::before {
-  content: "";
-  display: inline-block;
-  width: 12px; height: 12px;
-  background: var(--uv-low);
-  border-radius: 2px;
+.uv-box .k {
+  font-family: 'PT Mono', ui-monospace, monospace;
+  font-size: 12px; letter-spacing: 0.22em;
+  text-transform: uppercase; font-weight: 700; opacity: 0.7;
 }
-.uv-stack.mod   .level::before { background: var(--uv-mod); }
-.uv-stack.high  .level::before { background: var(--uv-high); }
-.uv-stack.vhigh .level::before { background: var(--uv-vhigh); }
-.uv-stack.extrm .level::before { background: var(--uv-extrm); }
-.uv-stack .warn {
+.uv-box .v {
+  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(40px, 3.4vw, 54px);
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+}
+.uv-box .l {
+  font-family: 'PT Sans', Arial, sans-serif; font-weight: 700;
+  font-size: 14px; letter-spacing: 0.14em;
+  text-transform: uppercase; padding: 3px 8px;
+  color: var(--paper); align-self: flex-start;
+}
+.uv-box.low   .l { background: var(--uv-low); }
+.uv-box.mod   .l { background: var(--uv-mod); color: var(--ink); }
+.uv-box.high  .l { background: var(--uv-high); }
+.uv-box.vhigh .l { background: var(--uv-vhigh); }
+.uv-box.extrm .l { background: var(--uv-extrm); }
+.uv-box.high, .uv-box.vhigh, .uv-box.extrm { background: var(--paper-2); }
+.uv-box .warn {
   font-family: 'PT Sans', Arial, sans-serif;
-  font-style: normal;
-  font-size: clamp(11px, 0.95vw, 13px);
-  color: var(--muted); line-height: 1.2;
-  max-width: 170px; text-align: right;
+  font-size: 12px; letter-spacing: 0.05em;
+  font-weight: 500; line-height: 1.25;
+  opacity: 0.8; margin-top: 2px;
+  max-width: 150px;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ALERT RIBBON — red accent bar, no border box
+   ALERT RIBBON
    ══════════════════════════════════════════════════════════════ */
 .alert-ribbon {
   display: none;
   align-items: center; gap: 14px;
-  padding: 10px 16px;
-  background: var(--red);
-  color: var(--paper);
+  padding: 10px 20px;
+  background: var(--red); color: var(--paper);
+  border: 2px solid var(--red-2);
 }
 .alert-ribbon.visible { display: flex; }
 .alert-ribbon .siren {
-  width: 20px; height: 20px; flex: 0 0 auto;
+  width: 24px; height: 24px; flex: 0 0 auto;
   background: var(--paper);
   -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2 C6 2 5 8 5 14 H3 V16 H21 V14 H19 C19 8 18 2 12 2 Z M11 18 H13 V22 H11 V18 Z' fill='black'/></svg>") center / contain no-repeat;
           mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2 C6 2 5 8 5 14 H3 V16 H21 V14 H19 C19 8 18 2 12 2 Z M11 18 H13 V22 H11 V18 Z' fill='black'/></svg>") center / contain no-repeat;
@@ -287,49 +212,45 @@ body::after {
 @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
 .alert-ribbon .label {
   font-family: 'PT Sans', Arial, sans-serif; font-weight: 700;
-  font-size: 13px; letter-spacing: 0.2em;
-  text-transform: uppercase;
-  padding-right: 14px; border-right: 1px solid rgba(255,255,255,0.4);
+  font-size: 16px; letter-spacing: 0.18em;
+  text-transform: uppercase; flex: 0 0 auto;
+  padding-right: 14px; border-right: 2px solid rgba(255,255,255,0.4);
 }
 .alert-ribbon .body {
-  font-family: 'PT Sans', Arial, sans-serif; font-style: normal;
-  font-size: clamp(13px, 1.1vw, 16px);
-  flex: 1; min-width: 0;
+  font-family: 'PT Sans', Arial, sans-serif; font-weight: 500;
+  font-size: clamp(14px, 1.2vw, 18px);
+  line-height: 1.25; flex: 1; min-width: 0;
   overflow: hidden; text-overflow: ellipsis;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   SLOGAN BAR — editorial margin-note with italic body.
-   Thin red rule below, no outer box.
+   SLOGAN BAR — Lenin + Fraunces pull-quote
    ══════════════════════════════════════════════════════════════ */
 .slogan-bar {
-  display: flex; align-items: center; gap: 20px;
-  padding: 8px 4px 10px;
-  border-bottom: 3px double var(--red);
-  min-height: 52px;
+  display: flex; align-items: center; gap: 18px;
+  padding: 10px 22px;
+  background: var(--paper); color: var(--ink);
+  border: 2px solid var(--ink);
+  min-height: 62px;
 }
 .slogan-bar .lenin {
-  flex: 0 0 auto; width: 38px; height: 46px;
+  flex: 0 0 auto; width: 46px; height: 54px;
   background-color: var(--red);
   -webkit-mask: url('/assets/lenin.svg') no-repeat center / contain;
           mask: url('/assets/lenin.svg') no-repeat center / contain;
 }
 .slogan-bar .star {
-  flex: 0 0 auto; width: 22px; height: 22px; color: var(--red);
+  flex: 0 0 auto; width: 28px; height: 28px; color: var(--red);
 }
 .slogan-bar .slogan-text {
-  /* Fraunces — editorial serif with optical-size + SOFT axes, much
-     better for pulled quotes than the old uppercase sans. Size +5%
-     over the previous PT Sans setting to give it breathing room. */
   font-family: 'Fraunces', 'PT Serif', Georgia, serif;
   font-weight: 500;
-  font-size: clamp(16px, 1.52vw, 22px);
+  font-size: clamp(17px, 1.55vw, 23px);
   font-variation-settings: "opsz" 96, "SOFT" 60;
   line-height: 1.28;
   color: var(--ink);
   flex: 1; min-width: 0;
   transition: opacity 0.4s ease;
-  font-feature-settings: "ss01", "liga", "dlig";
 }
 .slogan-bar .slogan-text.fade { opacity: 0; }
 .slogan-bar .slogan-text .attr {
@@ -346,243 +267,257 @@ body::after {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   CAROUSEL — no outer border. Panels share an open paper surface
-   with thin dashed rule top and bottom.
+   CAROUSEL — 4 panels, absolute-stacked, one visible at a time
    ══════════════════════════════════════════════════════════════ */
 .carousel {
   position: relative;
   min-height: 0;
+  border: 3px solid var(--ink);
+  background: var(--paper);
   overflow: hidden;
-  padding: 10px 0 14px;
-  border-top: 1px solid var(--hair);
-  border-bottom: 1px solid var(--hair);
 }
 .panel {
-  position: absolute; inset: 0;
-  padding: 10px 8px 8px;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.3s ease;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
   display: flex; flex-direction: column;
   min-height: 0; overflow: hidden;
 }
 .panel.active { opacity: 1; pointer-events: auto; }
 
-/* ── Station panel ──────────────────────────────────────── */
-.station-masthead {
-  display: flex; justify-content: space-between; align-items: baseline;
-  padding-bottom: 10px; margin-bottom: 14px;
-  border-bottom: 1px solid var(--ink);
-  position: relative;
+/* ── Station panel (shared by 3 station panels) ─────────────── */
+.station-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  padding: 16px 28px;
+  gap: 22px;
+  border-bottom: 3px solid var(--ink);
+  background: var(--paper);
 }
-.station-masthead::after {
-  content: ""; position: absolute;
-  left: 0; right: 0; bottom: -5px;
-  height: 2px; background: var(--ink);
-}
-.station-masthead .lhs {
-  display: flex; align-items: baseline; gap: 22px;
-  flex-wrap: wrap;
-}
-.station-masthead .circle {
-  width: 58px; height: 58px; border-radius: 50%;
+.station-head .circle {
+  width: 72px; height: 72px; border-radius: 50%;
   background: #a7a9ac; color: #fff;
-  display: inline-flex; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: 44px;
+  line-height: 1;
+}
+.station-head .circle.line-L { background: #a7a9ac; }
+.station-head .circle.line-G { background: #6cbe45; }
+.station-head .name {
   font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
   font-weight: 700;
-  font-size: 34px; line-height: 1;
-  align-self: center;
-}
-.station-masthead .circle.line-L { background: #a7a9ac; }
-.station-masthead .circle.line-G { background: #6cbe45; }
-.station-masthead .name {
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-size: clamp(44px, 4.6vw, 72px);
-  line-height: 0.9;
-  letter-spacing: 0;
-  color: var(--ink);
+  font-size: clamp(44px, 4.6vw, 74px);
+  line-height: 1;
+  letter-spacing: -0.01em;
   text-transform: uppercase;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.station-masthead .walk {
-  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+.station-head .walk {
+  text-align: right;
 }
-.station-masthead .walk .k {
+.station-head .walk .k {
+  display: block;
   font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 11px; letter-spacing: 0.22em;
-  text-transform: uppercase; color: var(--muted);
-  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 1;
+  margin-bottom: 4px;
 }
-.station-masthead .walk .v {
+.station-head .walk .v {
   font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
   font-weight: 700;
-  font-size: clamp(30px, 2.6vw, 44px);
-  line-height: 1; color: var(--ink);
+  font-size: clamp(34px, 3.2vw, 48px);
+  line-height: 1;
   font-variant-numeric: tabular-nums;
-}
-.station-masthead .walk .v em {
-  color: var(--red); font-style: normal;
-  font-size: 0.55em; margin-left: 6px;
+  color: var(--red);
 }
 
+/* Two direction blocks stacked vertically, each with 3 trains */
 .dirs {
+  flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1px 1fr;
-  flex: 1; min-height: 0;
-  gap: 0;
+  grid-template-rows: 1fr 1fr;
+  min-height: 0;
 }
 .dir {
   display: flex; flex-direction: column;
-  padding: 4px 20px 6px;
-  min-height: 0; gap: 10px;
+  padding: 18px 34px 16px;
+  min-height: 0;
+  gap: 8px;
 }
-.dir-sep {
-  background: var(--hair);
-  align-self: stretch;
-  width: 1px;
-}
+.dir + .dir { border-top: 3px solid var(--ink); background: var(--paper-2); }
 .dir-label {
-  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--hair);
-  line-height: 1.1;
+  display: flex; align-items: baseline; gap: 14px;
+  flex-wrap: wrap;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--hair);
+  font-family: 'PT Sans', Arial, sans-serif;
 }
 .dir-label .arrow {
   font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
   font-weight: 700;
-  font-size: clamp(20px, 1.8vw, 28px);
+  font-size: clamp(26px, 2.2vw, 34px);
   color: var(--red); line-height: 1;
 }
 .dir-label .main {
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-size: clamp(19px, 1.7vw, 26px);
-  letter-spacing: 0;
+  font-weight: 700;
+  font-size: clamp(22px, 2vw, 32px);
+  letter-spacing: 0.02em;
   color: var(--ink);
+  text-transform: uppercase;
 }
 .dir-label .terminus {
   font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: clamp(10px, 0.85vw, 13px);
-  letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--muted); font-weight: 500;
+  font-size: clamp(12px, 1vw, 15px);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
 }
-.train-list { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+
+.train-list {
+  display: flex; flex-direction: column;
+  flex: 1;
+  justify-content: space-around;
+  gap: 4px;
+}
 .train-row {
   display: grid;
-  grid-template-columns: auto auto 1fr;
+  grid-template-columns: auto 1fr auto;
   align-items: baseline;
-  gap: 10px;
-  padding: 5px 2px;
-  border-bottom: 1px dotted var(--hair);
+  gap: 20px;
+  padding: 6px 4px;
 }
-.train-row:last-child { border-bottom: none; }
 .train-row .clock {
   font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
   font-weight: 700;
-  font-size: clamp(18px, 1.9vw, 28px);
-  line-height: 1; font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  font-size: clamp(30px, 3vw, 46px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.005em;
 }
 .train-row .mins {
   font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 12px; letter-spacing: 0.08em;
-  text-transform: uppercase; font-weight: 500; color: var(--muted);
-}
-.train-row .tag {
-  font-family: 'PT Sans', Arial, sans-serif; font-weight: 600;
-  font-size: clamp(12px, 1.1vw, 16px);
-  letter-spacing: 0.06em; text-transform: uppercase;
-  text-align: right; color: var(--muted);
-  white-space: nowrap;
-}
-.train-row.missed { opacity: 0.35; }
-.train-row.missed .tag { color: var(--red); font-weight: 700; opacity: 1; }
-.train-row.catch {
-  border-bottom: none;
-  padding: 10px 12px;
-  margin: 4px 0;
-  background: var(--red);
-  color: var(--paper);
-  gap: 16px;
-  position: relative;
-}
-/* Small red arrow pointing to the catchable row */
-.train-row.catch::before {
-  content: "▸";
-  position: absolute;
-  left: -14px; top: 50%;
-  transform: translateY(-50%);
-  color: var(--red);
-  font-size: 20px;
-  line-height: 1;
-}
-.train-row.catch .clock { font-size: clamp(26px, 2.8vw, 40px); }
-.train-row.catch .mins { color: var(--paper); opacity: 0.82; }
-.train-row.catch .tag {
-  color: var(--paper); opacity: 1;
-  font-weight: 700;
-  font-size: clamp(14px, 1.4vw, 20px);
-}
-
-/* ── Week panel ─────────────────────────────────────────── */
-.week-panel { padding: 4px 12px; overflow: hidden; }
-.week-panel .hdr {
-  display: flex; justify-content: space-between; align-items: baseline;
-  padding-bottom: 10px; margin-bottom: 16px;
-  border-bottom: 1px solid var(--ink);
-  position: relative;
-}
-.week-panel .hdr::after {
-  content: ""; position: absolute;
-  left: 0; right: 0; bottom: -5px;
-  height: 2px; background: var(--ink);
-}
-.week-panel .hdr .title {
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-size: clamp(30px, 3vw, 48px);
-  line-height: 1;
-}
-.week-panel .hdr .title .cy {
-  color: var(--red);
-  margin-right: 16px;
-  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
-  font-weight: 700;
-}
-.week-panel .hdr .sub {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 12px; letter-spacing: 0.2em;
-  text-transform: uppercase; font-weight: 500;
+  font-size: clamp(12px, 1vw, 15px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--muted);
 }
-.week-panel .grid {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: 1fr 1fr;
-  gap: 14px;
-  min-height: 0;
-}
-.week-panel .day {
-  display: flex; flex-direction: column;
-  padding: 12px 14px;
-  gap: 4px;
-  min-height: 0;
-  border-top: 3px solid var(--ink);
-}
-.week-panel .day.today {
-  border-top-color: var(--red);
-}
-.week-panel .day.today .dow { color: var(--red); }
-.week-panel .day .dow {
+.train-row .tag {
   font-family: 'PT Sans', Arial, sans-serif;
-  font-size: clamp(22px, 2vw, 30px);
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  font-size: clamp(18px, 1.8vw, 26px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: right;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.train-row.missed { opacity: 0.38; }
+.train-row.missed .tag { color: var(--red); font-weight: 700; opacity: 1; }
+.train-row.catch {
+  background: var(--red);
+  color: var(--paper);
+  padding: 14px 16px;
+  border-radius: 0;
+}
+.train-row.catch .clock {
+  font-size: clamp(42px, 4.2vw, 64px);
+  color: var(--paper);
+}
+.train-row.catch .mins { color: var(--paper); opacity: 0.82; }
+.train-row.catch .tag {
+  color: var(--paper);
+  font-size: clamp(22px, 2.2vw, 34px);
+  font-weight: 700;
+  opacity: 1;
+}
+
+/* ── Weather panel (current + 7-day + sun) ──────────────────── */
+.weather-panel {
+  padding: 20px 28px 20px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  gap: 18px;
+}
+.wp-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  border-bottom: 3px solid var(--ink);
+  padding-bottom: 10px;
+}
+.wp-head .title {
+  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(38px, 3.6vw, 56px);
   line-height: 1;
 }
-.week-panel .day .date {
+.wp-head .title .cy { color: var(--red); margin-right: 18px; }
+.wp-head .sub {
   font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 11px; letter-spacing: 0.2em;
-  color: var(--muted); font-weight: 500;
+  font-size: clamp(14px, 1.2vw, 18px);
+  letter-spacing: 0.18em;
   text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
 }
-.week-panel .day .temps {
+.wp-summary {
+  font-family: 'PT Sans', Arial, sans-serif;
+  font-size: clamp(18px, 1.6vw, 24px);
+  line-height: 1.35;
+  color: var(--ink);
+  max-width: 68ch;
+}
+
+/* 7-day row — all days in one horizontal strip, generous cells */
+.wp-days {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+  border: 3px solid var(--ink);
+  background: var(--ink);
+  min-height: 0;
+}
+.wp-day {
+  background: var(--paper);
+  color: var(--ink);
+  padding: 14px 12px;
+  border-right: 2px solid var(--ink);
+  display: flex; flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.wp-day:last-child { border-right: none; }
+.wp-day:nth-child(even) { background: var(--paper-2); }
+.wp-day.today { background: var(--red); color: var(--paper); }
+.wp-day .dow {
+  font-family: 'PT Sans', Arial, sans-serif;
+  font-weight: 700;
+  font-size: clamp(18px, 1.7vw, 24px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.wp-day .date {
+  font-family: 'PT Mono', ui-monospace, monospace;
+  font-size: clamp(11px, 0.9vw, 13px);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  font-weight: 700;
+  line-height: 1;
+}
+.wp-day .t {
   font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
   font-weight: 700;
   font-size: clamp(30px, 3vw, 44px);
@@ -590,194 +525,125 @@ body::after {
   font-variant-numeric: tabular-nums;
   margin-top: 4px;
 }
-.week-panel .day .temps .lo { color: var(--muted); font-size: 0.65em; margin-left: 8px; }
-.week-panel .day .cond {
-  font-family: 'PT Sans', Arial, sans-serif; font-weight: 600;
-  font-size: clamp(13px, 1.2vw, 18px);
-  letter-spacing: 0.06em; text-transform: uppercase;
+.wp-day .t .lo { opacity: 0.5; font-size: 0.62em; margin-left: 6px; }
+.wp-day .cond {
+  font-family: 'PT Sans', Arial, sans-serif;
+  font-weight: 700;
+  font-size: clamp(13px, 1.15vw, 17px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   line-height: 1.2;
-}
-.week-panel .day .precip {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 12px; font-weight: 700;
-  color: var(--red); letter-spacing: 0.04em;
   margin-top: auto;
 }
-
-/* ── Today hourly panel ─────────────────────────────────── */
-.today-panel { padding: 4px 12px; overflow: hidden; }
-.today-panel .hdr {
-  display: flex; justify-content: space-between; align-items: baseline;
-  padding-bottom: 10px; margin-bottom: 14px;
-  border-bottom: 1px solid var(--ink);
-  position: relative;
-}
-.today-panel .hdr::after {
-  content: ""; position: absolute;
-  left: 0; right: 0; bottom: -5px;
-  height: 2px; background: var(--ink);
-}
-.today-panel .hdr .title {
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-size: clamp(30px, 3vw, 48px); line-height: 1;
-}
-.today-panel .hdr .title .cy {
-  color: var(--red); margin-right: 16px;
-  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
-  font-weight: 700;
-}
-.today-panel .hdr .sub {
+.wp-day .precip {
   font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 12px; letter-spacing: 0.2em;
-  text-transform: uppercase; font-weight: 500;
+  font-size: clamp(12px, 1vw, 15px);
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: 0.04em;
+}
+.wp-day.today .precip,
+.wp-day:nth-child(even) .precip { color: var(--ochre); }
+
+/* Sun strip at the bottom of the weather panel */
+.wp-sun {
+  display: flex; gap: 26px; flex-wrap: wrap;
+  align-items: baseline;
+  padding: 10px 4px 0;
+  font-family: 'PT Mono', ui-monospace, monospace;
+  font-size: clamp(14px, 1.2vw, 18px);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--muted);
 }
-.today-panel .hours {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 0;
-  flex: 1;
-  min-height: 0;
-}
-.today-panel .hour {
-  padding: 10px 8px;
-  border-right: 1px solid var(--hair);
-  display: flex; flex-direction: column; gap: 3px;
-  min-width: 0;
-}
-.today-panel .hour:last-child { border-right: none; }
-.today-panel .hour .h {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: clamp(11px, 1vw, 13px);
-  letter-spacing: 0.18em; text-transform: uppercase;
-  font-weight: 700; color: var(--muted);
-}
-.today-panel .hour .t {
+.wp-sun .k { font-weight: 700; color: var(--muted); opacity: 0.65; }
+.wp-sun .v {
+  color: var(--ink); font-weight: 700;
+  margin-left: 6px;
   font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(20px, 2.2vw, 32px);
-  line-height: 1; font-variant-numeric: tabular-nums;
-  color: var(--ink);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 1.15em;
 }
-.today-panel .hour .c {
-  font-family: 'PT Sans', Arial, sans-serif; font-weight: 600;
-  font-size: 11px; letter-spacing: 0.08em;
-  text-transform: uppercase; line-height: 1.1;
-  color: var(--ink-2);
-}
-.today-panel .hour .p {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 11px; font-weight: 700;
-  color: var(--red); letter-spacing: 0.04em;
-}
-.today-panel .hour .uv {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 10px; font-weight: 700;
-  letter-spacing: 0.06em; margin-top: auto;
-  color: var(--ochre);
-}
-.today-panel .footer-band {
-  margin-top: 14px;
-  padding: 10px 0;
-  border-top: 3px double var(--red);
-  display: flex; justify-content: space-between; gap: 16px;
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-size: clamp(15px, 1.4vw, 22px);
-  color: var(--ink);
-}
-.today-panel .footer-band .k {
-  font-family: 'PT Mono', ui-monospace, monospace; font-weight: 500;
-  font-size: 11px; letter-spacing: 0.22em;
-  text-transform: uppercase; color: var(--muted);
-  margin-right: 8px;
-}
+.wp-sun .item { display: inline-flex; align-items: baseline; }
 
 /* ══════════════════════════════════════════════════════════════
-   CAROUSEL TABS — simple text ribbon, not blocks.
-   Active one underlined in red.
+   CAROUSEL TABS
    ══════════════════════════════════════════════════════════════ */
 .carousel-tabs {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
-  gap: 0;
-  padding: 4px 0 0;
+  border: 2px solid var(--ink);
 }
 .carousel-tabs .tab {
-  padding: 8px 4px;
-  text-align: center;
-  border-top: 2px solid transparent;
+  padding: 10px 14px;
+  background: var(--paper);
+  color: var(--ink);
   font-family: 'PT Sans', Arial, sans-serif;
-  font-weight: 600;
-  font-size: clamp(12px, 1.05vw, 15px);
+  font-weight: 700;
+  font-size: clamp(13px, 1.15vw, 17px);
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--mute-2);
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  line-height: 1.15;
-  transition: color 0.3s, border-color 0.3s;
+  text-align: center;
+  border-right: 2px solid var(--ink);
+  opacity: 0.42;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  line-height: 1.1;
 }
+.carousel-tabs .tab:last-child { border-right: none; }
 .carousel-tabs .tab .sub {
   font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 9px; letter-spacing: 0.22em;
-  font-weight: 500; opacity: 0.6;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  opacity: 0.7;
+  font-weight: 700;
 }
 .carousel-tabs .tab.active {
-  color: var(--ink);
-  border-top-color: var(--red);
-  font-weight: 700;
+  opacity: 1;
+  background: var(--red);
+  color: var(--paper);
 }
 
 /* ══════════════════════════════════════════════════════════════
-   FOOTER — thin rule, small mono text, no heavy cells.
+   FOOTER — date + sun info + live
    ══════════════════════════════════════════════════════════════ */
 .footer {
-  display: flex; align-items: baseline;
-  padding: 8px 2px 2px;
-  border-top: 1px solid var(--ink);
-  gap: 28px;
-  position: relative;
-}
-.footer::before {
-  content: ""; position: absolute;
-  top: -5px; left: 0; right: 0;
-  height: 2px; background: var(--ink);
+  display: flex; align-items: stretch;
+  border: 2px solid var(--ink);
 }
 .footer .cell {
-  display: flex; align-items: baseline; gap: 10px;
+  flex: 1;
+  padding: 10px 16px;
+  display: flex; align-items: center; gap: 12px;
+  border-right: 2px solid var(--ink);
   min-width: 0;
 }
+.footer .cell:last-child { border-right: none; }
+.footer .cell.inv { background: var(--ink); color: var(--paper); }
+.footer .cell.red { background: var(--red); color: var(--paper); }
 .footer .cell .k {
   font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 10px; letter-spacing: 0.26em;
-  text-transform: uppercase; color: var(--muted);
-  font-weight: 600;
+  font-size: 11px; letter-spacing: 0.22em;
+  text-transform: uppercase; opacity: 0.65; font-weight: 700;
 }
 .footer .cell .v {
   font-family: 'PT Sans', Arial, sans-serif;
-  font-size: clamp(16px, 1.4vw, 22px);
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  font-weight: 700;
+  font-size: clamp(16px, 1.5vw, 22px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   line-height: 1;
-}
-.footer .live {
-  margin-left: auto;
-  display: flex; align-items: baseline; gap: 10px;
-  color: var(--red);
+  font-variant-numeric: tabular-nums;
 }
 .footer .live-dot {
-  width: 9px; height: 9px;
-  background: var(--red);
-  animation: blink 1.6s steps(2, start) infinite;
-  border-radius: 50%;
   display: inline-block;
-  transform: translateY(1px);
+  width: 10px; height: 10px;
+  background: var(--paper);
+  animation: blink 1.6s steps(2, start) infinite;
 }
-.footer .live .v { color: var(--red); font-family: 'PT Sans', Arial, sans-serif; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; font-size: 14px; }
 @keyframes blink { 0%, 50% { opacity: 1 } 51%, 100% { opacity: 0.25 } }
 
-/* legacy */
 .legacy { display: none; }
 </style>
 </head>
@@ -785,51 +651,29 @@ body::after {
 
 <div class="frame">
 
-  <!-- ═════ MASTHEAD ═════ -->
+  <!-- ═════ TOP STRIP ═════ -->
   <div class="top">
-    <!-- Metadata ribbon — like an issue number strip -->
-    <div class="masthead-meta">
-      <div class="left">
-        <span>ГРИНПОЙНТ</span>
-        <span class="ornament">✶</span>
-        <span id="mastheadDate">—</span>
+    <div class="time-box">
+      <span class="nums"><span id="bigClock">—</span></span>
+      <span class="ampm" id="ampm">—</span>
+    </div>
+    <div class="wx-box">
+      <div class="temp-col">
+        <div class="temp"><span id="tempNow">—</span><span class="deg">°</span></div>
+        <div class="temp-c" id="tempC">—</div>
       </div>
-      <div class="center">
-        <span>Live Dashboard</span>
-        <span class="ornament">✶</span>
-        <span>No. 617</span>
-      </div>
-      <div class="right">
-        <span id="mastheadMeta">—</span>
+      <div class="caption">
+        <div class="day-label" id="wxDayLabel">NOW</div>
+        <div class="label" id="weatherDesc">Loading…</div>
+        <div class="sub" id="feelsLike">—</div>
+        <div class="advice" id="weatherAdvice">—</div>
       </div>
     </div>
-
-    <!-- Main masthead row -->
-    <div class="top-main">
-      <div class="time-box">
-        <span class="nums"><span id="bigClock">—</span></span>
-        <span class="ampm" id="ampm">—</span>
-      </div>
-
-      <div class="wx-row">
-        <div class="wx-temp-block">
-          <div class="wx-temp"><span id="tempNow">—</span><span class="deg">°</span></div>
-          <div class="wx-temp-c" id="tempC">—</div>
-        </div>
-        <div class="wx-caption">
-          <div class="day-label" id="wxDayLabel">NOW</div>
-          <div class="label" id="weatherDesc">loading…</div>
-          <div class="sub" id="feelsLike">—</div>
-          <div class="advice" id="weatherAdvice">—</div>
-        </div>
-      </div>
-
-      <div class="uv-stack low" id="uvBox">
-        <span class="k">UV Now</span>
-        <span class="v" id="uvValue">—</span>
-        <span class="level"><span id="uvLabel">Low</span></span>
-        <span class="warn" id="uvWarn">—</span>
-      </div>
+    <div class="uv-box low" id="uvBox">
+      <span class="k">UV Now</span>
+      <span class="v" id="uvValue">—</span>
+      <span class="l" id="uvLabel">Low</span>
+      <span class="warn" id="uvWarn">—</span>
     </div>
   </div>
 
@@ -840,7 +684,7 @@ body::after {
     <span class="body" id="alertBody">—</span>
   </div>
 
-  <!-- ═════ SLOGAN ═════ -->
+  <!-- ═════ SLOGAN TICKER ═════ -->
   <div class="slogan-bar">
     <div class="lenin" role="img" aria-label="Lenin silhouette"></div>
     <svg class="star" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -849,27 +693,20 @@ body::after {
     <div class="slogan-text" id="sloganText">Workers of the L-line, unite!<span class="attr">— K. Marx</span></div>
   </div>
 
-  <!-- ═════ CAROUSEL ═════ -->
+  <!-- ═════ CAROUSEL (4 panels) ═════ -->
   <main class="carousel" id="carousel">
-
-    <!-- Station panels — one per station -->
+    <!-- Three station panels generated identically -->
     <div class="panel active" id="panel-Nassau Av">
-      <div class="station-masthead">
-        <div class="lhs">
-          <span class="circle line-G" data-station-circle>G</span>
-          <span class="name" data-station-name>—</span>
-        </div>
-        <div class="walk">
-          <span class="k">Walk from home</span>
-          <span class="v"><span data-station-walk>—</span> <em>min</em></span>
-        </div>
+      <div class="station-head">
+        <div class="circle line-G" data-station-circle>G</div>
+        <div class="name" data-station-name>—</div>
+        <div class="walk"><span class="k">Walk</span><span class="v" data-station-walk>—</span></div>
       </div>
       <div class="dirs">
         <div class="dir">
           <div class="dir-label"><span class="arrow">←</span><span class="main" data-dir-n-label>—</span><span class="terminus" data-dir-n-term>—</span></div>
           <div class="train-list" data-trains-n></div>
         </div>
-        <div class="dir-sep"></div>
         <div class="dir">
           <div class="dir-label"><span class="main" data-dir-s-label>—</span><span class="terminus" data-dir-s-term>—</span><span class="arrow">→</span></div>
           <div class="train-list" data-trains-s></div>
@@ -878,22 +715,16 @@ body::after {
     </div>
 
     <div class="panel" id="panel-Graham Av">
-      <div class="station-masthead">
-        <div class="lhs">
-          <span class="circle line-L" data-station-circle>L</span>
-          <span class="name" data-station-name>—</span>
-        </div>
-        <div class="walk">
-          <span class="k">Walk from home</span>
-          <span class="v"><span data-station-walk>—</span> <em>min</em></span>
-        </div>
+      <div class="station-head">
+        <div class="circle line-L" data-station-circle>L</div>
+        <div class="name" data-station-name>—</div>
+        <div class="walk"><span class="k">Walk</span><span class="v" data-station-walk>—</span></div>
       </div>
       <div class="dirs">
         <div class="dir">
           <div class="dir-label"><span class="arrow">←</span><span class="main" data-dir-n-label>—</span><span class="terminus" data-dir-n-term>—</span></div>
           <div class="train-list" data-trains-n></div>
         </div>
-        <div class="dir-sep"></div>
         <div class="dir">
           <div class="dir-label"><span class="main" data-dir-s-label>—</span><span class="terminus" data-dir-s-term>—</span><span class="arrow">→</span></div>
           <div class="train-list" data-trains-s></div>
@@ -902,22 +733,16 @@ body::after {
     </div>
 
     <div class="panel" id="panel-Bedford Av">
-      <div class="station-masthead">
-        <div class="lhs">
-          <span class="circle line-L" data-station-circle>L</span>
-          <span class="name" data-station-name>—</span>
-        </div>
-        <div class="walk">
-          <span class="k">Walk from home</span>
-          <span class="v"><span data-station-walk>—</span> <em>min</em></span>
-        </div>
+      <div class="station-head">
+        <div class="circle line-L" data-station-circle>L</div>
+        <div class="name" data-station-name>—</div>
+        <div class="walk"><span class="k">Walk</span><span class="v" data-station-walk>—</span></div>
       </div>
       <div class="dirs">
         <div class="dir">
           <div class="dir-label"><span class="arrow">←</span><span class="main" data-dir-n-label>—</span><span class="terminus" data-dir-n-term>—</span></div>
           <div class="train-list" data-trains-n></div>
         </div>
-        <div class="dir-sep"></div>
         <div class="dir">
           <div class="dir-label"><span class="main" data-dir-s-label>—</span><span class="terminus" data-dir-s-term>—</span><span class="arrow">→</span></div>
           <div class="train-list" data-trains-s></div>
@@ -925,33 +750,24 @@ body::after {
       </div>
     </div>
 
-    <!-- Week -->
-    <div class="panel week-panel" id="panel-week">
-      <div class="hdr">
-        <div class="title"><span class="cy">Неделя</span>The Week Ahead</div>
-        <div class="sub" id="weekSubLabel">—</div>
+    <!-- Weather panel (combined: today's context + 7-day + sun) -->
+    <div class="panel weather-panel" id="panel-weather">
+      <div class="wp-head">
+        <div class="title"><span class="cy">ПОГОДА</span>Outlook</div>
+        <div class="sub" id="wpSubLabel">—</div>
       </div>
-      <div class="grid" id="weekGrid"></div>
-    </div>
-
-    <!-- Hourly -->
-    <div class="panel today-panel" id="panel-today">
-      <div class="hdr">
-        <div class="title"><span class="cy">Сегодня</span>Next 12 Hours</div>
-        <div class="sub" id="todaySubLabel">—</div>
-      </div>
-      <div class="hours" id="hourlyGrid"></div>
-      <div class="footer-band">
-        <span><span class="k">Sunrise</span><span id="tpSunrise">—</span></span>
-        <span><span class="k">Sunset</span><span id="tpSunset">—</span></span>
-        <span><span class="k">Daylight</span><span id="tpDaylight">—</span></span>
-        <span><span class="k">UV Peak</span><span id="tpPeakUV">—</span></span>
+      <div class="wp-summary" id="wpSummary">—</div>
+      <div class="wp-days" id="wpDays"></div>
+      <div class="wp-sun">
+        <span class="item"><span class="k">Sunrise</span><span class="v" id="wpSunrise">—</span></span>
+        <span class="item"><span class="k">Sunset</span><span class="v" id="wpSunset">—</span></span>
+        <span class="item"><span class="k">Daylight</span><span class="v" id="wpDaylight">—</span></span>
+        <span class="item"><span class="k">Peak UV Today</span><span class="v" id="wpPeakUV">—</span></span>
       </div>
     </div>
-
   </main>
 
-  <!-- Tabs -->
+  <!-- ═════ TABS ═════ -->
   <div class="carousel-tabs" id="carouselTabs"></div>
 
   <!-- ═════ FOOTER ═════ -->
@@ -960,7 +776,7 @@ body::after {
       <span class="k">Date</span>
       <span class="v" id="dateLabel">—</span>
     </div>
-    <div class="cell">
+    <div class="cell inv">
       <span class="k">Sunrise</span>
       <span class="v" id="sunrise">—</span>
     </div>
@@ -968,11 +784,11 @@ body::after {
       <span class="k" id="sunDirLabel">Until Sunset</span>
       <span class="v" id="sunDaylight">—</span>
     </div>
-    <div class="cell">
+    <div class="cell inv">
       <span class="k">Sunset</span>
       <span class="v" id="sunset">—</span>
     </div>
-    <div class="cell live">
+    <div class="cell red">
       <span class="live-dot"></span>
       <span class="v" id="statusRight">LIVE</span>
     </div>
@@ -980,7 +796,7 @@ body::after {
 
 </div>
 
-<!-- legacy IDs -->
+<!-- legacy -->
 <span id="seconds" class="legacy"></span>
 <span id="weatherIcon" class="legacy"></span>
 <span id="dateSub" class="legacy"></span>
@@ -995,21 +811,25 @@ body::after {
 // ═════════════════════════════════════════════════════════════════
 // CONFIG
 // ═════════════════════════════════════════════════════════════════
-const WALK_MIN = { 'Nassau Av': 9, 'Graham Av': 12, 'Bedford Av': 20 };
+const WALK_MIN = {
+  'Nassau Av':  9,
+  'Graham Av':  12,
+  'Bedford Av': 20,
+};
 const STATION_ORDER = ['Nassau Av', 'Graham Av', 'Bedford Av'];
 const PANELS = [
-  { id: 'panel-Nassau Av',  type: 'station', station: 'Nassau Av',  label: 'Nassau',  sub: 'G · 1/5' },
-  { id: 'panel-Graham Av',  type: 'station', station: 'Graham Av',  label: 'Graham',  sub: 'L · 2/5' },
-  { id: 'panel-Bedford Av', type: 'station', station: 'Bedford Av', label: 'Bedford', sub: 'L · 3/5' },
-  { id: 'panel-week',       type: 'week',    label: 'Week',         sub: '7 days · 4/5' },
-  { id: 'panel-today',      type: 'today',   label: 'Hourly',       sub: 'next 12h · 5/5' },
+  { id: 'panel-Nassau Av',  type: 'station', station: 'Nassau Av',  label: 'Nassau',  sub: 'G · 1 of 4' },
+  { id: 'panel-Graham Av',  type: 'station', station: 'Graham Av',  label: 'Graham',  sub: 'L · 2 of 4' },
+  { id: 'panel-Bedford Av', type: 'station', station: 'Bedford Av', label: 'Bedford', sub: 'L · 3 of 4' },
+  { id: 'panel-weather',    type: 'weather', label: 'Weather',     sub: '7 days · 4 of 4' },
 ];
 const PANEL_ROTATE_MS = 12_000;
 const SLOGAN_ROTATE_MS = 12_000;
 const ALERT_ROTATE_MS  = 12_000;
+const TRAINS_PER_DIR = 3;
 
 // ═════════════════════════════════════════════════════════════════
-// HELPERS
+// SAFE DOM
 // ═════════════════════════════════════════════════════════════════
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -1023,13 +843,6 @@ function fmtClockShort(date) {
   const m = String(date.getMinutes()).padStart(2, '0');
   const ap = h >= 12 ? 'PM' : 'AM';
   h = h % 12 || 12;
-  return h + ':' + m + ap.toLowerCase();
-}
-function fmtClockLong(date) {
-  let h = date.getHours();
-  const m = String(date.getMinutes()).padStart(2, '0');
-  const ap = h >= 12 ? 'PM' : 'AM';
-  h = h % 12 || 12;
   return h + ':' + m + ' ' + ap;
 }
 function hoursMinutesBetween(a, b) {
@@ -1038,7 +851,7 @@ function hoursMinutesBetween(a, b) {
   const m = totalMin % 60;
   if (h === 0) return m + ' min';
   if (m === 0) return h + ' hr';
-  return h + 'h ' + m + 'm';
+  return h + ' hr ' + m + ' min';
 }
 
 // ═════════════════════════════════════════════════════════════════
@@ -1058,10 +871,6 @@ function tickClock() {
   const weekday = now.toLocaleDateString('en-US', { weekday: 'short' });
   const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   document.getElementById('dateLabel').textContent = weekday + ' · ' + md;
-
-  const longDate = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-  document.getElementById('mastheadDate').textContent = longDate;
-  document.getElementById('mastheadMeta').textContent = 'Edition ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 tickClock();
 setInterval(tickClock, 1000);
@@ -1097,11 +906,11 @@ function weatherSummary(code, tempF) {
 }
 function uvLevel(v) {
   if (v == null) return { key: 'low', label: 'N/A', warn: '' };
-  if (v < 3)  return { key: 'low',   label: 'Low',       warn: 'No protection needed.' };
-  if (v < 6)  return { key: 'mod',   label: 'Moderate',  warn: 'Sunscreen if outside over an hour.' };
-  if (v < 8)  return { key: 'high',  label: 'High',      warn: 'Cover up — sunscreen and a hat.' };
-  if (v < 11) return { key: 'vhigh', label: 'Very High', warn: 'Avoid sun 10a–4p. SPF 30+.' };
-  return        { key: 'extrm', label: 'Extreme',   warn: 'Stay inside if possible.' };
+  if (v < 3)  return { key: 'low',   label: 'Low',       warn: 'No protection needed' };
+  if (v < 6)  return { key: 'mod',   label: 'Moderate',  warn: 'Sunscreen if outside >1 hr' };
+  if (v < 8)  return { key: 'high',  label: 'High',      warn: 'Cover up · sunscreen + hat' };
+  if (v < 11) return { key: 'vhigh', label: 'Very High', warn: 'Avoid sun 10a-4p · SPF 30+' };
+  return        { key: 'extrm', label: 'Extreme',   warn: 'Stay inside if possible' };
 }
 
 let weatherData = null;
@@ -1113,7 +922,7 @@ function setUVNow(value, peakHint) {
   document.getElementById('uvValue').textContent = (value == null ? '—' : Math.round(value));
   document.getElementById('uvLabel').textContent = uv.label;
   document.getElementById('uvWarn').textContent =
-    peakHint ? uv.warn + ' ' + peakHint : uv.warn;
+    peakHint ? uv.warn + ' · ' + peakHint : uv.warn;
 }
 function renderCurrentWeather() {
   if (!weatherData) return;
@@ -1123,12 +932,12 @@ function renderCurrentWeather() {
   const now = new Date();
   const weekday = now.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
   const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
-  document.getElementById('wxDayLabel').textContent = 'Now · ' + weekday + ' · ' + md;
+  document.getElementById('wxDayLabel').textContent = 'NOW · ' + weekday + ' · ' + md;
   document.getElementById('tempNow').textContent = Math.round(tempF);
   document.getElementById('tempC').textContent = Math.round(fahrToCelsius(tempF)) + '°C';
   document.getElementById('weatherDesc').textContent = WMO_LABEL[code] || 'Weather';
 
-  const parts = ['Feels ' + Math.round(cur.apparent_temperature) + '°F · ' +
+  const parts = ['Feels ' + Math.round(cur.apparent_temperature) + '°F / ' +
                  Math.round(fahrToCelsius(cur.apparent_temperature)) + '°C'];
   if (cur.wind_speed_10m != null) parts.push(Math.round(cur.wind_speed_10m) + ' mph wind');
   if (cur.relative_humidity_2m != null) parts.push(cur.relative_humidity_2m + '% humidity');
@@ -1151,7 +960,7 @@ function renderCurrentWeather() {
       let ph = pd.getHours();
       const pap = ph >= 12 ? 'pm' : 'am';
       ph = ph % 12 || 12;
-      peakHint = 'Peaks at UV ' + Math.round(futurePeakVal) + ' ~' + ph + pap + '.';
+      peakHint = 'Peaks at UV ' + Math.round(futurePeakVal) + ' ~' + ph + pap;
     }
   }
   setUVNow(nowUV, peakHint);
@@ -1177,87 +986,75 @@ function renderSunInfo() {
     document.getElementById('sunDaylight').textContent = nextRise ? hoursMinutesBetween(now, nextRise) : '—';
   }
 }
-function renderWeekPanel() {
+function renderWeatherPanel() {
   if (!weatherData) return;
-  const daily = weatherData.daily;
+  const d = weatherData;
+  const daily = d.daily;
   if (!daily || !daily.time) return;
-  const grid = document.getElementById('weekGrid');
+
+  // Summary text = weatherAdvice (reuse)
+  const tempF = d.current.temperature_2m;
+  const code = d.current.weather_code;
+  const summary = weatherSummary(code, tempF) + ' Hi ' +
+    Math.round(daily.temperature_2m_max[0]) + '°F / Lo ' +
+    Math.round(daily.temperature_2m_min[0]) + '°F today.';
+  document.getElementById('wpSummary').textContent = summary;
+
+  // Sub label in the header
+  const subLabel = new Date(daily.time[0] + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() +
+    ' – ' + new Date(daily.time[Math.min(6, daily.time.length-1)] + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+  document.getElementById('wpSubLabel').textContent = subLabel;
+
+  // Days grid
+  const grid = document.getElementById('wpDays');
   grid.textContent = '';
   const count = Math.min(daily.time.length, 7);
-  const subLabel = (daily.time[0] && daily.time[count-1])
-    ? new Date(daily.time[0] + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
-      ' – ' + new Date(daily.time[count-1] + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    : '';
-  document.getElementById('weekSubLabel').textContent = subLabel;
   for (let k = 0; k < count; k++) {
     const date = new Date(daily.time[k] + 'T12:00:00');
-    const dow = date.toLocaleDateString('en-US', { weekday: 'short' });
-    const md  = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const dow = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+    const md  = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
     const hi = Math.round(daily.temperature_2m_max[k]);
     const lo = Math.round(daily.temperature_2m_min[k]);
-    const code = daily.weather_code[k];
+    const dCode = daily.weather_code[k];
     const precip = daily.precipitation_probability_max?.[k] ?? 0;
-    const cell = el('div', 'day' + (k === 0 ? ' today' : ''));
-    cell.appendChild(el('div', 'dow', k === 0 ? 'Today · ' + dow : dow));
+    const cell = el('div', 'wp-day' + (k === 0 ? ' today' : ''));
+    cell.appendChild(el('div', 'dow', (k === 0 ? 'TODAY' : dow)));
     cell.appendChild(el('div', 'date', md));
-    const temps = el('div', 'temps');
-    temps.appendChild(el('span', 'hi', hi + '°'));
-    temps.appendChild(el('span', 'lo', lo + '°'));
-    cell.appendChild(temps);
-    cell.appendChild(el('div', 'cond', (WMO_LABEL[code] || 'Weather').toUpperCase()));
+    const t = el('div', 't');
+    t.appendChild(el('span', 'hi', hi + '°'));
+    t.appendChild(el('span', 'lo', lo + '°'));
+    cell.appendChild(t);
+    cell.appendChild(el('div', 'cond', WMO_LABEL[dCode] || 'Weather'));
     if (precip > 10) cell.appendChild(el('div', 'precip', precip + '% rain'));
     grid.appendChild(cell);
   }
-}
-function renderTodayPanel() {
-  if (!weatherData) return;
-  const d = weatherData;
-  const nowMs = Date.now();
-  const picks = d.hourly.time
-    .map((t, idx) => ({ ms: new Date(t).getTime(), idx }))
-    .filter(x => x.ms >= nowMs).slice(0, 12);
-  const host = document.getElementById('hourlyGrid');
-  host.textContent = '';
-  picks.forEach(p => {
-    const dt = new Date(d.hourly.time[p.idx]);
-    let h = dt.getHours();
-    const ap = h >= 12 ? 'pm' : 'am';
-    h = h % 12 || 12;
-    const tf = Math.round(d.hourly.temperature_2m[p.idx]);
-    const code = d.hourly.weather_code[p.idx];
-    const precip = d.hourly.precipitation_probability?.[p.idx] ?? 0;
-    const uvv = d.hourly.uv_index?.[p.idx];
-    const cell = el('div', 'hour');
-    cell.appendChild(el('div', 'h', h + ap));
-    cell.appendChild(el('div', 't', tf + '°'));
-    const short = (WMO_LABEL[code] || '').split(' ')[0];
-    cell.appendChild(el('div', 'c', short || '—'));
-    cell.appendChild(el('div', 'p', (precip > 10 ? precip + '%' : '')));
-    cell.appendChild(el('div', 'uv', (uvv != null && uvv > 0.5 ? 'UV ' + Math.round(uvv) : '')));
-    host.appendChild(cell);
-  });
-  const daily = d.daily;
-  if (daily && daily.sunrise && daily.sunset) {
+
+  // Sun strip
+  if (daily.sunrise && daily.sunset) {
     const sr = new Date(daily.sunrise[0]);
     const ss = new Date(daily.sunset[0]);
-    document.getElementById('tpSunrise').textContent = fmtClockLong(sr);
-    document.getElementById('tpSunset').textContent  = fmtClockLong(ss);
-    document.getElementById('tpDaylight').textContent = hoursMinutesBetween(sr, ss);
+    document.getElementById('wpSunrise').textContent = fmtClockShort(sr);
+    document.getElementById('wpSunset').textContent  = fmtClockShort(ss);
+    document.getElementById('wpDaylight').textContent = hoursMinutesBetween(sr, ss);
   }
-  if (daily && daily.uv_index_max) {
-    const peak = daily.uv_index_max[0];
+  if (daily.uv_index_max) {
+    const peak = Math.round(daily.uv_index_max[0]);
     let hAt = '', maxV = -1;
     if (d.hourly && d.hourly.uv_index) {
       for (let i = 0; i < Math.min(24, d.hourly.time.length); i++) {
         const v = d.hourly.uv_index[i];
-        if (v > maxV) { maxV = v; const ht = new Date(d.hourly.time[i]); let hh = ht.getHours(); const ap = hh >= 12 ? 'pm' : 'am'; hh = hh % 12 || 12; hAt = ' @ ' + hh + ap; }
+        if (v > maxV) {
+          maxV = v;
+          const ht = new Date(d.hourly.time[i]);
+          let hh = ht.getHours();
+          const ap = hh >= 12 ? 'pm' : 'am';
+          hh = hh % 12 || 12;
+          hAt = ' ~' + hh + ap;
+        }
       }
     }
-    document.getElementById('tpPeakUV').textContent = Math.round(peak) + hAt;
+    document.getElementById('wpPeakUV').textContent = peak + hAt;
   }
-  const now = new Date();
-  const md = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-  document.getElementById('todaySubLabel').textContent = md;
 }
 async function refreshWeather() {
   try {
@@ -1267,8 +1064,7 @@ async function refreshWeather() {
     weatherData = j.data;
     renderCurrentWeather();
     renderSunInfo();
-    renderWeekPanel();
-    renderTodayPanel();
+    renderWeatherPanel();
   } catch (e) {
     console.warn('weather', e);
     document.getElementById('weatherDesc').textContent = 'Offline';
@@ -1276,7 +1072,7 @@ async function refreshWeather() {
 }
 refreshWeather();
 setInterval(refreshWeather, 10 * 60 * 1000);
-setInterval(() => { if (weatherData) { renderCurrentWeather(); renderSunInfo(); renderTodayPanel(); }}, 60 * 1000);
+setInterval(() => { if (weatherData) { renderCurrentWeather(); renderSunInfo(); }}, 60 * 1000);
 
 // ═════════════════════════════════════════════════════════════════
 // TRAINS
@@ -1289,7 +1085,7 @@ function buildTrainRow(mins, walk, isCatch) {
   let tag;
   if (isCatch) {
     row.classList.add('catch');
-    tag = (leaveIn <= 0) ? 'Leave now' : 'Leave in ' + leaveIn + ' min';
+    tag = (leaveIn <= 0) ? 'LEAVE NOW' : 'LEAVE IN ' + leaveIn + ' MIN';
   } else if (leaveIn < 1) {
     row.classList.add('missed');
     tag = 'Missed';
@@ -1297,13 +1093,13 @@ function buildTrainRow(mins, walk, isCatch) {
     tag = 'Leave in ' + leaveIn + ' min';
   }
   row.appendChild(el('span', 'clock', fmtClockShort(arriveAt)));
-  row.appendChild(el('span', 'mins', '+' + mins + 'min'));
+  row.appendChild(el('span', 'mins', '+' + mins + ' MIN'));
   row.appendChild(el('span', 'tag', tag));
   return row;
 }
 function fillDirEl(listEl, trains, walk) {
   listEl.textContent = '';
-  const arr = (trains || []).slice(0, 5);
+  const arr = (trains || []).slice(0, TRAINS_PER_DIR);
   if (!arr.length) {
     const empty = el('div', 'train-row');
     empty.appendChild(el('span', 'tag', 'No trains scheduled'));
@@ -1330,12 +1126,12 @@ function renderStationPanel(stationName) {
   circle.classList.remove('line-L', 'line-G');
   circle.classList.add('line-' + s.line);
   panel.querySelector('[data-station-name]').textContent = stationName;
-  panel.querySelector('[data-station-walk]').textContent = walk;
+  panel.querySelector('[data-station-walk]').textContent = walk + ' min';
   const dN = s.directions?.N || {}, dS = s.directions?.S || {};
   panel.querySelector('[data-dir-n-label]').textContent = dN.label || '—';
-  panel.querySelector('[data-dir-n-term]').textContent  = (dN.terminus || '').toUpperCase();
+  panel.querySelector('[data-dir-n-term]').textContent  = (dN.terminus || '');
   panel.querySelector('[data-dir-s-label]').textContent = dS.label || '—';
-  panel.querySelector('[data-dir-s-term]').textContent  = (dS.terminus || '').toUpperCase();
+  panel.querySelector('[data-dir-s-term]').textContent  = (dS.terminus || '');
   fillDirEl(panel.querySelector('[data-trains-n]'), dN.trains, walk);
   fillDirEl(panel.querySelector('[data-trains-s]'), dS.trains, walk);
 }
@@ -1347,17 +1143,17 @@ async function refreshTrains() {
     trainsData = j.data;
     renderAlerts(trainsData.alerts || []);
     STATION_ORDER.forEach(renderStationPanel);
-    document.getElementById('statusRight').textContent = 'Live';
+    document.getElementById('statusRight').textContent = 'LIVE';
   } catch (e) {
     console.warn('trains', e);
-    document.getElementById('statusRight').textContent = 'Retrying';
+    document.getElementById('statusRight').textContent = 'RETRY';
   }
 }
 refreshTrains();
 setInterval(refreshTrains, 20 * 1000);
 
 // ═════════════════════════════════════════════════════════════════
-// CAROUSEL
+// CAROUSEL ROTATION
 // ═════════════════════════════════════════════════════════════════
 let panelIdx = 0;
 function renderCarouselTabs() {
@@ -1376,12 +1172,14 @@ function showPanel(idx) {
   const target = document.getElementById(p.id);
   if (target) target.classList.add('active');
   if (p.type === 'station') renderStationPanel(p.station);
-  else if (p.type === 'week') renderWeekPanel();
-  else if (p.type === 'today') renderTodayPanel();
+  else if (p.type === 'weather') renderWeatherPanel();
   renderCarouselTabs();
 }
 showPanel(0);
-setInterval(() => { panelIdx = (panelIdx + 1) % PANELS.length; showPanel(panelIdx); }, PANEL_ROTATE_MS);
+setInterval(() => {
+  panelIdx = (panelIdx + 1) % PANELS.length;
+  showPanel(panelIdx);
+}, PANEL_ROTATE_MS);
 
 // ═════════════════════════════════════════════════════════════════
 // ALERTS
@@ -1403,13 +1201,9 @@ function rotateAlert() {
 setInterval(rotateAlert, ALERT_ROTATE_MS);
 
 // ═════════════════════════════════════════════════════════════════
-// SLOGANS — 70+ quotes (Marx/Lenin canon, commute parodies,
-// abundance agenda, intra-left tension, Mamdani-tone absurdism,
-// Greenpoint kitsch).  Rendered in italic body text, attribution
-// in red Oswald caps — editorial margin-note style.
+// SLOGAN BANK (unchanged from v4)
 // ═════════════════════════════════════════════════════════════════
 const SLOGANS = [
-  // Classic canon (verbatim / near-verbatim)
   { t: "Workers of the world, unite! You have nothing to lose but your chains.", a: "K. Marx & F. Engels, Manifesto (1848)" },
   { t: "The history of all hitherto existing society is the history of class struggles.", a: "K. Marx, Manifesto" },
   { t: "From each according to his ability, to each according to his needs.", a: "K. Marx, 1875" },
@@ -1424,8 +1218,6 @@ const SLOGANS = [
   { t: "Be realistic: demand the impossible.", a: "Paris, May 1968" },
   { t: "We must dare to invent the future.", a: "T. Sankara" },
   { t: "At the risk of seeming ridiculous, let me say that the true revolutionary is guided by great feelings of love.", a: "Che Guevara" },
-
-  // Commute-adapted parodies
   { t: "Workers of the L-line, unite! But first, renegotiate the work rules.", a: "K. Marx, adapted 2025" },
   { t: "The philosophers have only interpreted the schedule; the point is to catch the train.", a: "K. Marx, adapted" },
   { t: "A spectre is haunting Greenpoint — the G train.", a: "Manifesto, adapted" },
@@ -1434,9 +1226,7 @@ const SLOGANS = [
   { t: "History repeats itself — first as tragedy, then as community board meeting.", a: "K. Marx, adapted" },
   { t: "The means of production belong to the workers. The means of transportation belong to whoever can finish them in a decade.", a: "K. Marx, adapted" },
   { t: "There are decades where no train comes; then weeks where three arrive at once.", a: "V. Lenin, adapted" },
-
-  // Abundance agenda
-  { t: "Supply-side progressivism.", a: "E. Klein, NYT 2021" },
+  { t: "Supply-side progressivism.", a: "E. Klein, New York Times, 2021" },
   { t: "Why we can't build.", a: "E. Klein, NYT op-ed" },
   { t: "We don't have a money problem. We have a process problem.", a: "E. Klein, adapted" },
   { t: "A country that can't build is a country that can't govern.", a: "D. Thompson" },
@@ -1444,13 +1234,12 @@ const SLOGANS = [
   { t: "If you want affordable housing, you need more housing.", a: "J. Demsas" },
   { t: "The environmental review is itself the environmental harm.", a: "E. Klein, adapted" },
   { t: "We pay four times what Paris pays per mile of subway. It is not about greed — it is about process.", a: "A. Levy, Pedestrian Observations" },
-  { t: "Abundance is a value, not just an outcome.", a: "Klein & Thompson, 2025" },
+  { t: "Abundance is a value, not just an outcome.", a: "Klein & Thompson, Abundance (2025)" },
   { t: "A progressivism that cannot build is not progressive.", a: "abundance agenda" },
   { t: "The obstacle to the green transition is not capital — it is the community meeting.", a: "E. Levitz, adapted" },
   { t: "The real enemy is not the capitalist. It is the discretionary review process.", a: "abundance progressive, 2025" },
+  { t: "Cost disease socialism: pay more, get less, call it solidarity.", a: "S. Hammond, adapted" },
   { t: "NEPA review has averaged 4.5 years for major projects this decade.", a: "M. Yglesias, Slow Boring" },
-
-  // Intra-left tension
   { t: "Solidarity with the workers. Reform the work rules.", a: "DSA transit caucus, apocryphal" },
   { t: "The unions are not the problem. They are negotiating inside a broken system.", a: "R. Barkan, adapted" },
   { t: "There is no contradiction between labor rights and competent construction.", a: "fictional editorial" },
@@ -1460,9 +1249,6 @@ const SLOGANS = [
   { t: "The obstacle is zoning — and also capital.", a: "left abundance, 2025" },
   { t: "Solidarity forever. Except with the block association opposing the bike lane.", a: "urbanist Twitter" },
   { t: "Build it fast, build it cheap, build it union — pick two. Actually, pick one.", a: "NYC transit joke" },
-  { t: "You cannot tax your way out of a supply crisis. But you can try.", a: "urban economist, apocryphal" },
-
-  // Mamdani-tone
   { t: "Freeze the rent. Free the buses. Finish the Second Avenue Subway in this century.", a: "Z. Mamdani, apocryphal" },
   { t: "I promise three things: cheaper rent, faster trains, and a single-payer bodega system.", a: "Z. Mamdani, apocryphal" },
   { t: "Trust the tenants. Fund the buses. Tax the yachts.", a: "Z. Mamdani, apocryphal" },
@@ -1474,8 +1260,6 @@ const SLOGANS = [
   { t: "Seize the means of production. Start with the MTA procurement committee.", a: "Z. Mamdani, apocryphal" },
   { t: "Comrades, we will not stop until every bodega has a functional slushee machine.", a: "Z. Mamdani, apocryphal" },
   { t: "Public transit, public housing, public parks — and yes, a public option for bagels.", a: "Z. Mamdani, apocryphal" },
-
-  // Greenpoint soviet kitsch
   { t: "Comrade, hold the door.", a: "Greenpoint soviet" },
   { t: "Solidarity with the B43 bus.", a: "Greenpoint soviet" },
   { t: "Five-year plan: arrive on time.", a: "Politburo" },
@@ -1484,8 +1268,6 @@ const SLOGANS = [
   { t: "Comrade, have you read your Community Board's response to the shuttle bus plan?", a: "Greenpoint soviet" },
   { t: "The revolution will arrive on the 7:34 L — provided CBTC cuts over by 2030.", a: "Greenpoint soviet" },
   { t: "Dialectical materialism is fine, but have you tried the permitting office at 280 Broadway?", a: "Greenpoint soviet" },
-  { t: "A bagel for every worker. A bike lane for every avenue. A subway mile for under a billion dollars.", a: "Greenpoint soviet" },
-  { t: "First they came for the bike lanes; I said nothing, because I drive. Then they came for the subways.", a: "Greenpoint soviet, adapted" },
 ];
 
 let sloganIdx = Math.floor(Math.random() * SLOGANS.length);
