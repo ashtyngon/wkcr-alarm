@@ -564,22 +564,10 @@
     "url": "https://eu6.fastcast4u.com/proxy/cloudsfm?mp=/1"
   },
   {
-    "id": "sanyufm",
-    "name": "Sanyu FM",
-    "genre": "English pop/urban — Kampala",
-    "url": "https://s44.myradiostream.com:8138/"
-  },
-  {
     "id": "zifm",
     "name": "ZiFM Stereo",
     "genre": "Zimbabwean music/talk — Harare",
     "url": "https://edge.iono.fm/xice/134_medium.aac"
-  },
-  {
-    "id": "moambq",
-    "name": "Rádio Moçambique",
-    "genre": "Portuguese national — Maputo",
-    "url": "https://node.stream-africa.com:8443/AntenaNacional"
   },
   {
     "id": "airraagam",
@@ -687,7 +675,7 @@
     "id": "kbs1fm",
     "name": "KBS 1FM Classic",
     "genre": "Korean classical — Seoul",
-    "url": "https://1fm.gscdn.kbs.co.kr/1fm_192_2.m3u8"
+    "url": "https://radio.bsod.kr/stream/?stn=kbs&ch=1fm"
   },
   {
     "id": "warna",
@@ -784,12 +772,6 @@
     "name": "Radio Pakistan Peshawar",
     "genre": "Pashto",
     "url": "https://whmsonic.radio.gov.pk:8072/relay"
-  },
-  {
-    "id": "kantipur",
-    "name": "Radio Kantipur 96.1",
-    "genre": "Nepali — Kathmandu",
-    "url": "https://radio-broadcast.ekantipur.com/stream"
   },
   {
     "id": "radiolibre",
@@ -1395,7 +1377,7 @@
     "id": "tbctaifa",
     "name": "TBC Taifa",
     "genre": "Swahili public radio — Dar es Salaam",
-    "url": "https://a7.asurahosting.com:7890/"
+    "url": "https://a7.asurahosting.com:7890/listen.mp3"
   },
   {
     "id": "rsg",
@@ -1510,24 +1492,6 @@
     "name": "Radio Pakistan Islamabad",
     "genre": "PBC national",
     "url": "https://whmsonic.radio.gov.pk:7003/stream"
-  },
-  {
-    "id": "needs",
-    "name": "Needs Radio",
-    "genre": "Mandarin culture — Taipei",
-    "url": "https://cdn280.ccdntech.com/live-http/_definst_/vod280_Live/needs/chunklist.m3u8"
-  },
-  {
-    "id": "bbradio",
-    "name": "B&B Radio",
-    "genre": "Mandarin/Hokkien — Taiwan",
-    "url": "https://cdn280.ccdntech.com/live-http/_definst_/vod280_Live/bb/playlist.m3u8"
-  },
-  {
-    "id": "csbc",
-    "name": "CSBC",
-    "genre": "Mandarin/Taiwanese — Taiwan",
-    "url": "https://flv.ccdntech.com/live/_definst_/mp4:vod117_Live/live1/playlist.m3u8"
   },
   {
     "id": "asiafm",
