@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#f0e4c8"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Big+Shoulders+Display:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=PT+Mono&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet"/>
 <style>
 /* ──────────────────────────────────────────────────────────────────
    Soviet magazine dashboard, v5.
@@ -112,7 +112,7 @@ body::after {
   gap: 18px;
   padding: 6px 2px 10px;
   border-bottom: 1px dashed var(--hair);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: 11px;
   letter-spacing: 0.26em;
   text-transform: uppercase;
@@ -143,8 +143,8 @@ body::after {
   border-right: 1px solid var(--ink);
 }
 .time-box .nums {
-  font-family: 'Big Shoulders Display', 'Arial Black', sans-serif;
-  font-weight: 900;
+  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
+  font-weight: 700;
   font-size: clamp(78px, 8.6vw, 146px);
   line-height: 0.9;
   letter-spacing: -0.02em;
@@ -152,7 +152,7 @@ body::after {
   font-variant-numeric: tabular-nums;
 }
 .time-box .ampm {
-  font-family: 'Archivo', sans-serif;
+  font-family: 'PT Sans', Arial, sans-serif;
   font-size: clamp(26px, 2.4vw, 40px);
   color: var(--red);
   letter-spacing: 0.02em;
@@ -168,8 +168,8 @@ body::after {
   min-width: 0;
 }
 .wx-temp {
-  font-family: 'Big Shoulders Display', 'Arial Black', sans-serif;
-  font-weight: 900;
+  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
+  font-weight: 700;
   font-size: clamp(72px, 7.4vw, 130px);
   line-height: 0.9;
   letter-spacing: -0.02em;
@@ -179,7 +179,7 @@ body::after {
 }
 .wx-temp .deg { color: var(--red); font-size: 0.75em; }
 .wx-temp-c {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: clamp(13px, 1.1vw, 16px);
   letter-spacing: 0.1em;
   color: var(--muted); font-weight: 500;
@@ -193,26 +193,26 @@ body::after {
   padding-left: 20px;
 }
 .wx-caption .day-label {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: clamp(11px, 0.95vw, 13px);
   letter-spacing: 0.26em; text-transform: uppercase;
   color: var(--red); font-weight: 700; line-height: 1;
   margin-bottom: 2px;
 }
 .wx-caption .label {
-  font-family: 'Archivo', sans-serif;
+  font-family: 'PT Sans', Arial, sans-serif;
   font-size: clamp(28px, 3.0vw, 48px);
   letter-spacing: 0;
   line-height: 1.02; color: var(--ink);
 }
 .wx-caption .sub {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: clamp(12px, 0.95vw, 14px);
   letter-spacing: 0.08em; font-weight: 500;
   color: var(--muted); text-transform: uppercase;
 }
 .wx-caption .advice {
-  font-family: 'Archivo', sans-serif;
+  font-family: 'PT Sans', Arial, sans-serif;
   font-weight: 500;
   font-size: clamp(15px, 1.3vw, 20px);
   line-height: 1.3;
@@ -229,21 +229,21 @@ body::after {
   min-width: 160px;
 }
 .uv-stack .k {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: 11px; letter-spacing: 0.24em;
   text-transform: uppercase; font-weight: 600;
   color: var(--muted);
 }
 .uv-stack .v {
-  font-family: 'Big Shoulders Display', 'Arial Black', sans-serif;
-  font-weight: 900;
+  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
+  font-weight: 700;
   font-size: clamp(48px, 4.2vw, 66px);
   line-height: 0.9; color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 .uv-stack .level {
   display: inline-flex; align-items: center; gap: 8px;
-  font-family: 'Archivo', sans-serif;
+  font-family: 'PT Sans', Arial, sans-serif;
   font-size: clamp(18px, 1.6vw, 22px);
   color: var(--ink);
 }
@@ -259,7 +259,7 @@ body::after {
 .uv-stack.vhigh .level::before { background: var(--uv-vhigh); }
 .uv-stack.extrm .level::before { background: var(--uv-extrm); }
 .uv-stack .warn {
-  font-family: 'Archivo', sans-serif;
+  font-family: 'PT Sans', Arial, sans-serif;
   font-style: normal;
   font-size: clamp(11px, 0.95vw, 13px);
   color: var(--muted); line-height: 1.2;
@@ -286,13 +286,13 @@ body::after {
 }
 @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
 .alert-ribbon .label {
-  font-family: 'Archivo', sans-serif; font-weight: 700;
+  font-family: 'PT Sans', Arial, sans-serif; font-weight: 700;
   font-size: 13px; letter-spacing: 0.2em;
   text-transform: uppercase;
   padding-right: 14px; border-right: 1px solid rgba(255,255,255,0.4);
 }
 .alert-ribbon .body {
-  font-family: 'Archivo', sans-serif; font-style: normal;
+  font-family: 'PT Sans', Arial, sans-serif; font-style: normal;
   font-size: clamp(13px, 1.1vw, 16px);
   flex: 1; min-width: 0;
   overflow: hidden; text-overflow: ellipsis;
@@ -318,7 +318,7 @@ body::after {
   flex: 0 0 auto; width: 22px; height: 22px; color: var(--red);
 }
 .slogan-bar .slogan-text {
-  font-family: 'Archivo', sans-serif;
+  font-family: 'PT Sans', Arial, sans-serif;
   font-weight: 500;
   font-size: clamp(15px, 1.45vw, 21px);
   line-height: 1.3;
@@ -330,7 +330,7 @@ body::after {
 .slogan-bar .slogan-text .attr {
   display: inline-block;
   font-style: normal;
-  font-family: 'Archivo', sans-serif;
+  font-family: 'PT Sans', Arial, sans-serif;
   font-weight: 500;
   color: var(--red);
   margin-left: 14px;
@@ -381,15 +381,15 @@ body::after {
   width: 58px; height: 58px; border-radius: 50%;
   background: #a7a9ac; color: #fff;
   display: inline-flex; align-items: center; justify-content: center;
-  font-family: 'Big Shoulders Display', 'Arial Black', sans-serif;
-  font-weight: 900;
+  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
+  font-weight: 700;
   font-size: 34px; line-height: 1;
   align-self: center;
 }
 .station-masthead .circle.line-L { background: #a7a9ac; }
 .station-masthead .circle.line-G { background: #6cbe45; }
 .station-masthead .name {
-  font-family: 'Archivo', sans-serif;
+  font-family: 'PT Sans', Arial, sans-serif;
   font-size: clamp(44px, 4.6vw, 72px);
   line-height: 0.9;
   letter-spacing: 0;
@@ -400,14 +400,14 @@ body::after {
   display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
 }
 .station-masthead .walk .k {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: 11px; letter-spacing: 0.22em;
   text-transform: uppercase; color: var(--muted);
   font-weight: 600;
 }
 .station-masthead .walk .v {
-  font-family: 'Big Shoulders Display', 'Arial Black', sans-serif;
-  font-weight: 900;
+  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
+  font-weight: 700;
   font-size: clamp(30px, 2.6vw, 44px);
   line-height: 1; color: var(--ink);
   font-variant-numeric: tabular-nums;
@@ -440,19 +440,19 @@ body::after {
   line-height: 1.1;
 }
 .dir-label .arrow {
-  font-family: 'Big Shoulders Display', 'Arial Black', sans-serif;
-  font-weight: 900;
+  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
+  font-weight: 700;
   font-size: clamp(20px, 1.8vw, 28px);
   color: var(--red); line-height: 1;
 }
 .dir-label .main {
-  font-family: 'Archivo', sans-serif;
+  font-family: 'PT Sans', Arial, sans-serif;
   font-size: clamp(19px, 1.7vw, 26px);
   letter-spacing: 0;
   color: var(--ink);
 }
 .dir-label .terminus {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: clamp(10px, 0.85vw, 13px);
   letter-spacing: 0.18em; text-transform: uppercase;
   color: var(--muted); font-weight: 500;
@@ -468,19 +468,19 @@ body::after {
 }
 .train-row:last-child { border-bottom: none; }
 .train-row .clock {
-  font-family: 'Big Shoulders Display', 'Arial Black', sans-serif;
-  font-weight: 900;
+  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
+  font-weight: 700;
   font-size: clamp(18px, 1.9vw, 28px);
   line-height: 1; font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
 .train-row .mins {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: 12px; letter-spacing: 0.08em;
   text-transform: uppercase; font-weight: 500; color: var(--muted);
 }
 .train-row .tag {
-  font-family: 'Archivo', sans-serif; font-weight: 600;
+  font-family: 'PT Sans', Arial, sans-serif; font-weight: 600;
   font-size: clamp(12px, 1.1vw, 16px);
   letter-spacing: 0.06em; text-transform: uppercase;
   text-align: right; color: var(--muted);
@@ -529,18 +529,18 @@ body::after {
   height: 2px; background: var(--ink);
 }
 .week-panel .hdr .title {
-  font-family: 'Archivo', sans-serif;
+  font-family: 'PT Sans', Arial, sans-serif;
   font-size: clamp(30px, 3vw, 48px);
   line-height: 1;
 }
 .week-panel .hdr .title .cy {
   color: var(--red);
   margin-right: 16px;
-  font-family: 'Big Shoulders Display', 'Arial Black', sans-serif;
-  font-weight: 900;
+  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
+  font-weight: 700;
 }
 .week-panel .hdr .sub {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: 12px; letter-spacing: 0.2em;
   text-transform: uppercase; font-weight: 500;
   color: var(--muted);
@@ -565,20 +565,20 @@ body::after {
 }
 .week-panel .day.today .dow { color: var(--red); }
 .week-panel .day .dow {
-  font-family: 'Archivo', sans-serif;
+  font-family: 'PT Sans', Arial, sans-serif;
   font-size: clamp(22px, 2vw, 30px);
   letter-spacing: 0.02em;
   line-height: 1;
 }
 .week-panel .day .date {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: 11px; letter-spacing: 0.2em;
   color: var(--muted); font-weight: 500;
   text-transform: uppercase;
 }
 .week-panel .day .temps {
-  font-family: 'Big Shoulders Display', 'Arial Black', sans-serif;
-  font-weight: 900;
+  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
+  font-weight: 700;
   font-size: clamp(30px, 3vw, 44px);
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -586,13 +586,13 @@ body::after {
 }
 .week-panel .day .temps .lo { color: var(--muted); font-size: 0.65em; margin-left: 8px; }
 .week-panel .day .cond {
-  font-family: 'Archivo', sans-serif; font-weight: 600;
+  font-family: 'PT Sans', Arial, sans-serif; font-weight: 600;
   font-size: clamp(13px, 1.2vw, 18px);
   letter-spacing: 0.06em; text-transform: uppercase;
   line-height: 1.2;
 }
 .week-panel .day .precip {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: 12px; font-weight: 700;
   color: var(--red); letter-spacing: 0.04em;
   margin-top: auto;
@@ -612,16 +612,16 @@ body::after {
   height: 2px; background: var(--ink);
 }
 .today-panel .hdr .title {
-  font-family: 'Archivo', sans-serif;
+  font-family: 'PT Sans', Arial, sans-serif;
   font-size: clamp(30px, 3vw, 48px); line-height: 1;
 }
 .today-panel .hdr .title .cy {
   color: var(--red); margin-right: 16px;
-  font-family: 'Big Shoulders Display', 'Arial Black', sans-serif;
-  font-weight: 900;
+  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
+  font-weight: 700;
 }
 .today-panel .hdr .sub {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: 12px; letter-spacing: 0.2em;
   text-transform: uppercase; font-weight: 500;
   color: var(--muted);
@@ -641,31 +641,31 @@ body::after {
 }
 .today-panel .hour:last-child { border-right: none; }
 .today-panel .hour .h {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: clamp(11px, 1vw, 13px);
   letter-spacing: 0.18em; text-transform: uppercase;
   font-weight: 700; color: var(--muted);
 }
 .today-panel .hour .t {
-  font-family: 'Big Shoulders Display', 'Arial Black', sans-serif;
-  font-weight: 900;
+  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
+  font-weight: 700;
   font-size: clamp(20px, 2.2vw, 32px);
   line-height: 1; font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
 .today-panel .hour .c {
-  font-family: 'Archivo', sans-serif; font-weight: 600;
+  font-family: 'PT Sans', Arial, sans-serif; font-weight: 600;
   font-size: 11px; letter-spacing: 0.08em;
   text-transform: uppercase; line-height: 1.1;
   color: var(--ink-2);
 }
 .today-panel .hour .p {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: 11px; font-weight: 700;
   color: var(--red); letter-spacing: 0.04em;
 }
 .today-panel .hour .uv {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: 10px; font-weight: 700;
   letter-spacing: 0.06em; margin-top: auto;
   color: var(--ochre);
@@ -675,12 +675,12 @@ body::after {
   padding: 10px 0;
   border-top: 3px double var(--red);
   display: flex; justify-content: space-between; gap: 16px;
-  font-family: 'Archivo', sans-serif;
+  font-family: 'PT Sans', Arial, sans-serif;
   font-size: clamp(15px, 1.4vw, 22px);
   color: var(--ink);
 }
 .today-panel .footer-band .k {
-  font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 500;
+  font-family: 'PT Mono', ui-monospace, monospace; font-weight: 500;
   font-size: 11px; letter-spacing: 0.22em;
   text-transform: uppercase; color: var(--muted);
   margin-right: 8px;
@@ -701,7 +701,7 @@ body::after {
   padding: 8px 4px;
   text-align: center;
   border-top: 2px solid transparent;
-  font-family: 'Archivo', sans-serif;
+  font-family: 'PT Sans', Arial, sans-serif;
   font-weight: 600;
   font-size: clamp(12px, 1.05vw, 15px);
   letter-spacing: 0.18em;
@@ -712,7 +712,7 @@ body::after {
   transition: color 0.3s, border-color 0.3s;
 }
 .carousel-tabs .tab .sub {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: 9px; letter-spacing: 0.22em;
   font-weight: 500; opacity: 0.6;
 }
@@ -742,13 +742,13 @@ body::after {
   min-width: 0;
 }
 .footer .cell .k {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'PT Mono', ui-monospace, monospace;
   font-size: 10px; letter-spacing: 0.26em;
   text-transform: uppercase; color: var(--muted);
   font-weight: 600;
 }
 .footer .cell .v {
-  font-family: 'Archivo', sans-serif;
+  font-family: 'PT Sans', Arial, sans-serif;
   font-size: clamp(16px, 1.4vw, 22px);
   color: var(--ink);
   font-variant-numeric: tabular-nums;
@@ -768,7 +768,7 @@ body::after {
   display: inline-block;
   transform: translateY(1px);
 }
-.footer .live .v { color: var(--red); font-family: 'Archivo', sans-serif; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; font-size: 14px; }
+.footer .live .v { color: var(--red); font-family: 'PT Sans', Arial, sans-serif; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; font-size: 14px; }
 @keyframes blink { 0%, 50% { opacity: 1 } 51%, 100% { opacity: 0.25 } }
 
 /* legacy */
