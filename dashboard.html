@@ -3,359 +3,619 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Dashboard</title>
-<!-- Safari "Add to Dock" / iOS "Add to Home Screen" → standalone, no chrome -->
+<title>ГРИНПОЙНТ · GREENPOINT</title>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-title" content="Dashboard"/>
+<meta name="apple-mobile-web-app-title" content="Greenpoint"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="mobile-web-app-capable" content="yes"/>
-<meta name="theme-color" content="#0b1020"/>
+<meta name="theme-color" content="#0a0a0a"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
 <style>
 /* ──────────────────────────────────────────────────────────────────
-   Wall dashboard.
-   Priorities: readable from across a room, information-dense without
-   being cluttered. Big typography, calibrated walk times.
+   Soviet Avant-Garde / Constructivist dashboard.
+   Palette: Rodchenko-ish newsprint cream + vermilion red + black.
+   Typography: Alfa Slab One (display numerals) +
+               Oswald (condensed sans-serif for labels) +
+               Roboto Mono (data, metadata).
+   Layout: asymmetric, heavy rules, diagonal wedge, oversized numerals.
    ────────────────────────────────────────────────────────────────── */
 :root {
-  --bg:        #fafafa;
-  --surface:   #ffffff;
-  --ink:       #0f172a;
-  --ink-2:     #334155;
-  --muted:     #64748b;
-  --muted-2:   #94a3b8;
-  --line:      #e2e8f0;
-  --accent:    #0a66ff;   /* go — blue */
-  --warn:      #d97706;   /* caution — amber */
-  --danger:    #dc2626;   /* miss — red */
-  --ok:        #059669;   /* plenty — green */
-}
-body[data-theme="dark"] {
-  --bg:        #0b1020;
-  --surface:   #111827;
-  --ink:       #f3f4f6;
-  --ink-2:     #d1d5db;
-  --muted:     #9ca3af;
-  --muted-2:   #6b7280;
-  --line:      #1f2937;
-  --accent:    #60a5fa;
-  --warn:      #f59e0b;
-  --danger:    #f87171;
-  --ok:        #34d399;
+  --paper:   #f2e7cc;
+  --paper-2: #e5d8b8;
+  --ink:     #0a0a0a;
+  --red:     #c4201e;
+  --red-2:   #8a1513;
+  --ochre:   #d4a017;
+  --white:   #f8efd6;
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+html, body {
+  margin: 0; padding: 0; height: 100%; overflow: hidden;
+}
 body {
-  background: var(--bg);
+  background: var(--paper);
   color: var(--ink);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Oswald', Arial, sans-serif;
   font-size: 18px;
-  font-feature-settings: "ss01", "cv11", "tnum";
+  font-weight: 500;
   -webkit-font-smoothing: antialiased;
-  transition: background .6s ease, color .6s ease;
+  /* Faint paper grain — subtle turbulence so it doesn't feel too clean */
+  background-image:
+    radial-gradient(ellipse at 70% 10%, rgba(0,0,0,0.04), transparent 60%),
+    radial-gradient(ellipse at 10% 90%, rgba(196, 32, 30, 0.06), transparent 55%);
 }
 
-.stage {
+/* Grid scaffolding for whole screen */
+.frame {
   display: grid;
   grid-template-rows: auto auto 1fr;
-  gap: 32px;
   height: 100vh;
-  padding: 40px 56px 40px;
-}
-
-/* ── HERO: Time + Weather ──────────────────────────────────────── */
-.hero {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 56px;
-  align-items: start;
-}
-
-/* LEFT: Time */
-.time-block { min-width: 0; }
-.time-now {
-  font-size: clamp(140px, 19vw, 320px);
-  font-weight: 200;
-  letter-spacing: -0.05em;
-  line-height: 0.9;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-.time-now .ampm {
-  font-size: 0.24em;
-  font-weight: 500;
-  color: var(--muted);
-  margin-left: 16px;
-  letter-spacing: 0;
-  vertical-align: 1em;
-}
-.time-date {
-  margin-top: 14px;
-  font-size: clamp(28px, 3vw, 44px);
-  font-weight: 600;
-  color: var(--ink-2);
-  line-height: 1;
-}
-.time-sub {
-  margin-top: 10px;
-  display: flex; gap: 24px; flex-wrap: wrap;
-  font-size: 18px;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-.time-sub .pill {
-  display: inline-flex; align-items: center; gap: 8px;
-}
-.time-sub .pill .k {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--muted-2);
-}
-.time-sub .pill .v {
-  color: var(--ink-2); font-weight: 500;
-}
-
-/* RIGHT: Weather */
-.wx-block { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
-.wx-main { display: flex; align-items: baseline; gap: 28px; }
-.wx-temp {
-  font-size: clamp(130px, 17vw, 290px);
-  font-weight: 200;
-  letter-spacing: -0.04em;
-  line-height: 0.88;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-.wx-temp .deg { color: var(--muted); font-weight: 200; }
-.wx-caption {
-  display: flex; flex-direction: column; gap: 6px;
-  padding-bottom: 16px;
-}
-.wx-caption .label {
-  font-size: clamp(28px, 3.2vw, 42px);
-  font-weight: 700;
-  color: var(--ink);
-  line-height: 1.05;
-  letter-spacing: -0.01em;
-}
-.wx-caption .hi-lo {
-  font-size: 20px; color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
-  font-weight: 500;
-}
-.wx-caption .hi-lo .sep { color: var(--muted-2); margin: 0 8px; }
-.wx-caption .feels {
-  font-size: 17px; color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-.wx-summary {
-  font-size: clamp(19px, 1.6vw, 26px);
-  color: var(--ink-2);
-  max-width: 38ch;
-  line-height: 1.35;
-  font-weight: 500;
-}
-
-/* ── FORECAST STRIP ────────────────────────────────────────────── */
-.forecast {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  padding: 20px 0;
-}
-.fc-cell {
-  display: flex; flex-direction: column; gap: 6px;
-  padding: 0 16px;
-  border-left: 1px solid var(--line);
-}
-.fc-cell:first-child { border-left: none; padding-left: 0; }
-.fc-cell .hr {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 14px; letter-spacing: 0.08em;
-  color: var(--muted); text-transform: uppercase;
-  font-weight: 500;
-}
-.fc-cell .t {
-  font-size: 40px; font-weight: 600; color: var(--ink);
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-.fc-cell .row-under {
-  display: flex; align-items: baseline; gap: 10px;
-  flex-wrap: wrap;
-}
-.fc-cell .c {
-  font-size: 15px; color: var(--muted-2);
-  font-weight: 500;
-}
-.fc-cell .p {
-  font-size: 14px; font-weight: 600;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ── TRAINS ────────────────────────────────────────────────────── */
-.trains {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
-  align-items: stretch;
-  min-height: 0;
-}
-.stop {
-  display: flex; flex-direction: column;
-  padding: 24px 28px 22px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  gap: 8px;
-  min-height: 0;
+  padding: 28px 40px 32px;
+  gap: 20px;
   position: relative;
   overflow: hidden;
 }
-.stop-head {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 2px;
+
+/* ── Diagonal red wedge (decorative, points to the time) ──────── */
+.frame::before {
+  content: "";
+  position: absolute;
+  top: -40px; right: -80px;
+  width: 360px; height: 220px;
+  background: var(--red);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 40% 100%);
+  transform: rotate(-8deg);
+  z-index: 0;
+  pointer-events: none;
 }
-.stop-name {
-  font-size: clamp(26px, 2.2vw, 34px);
+/* Black block on the bottom-left as compositional counterweight */
+.frame::after {
+  content: "";
+  position: absolute;
+  left: -30px; bottom: -30px;
+  width: 120px; height: 120px;
+  background: var(--ink);
+  transform: rotate(14deg);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HEADER STRIP — city name, bilingual. Heavy black bar.
+   ══════════════════════════════════════════════════════════════ */
+.banner {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--ink);
+  color: var(--paper);
+  border: 4px solid var(--ink);
+}
+.banner .loc {
+  font-family: 'Oswald', sans-serif;
   font-weight: 700;
-  color: var(--ink);
-  letter-spacing: -0.01em;
+  font-size: clamp(20px, 2vw, 32px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   line-height: 1;
 }
-.stop-badge {
-  display: flex; align-items: center; gap: 8px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px; letter-spacing: 0.08em;
-  color: var(--muted); text-transform: uppercase;
+.banner .loc .sep {
+  color: var(--red);
+  margin: 0 14px;
   font-weight: 500;
 }
-.stop-badge .L {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: #a7a9ac; color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Inter', sans-serif;
-  font-weight: 700; font-size: 15px; letter-spacing: 0;
+.banner .live {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px; letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
-.stop-verdict {
-  margin-top: 8px;
-  font-size: clamp(32px, 3.1vw, 50px);
-  font-weight: 700;
-  line-height: 1.04;
-  letter-spacing: -0.02em;
+.banner .live .dot {
+  width: 10px; height: 10px; background: var(--red);
+  display: inline-block;
+  animation: blink 1.6s steps(2, start) infinite;
+}
+@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.25; } }
+
+/* ══════════════════════════════════════════════════════════════
+   HERO — time on left, weather on right, massive type
+   ══════════════════════════════════════════════════════════════ */
+.hero {
+  position: relative; z-index: 2;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 36px;
+  border-top: 6px solid var(--ink);
+  border-bottom: 6px solid var(--ink);
+  padding: 20px 0 22px;
+  background: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+}
+
+/* LEFT: Time */
+.time-col {
+  position: relative;
+  padding-right: 24px;
+  border-right: 4px solid var(--ink);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.time-col .label-rot {
+  position: absolute;
+  top: 20px; right: 16px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px; letter-spacing: 0.26em; text-transform: uppercase;
+  color: var(--ink);
+  transform: rotate(-90deg); transform-origin: 100% 0;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.time-now {
+  font-family: 'Alfa Slab One', 'Times New Roman', serif;
+  font-size: clamp(140px, 20vw, 300px);
+  line-height: 0.82;
+  letter-spacing: -0.03em;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
+  display: flex; align-items: flex-start; gap: 18px;
 }
-.stop-verdict.go     { color: var(--accent); }
-.stop-verdict.soon   { color: var(--warn); }
-.stop-verdict.plenty { color: var(--ok); }
-.stop-verdict.miss   { color: var(--danger); }
+.time-now .nums {
+  background: var(--red);
+  color: var(--paper);
+  padding: 0 20px 8px;
+  display: inline-block;
+}
+.time-now .ampm {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.18em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--ink);
+  margin-top: 18px;
+  writing-mode: vertical-rl;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.time-date {
+  margin-top: 4px;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 3vw, 48px);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  line-height: 1;
+}
+.time-date .accent { color: var(--red); }
+
+.sun-row {
+  display: flex; gap: 0;
+  margin-top: 10px;
+  border-top: 3px solid var(--ink);
+  border-bottom: 3px solid var(--ink);
+}
+.sun-row .cell {
+  flex: 1;
+  padding: 8px 12px;
+  border-right: 2px solid var(--ink);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.sun-row .cell:last-child { border-right: none; }
+.sun-row .cell.inv {
+  background: var(--ink); color: var(--paper);
+}
+.sun-row .cell .k {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase; font-weight: 500;
+  opacity: 0.7;
+}
+.sun-row .cell .v {
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(18px, 1.6vw, 24px);
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+/* RIGHT: Weather */
+.wx-col {
+  position: relative;
+  padding-left: 24px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.wx-col .label-top {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(14px, 1.3vw, 20px);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink);
+  line-height: 1;
+  border-bottom: 3px solid var(--ink);
+  padding-bottom: 6px;
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+.wx-col .label-top .sep { color: var(--red); }
+.wx-col .label-top .hi-lo {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 700;
+  font-size: 0.85em;
+  letter-spacing: 0.05em;
+}
+.wx-col .label-top .hi-lo .hi { color: var(--red); }
+.wx-col .label-top .hi-lo .lo { color: var(--ink); opacity: 0.55; }
+
+.wx-temp {
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(130px, 17vw, 240px);
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  display: flex; align-items: flex-start; gap: 6px;
+}
+.wx-temp .deg {
+  color: var(--red);
+  font-size: 0.7em;
+  line-height: 1;
+}
+.wx-desc {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(32px, 3.2vw, 52px);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 6px 14px;
+  display: inline-block;
+  align-self: flex-start;
+}
+.wx-feels {
+  font-family: 'Roboto Mono', monospace;
+  font-size: clamp(13px, 1.1vw, 16px);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.7;
+  font-weight: 500;
+}
+.wx-summary {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: clamp(19px, 1.7vw, 26px);
+  line-height: 1.3;
+  color: var(--ink);
+  max-width: 34ch;
+  border-left: 5px solid var(--red);
+  padding-left: 14px;
+  margin-top: 4px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FORECAST STRIP — 6 cells, alternating red/black/cream
+   like a propaganda filmstrip
+   ══════════════════════════════════════════════════════════════ */
+.forecast {
+  position: relative; z-index: 2;
+  display: grid;
+  grid-template-columns: auto repeat(6, 1fr);
+  gap: 0;
+  border: 4px solid var(--ink);
+  background: var(--ink);
+}
+.forecast .fc-label {
+  background: var(--red);
+  color: var(--paper);
+  padding: 14px 18px;
+  display: flex; flex-direction: column; justify-content: center;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.forecast .fc-label .big {
+  font-size: clamp(20px, 1.8vw, 28px);
+  line-height: 1;
+}
+.forecast .fc-label .small {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  font-weight: 500;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+.forecast .fc-cell {
+  padding: 14px 14px 12px;
+  border-left: 3px solid var(--ink);
+  display: flex; flex-direction: column; gap: 4px;
+  background: var(--paper);
+  color: var(--ink);
+}
+.forecast .fc-cell:nth-child(3),
+.forecast .fc-cell:nth-child(5),
+.forecast .fc-cell:nth-child(7) {
+  background: var(--ink); color: var(--paper);
+}
+.forecast .fc-cell .hr {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+.forecast .fc-cell .t {
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(34px, 3.2vw, 48px);
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+}
+.forecast .fc-cell .c {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.forecast .fc-cell .p {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--red);
+}
+.forecast .fc-cell:nth-child(3) .p,
+.forecast .fc-cell:nth-child(5) .p,
+.forecast .fc-cell:nth-child(7) .p { color: var(--ochre); }
+
+/* ══════════════════════════════════════════════════════════════
+   TRAINS — three station cards, each a heavy propaganda tile
+   ══════════════════════════════════════════════════════════════ */
+.train-frame {
+  position: relative; z-index: 2;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 14px;
+  min-height: 0;
+}
+.train-header {
+  display: flex; align-items: stretch;
+  border: 4px solid var(--ink);
+  background: var(--ink);
+}
+.train-header .L-badge {
+  background: var(--ink);
+  color: var(--paper);
+  width: 64px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Alfa Slab One', serif;
+  font-size: 42px; line-height: 1;
+  border-right: 4px solid var(--red);
+}
+.train-header .title {
+  flex: 1;
+  background: var(--red);
+  color: var(--paper);
+  padding: 10px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.train-header .title .big {
+  font-size: clamp(22px, 2.2vw, 32px);
+  line-height: 1;
+}
+.train-header .title .stat {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.stations { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; min-height: 0; }
+.stop {
+  position: relative;
+  display: flex; flex-direction: column;
+  padding: 20px 22px 16px;
+  border: 4px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 0;
+  gap: 6px;
+}
+.stop.theme-red { background: var(--red); color: var(--paper); }
+.stop.theme-black { background: var(--ink); color: var(--paper); }
+.stop.theme-cream { background: var(--paper); color: var(--ink); }
+.stop .stop-num {
+  position: absolute;
+  top: 10px; right: 14px;
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(48px, 5vw, 90px);
+  line-height: 0.8;
+  opacity: 0.15;
+  color: currentColor;
+  pointer-events: none;
+}
+.stop-name {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 2.6vw, 42px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 0.95;
+}
+.stop-badge {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px; letter-spacing: 0.2em;
+  text-transform: uppercase; font-weight: 500;
+  opacity: 0.7;
+  margin-top: -2px;
+}
+.stop-verdict {
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(34px, 3.4vw, 56px);
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  margin-top: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.stop.theme-cream .stop-verdict.go     { color: var(--red); }
+.stop.theme-cream .stop-verdict.soon   { color: var(--ink); }
+.stop.theme-cream .stop-verdict.plenty { color: var(--ink); }
+.stop.theme-cream .stop-verdict.miss   { color: var(--red); }
+.stop.theme-red .stop-verdict   { color: var(--paper); }
+.stop.theme-black .stop-verdict { color: var(--paper); }
+.stop.theme-black .stop-verdict.go { color: var(--red); }
 
 .stop-sub {
-  margin-top: 6px;
-  font-size: clamp(17px, 1.4vw, 22px);
-  color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
-  line-height: 1.35;
+  font-family: 'Oswald', sans-serif;
   font-weight: 500;
+  font-size: clamp(16px, 1.4vw, 21px);
+  line-height: 1.25;
+  margin-top: 4px;
+  opacity: 0.95;
 }
 .stop-meta {
   margin-top: auto;
-  padding-top: 14px;
-  display: flex; gap: 20px; flex-wrap: wrap;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px; letter-spacing: 0.05em;
-  color: var(--muted); text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
+  padding-top: 10px;
+  border-top: 2px solid currentColor;
+  display: flex; justify-content: space-between; gap: 10px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 .stop-meta .m {
-  display: inline-flex; gap: 8px; align-items: baseline;
+  display: flex; flex-direction: column;
+  gap: 2px;
 }
-.stop-meta .m .k { color: var(--muted-2); font-size: 11px; }
-.stop-meta .m .v { color: var(--ink-2); font-weight: 600; font-size: 14px; letter-spacing: 0; }
+.stop-meta .m .k { font-weight: 500; opacity: 0.6; font-size: 10px; }
+.stop-meta .m .v {
+  font-family: 'Alfa Slab One', serif;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
 
-/* live updated indicator, bottom-right */
-.status-indicator {
-  position: fixed;
-  right: 18px; bottom: 14px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px; letter-spacing: 0.12em;
-  color: var(--muted-2); text-transform: uppercase;
-  opacity: 0.6;
-}
-.status-indicator .dot {
-  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--ok); margin-right: 6px; vertical-align: middle;
-  animation: pulse 2.5s ease-in-out infinite;
-}
-@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.25 } }
+/* Hide legacy elements kept for backend compat */
+.legacy { display: none; }
 </style>
 </head>
-<body data-theme="light">
+<body>
 
-<div class="stage">
+<div class="frame">
 
-  <!-- HERO: TIME + WEATHER -->
+  <!-- ═════ BANNER ═════ -->
+  <div class="banner">
+    <div class="loc">
+      ГРИНПОЙНТ<span class="sep">·</span>GREENPOINT<span class="sep">·</span>11222
+    </div>
+    <div class="live"><span class="dot"></span><span id="statusRight">В ЭФИРЕ · LIVE</span></div>
+  </div>
+
+  <!-- ═════ HERO ═════ -->
   <section class="hero">
-    <div class="time-block">
+    <!-- Time column -->
+    <div class="time-col">
+      <span class="label-rot">ВРЕМЯ · TIME</span>
       <div class="time-now">
-        <span id="bigClock">—</span><span class="ampm" id="ampm">—</span>
+        <span class="nums"><span id="bigClock">—</span></span>
+        <span class="ampm" id="ampm">AM</span>
       </div>
       <div class="time-date" id="dateLabel">—</div>
-      <div class="time-sub">
-        <span class="pill"><span class="k">Sunrise</span><span class="v" id="sunrise">—</span></span>
-        <span class="pill"><span class="k">Sunset</span><span class="v" id="sunset">—</span></span>
-        <span class="pill"><span class="k" id="sunDirLabel">Daylight</span><span class="v" id="sunDaylight">—</span></span>
-      </div>
-      <!-- compat -->
-      <span id="seconds" style="display:none"></span>
-      <span id="weatherIcon" style="display:none"></span>
-      <span id="dateSub" style="display:none"></span>
-    </div>
-
-    <div class="wx-block">
-      <div class="wx-main">
-        <div class="wx-temp"><span id="tempNow">—</span><span class="deg">°</span></div>
-        <div class="wx-caption">
-          <div class="label" id="weatherDesc">loading…</div>
-          <div class="hi-lo"><span id="hiTemp">—</span><span class="sep">/</span><span id="loTemp">—</span> today</div>
-          <div class="feels" id="feelsLike">—</div>
+      <div class="sun-row">
+        <div class="cell">
+          <span class="k">Восход · Sunrise</span>
+          <span class="v" id="sunrise">—</span>
+        </div>
+        <div class="cell inv">
+          <span class="k" id="sunDirLabel">Until Sunset</span>
+          <span class="v" id="sunDaylight">—</span>
+        </div>
+        <div class="cell">
+          <span class="k">Закат · Sunset</span>
+          <span class="v" id="sunset">—</span>
         </div>
       </div>
+    </div>
+
+    <!-- Weather column -->
+    <div class="wx-col">
+      <div class="label-top">
+        <span>ПОГОДА<span class="sep"> · </span>WEATHER</span>
+        <span class="hi-lo">
+          HI <span class="hi" id="hiTemp">—</span> / LO <span class="lo" id="loTemp">—</span>
+        </span>
+      </div>
+      <div class="wx-temp">
+        <span id="tempNow">—</span><span class="deg">°</span>
+      </div>
+      <div class="wx-desc" id="weatherDesc">LOADING…</div>
+      <div class="wx-feels" id="feelsLike">—</div>
       <div class="wx-summary" id="weatherAdvice">—</div>
     </div>
   </section>
 
-  <!-- 6-HOUR FORECAST STRIP -->
-  <section class="forecast" id="forecastStrip"></section>
+  <!-- ═════ FORECAST STRIP ═════ -->
+  <section class="forecast" id="forecastStrip">
+    <div class="fc-label">
+      <span class="big">6 ЧАСОВ</span>
+      <span class="small">6-HR FORECAST</span>
+    </div>
+    <!-- cells appended dynamically -->
+  </section>
 
-  <!-- TRAINS -->
-  <section class="trains" id="trainTiles"></section>
+  <!-- ═════ TRAIN FRAME ═════ -->
+  <section class="train-frame">
+    <div class="train-header">
+      <div class="L-badge">L</div>
+      <div class="title">
+        <span class="big">МЕТРОПОЛИТЕН<span style="color:var(--ink);margin:0 12px;">·</span>SUBWAY<span style="color:var(--ink);margin:0 12px;">·</span>MANHATTAN-BOUND</span>
+        <span class="stat" id="trainsUpdated">—</span>
+      </div>
+    </div>
+    <div class="stations" id="trainTiles"></div>
+  </section>
 
 </div>
 
-<!-- Live indicator -->
-<div class="status-indicator"><span class="dot"></span><span id="statusRight">Live</span><span id="trainsUpdated" style="display:none"></span></div>
+<!-- Legacy placeholders backend consumers rely on -->
+<span id="seconds" class="legacy"></span>
+<span id="weatherIcon" class="legacy"></span>
+<span id="dateSub" class="legacy"></span>
+<span id="location" class="legacy">Greenpoint · 11222</span>
 
 <script>
 // ═════════════════════════════════════════════════════════════════
-// CONFIG — walking time from the apartment to each L station.
+// CONFIG
 // ═════════════════════════════════════════════════════════════════
 const WALK_MIN = {
   'Nassau Av':  4,
   'Graham Av':  10,
   'Bedford Av': 18,
 };
+// Rotate card themes so the row reads like a constructivist poster.
+const STATION_THEME = ['theme-red', 'theme-cream', 'theme-black'];
+
+// Cyrillic transliteration of station names, for flavor.
+const CYRILLIC_STATION = {
+  'Nassau Av':  'НАССАУ',
+  'Graham Av':  'ГРЭМ',
+  'Bedford Av': 'БЕДФОРД',
+};
 
 // ═════════════════════════════════════════════════════════════════
-// SAFE DOM HELPERS
+// SAFE DOM
 // ═════════════════════════════════════════════════════════════════
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -382,6 +642,9 @@ function fmtClockShort(date) {
   return h + ':' + m + ap.toLowerCase();
 }
 
+const CYRILLIC_WEEKDAY = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+const CYRILLIC_MONTH = ['Января','Февраля','Марта','Апреля','Мая','Июня','Июля','Августа','Сентября','Октября','Ноября','Декабря'];
+
 function tickClock() {
   const now = new Date();
   let h = now.getHours();
@@ -395,47 +658,53 @@ function tickClock() {
   document.getElementById('seconds').textContent = String(now.getSeconds()).padStart(2,'0');
 
   const weekday = now.toLocaleDateString('en-US', { weekday: 'long' });
-  const md = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-  document.getElementById('dateLabel').textContent = weekday + ', ' + md;
-
-  // Dark theme 10pm–7am
-  const hr24 = now.getHours();
-  document.body.setAttribute('data-theme', (hr24 >= 22 || hr24 < 7) ? 'dark' : 'light');
+  const month = now.toLocaleDateString('en-US', { month: 'long' });
+  const day = now.getDate();
+  // e.g. "ЧЕТВЕРГ · THU 17 · АПР"
+  const dow = now.getDay();
+  const dateHTML = document.getElementById('dateLabel');
+  dateHTML.textContent = '';
+  const a = el('span', '', CYRILLIC_WEEKDAY[dow]);
+  const sep1 = el('span', 'accent', ' · ');
+  const b = el('span', '', day + ' ' + month.toUpperCase());
+  dateHTML.appendChild(a);
+  dateHTML.appendChild(sep1);
+  dateHTML.appendChild(b);
 }
 tickClock();
 setInterval(tickClock, 1000);
 
 // ═════════════════════════════════════════════════════════════════
-// WEATHER
+// WEATHER LABELS
 // ═════════════════════════════════════════════════════════════════
 const WMO_LABEL = {
-  0:  { short: 'Clear',           long: 'Clear skies' },
-  1:  { short: 'Mostly clear',    long: 'Mostly clear' },
-  2:  { short: 'Partly cloudy',   long: 'Partly cloudy' },
-  3:  { short: 'Overcast',        long: 'Overcast' },
-  45: { short: 'Fog',             long: 'Fog' },
-  48: { short: 'Freezing fog',    long: 'Freezing fog' },
-  51: { short: 'Light drizzle',   long: 'Light drizzle' },
-  53: { short: 'Drizzle',         long: 'Drizzle' },
-  55: { short: 'Heavy drizzle',   long: 'Heavy drizzle' },
-  61: { short: 'Light rain',      long: 'Light rain' },
-  63: { short: 'Rain',            long: 'Rain' },
-  65: { short: 'Heavy rain',      long: 'Heavy rain' },
-  71: { short: 'Light snow',      long: 'Light snow' },
-  73: { short: 'Snow',            long: 'Snow' },
-  75: { short: 'Heavy snow',      long: 'Heavy snow' },
-  77: { short: 'Snow grains',     long: 'Snow grains' },
-  80: { short: 'Showers',         long: 'Rain showers' },
-  81: { short: 'Showers',         long: 'Heavy showers' },
-  82: { short: 'Downpour',        long: 'Violent showers' },
-  85: { short: 'Snow showers',    long: 'Snow showers' },
-  86: { short: 'Snow showers',    long: 'Heavy snow showers' },
-  95: { short: 'Thunderstorm',    long: 'Thunderstorm' },
-  96: { short: 'Thunderstorm',    long: 'Thunderstorm with hail' },
-  99: { short: 'Severe storm',    long: 'Severe storm with hail' },
+  0:  { short: 'Clear',          long: 'CLEAR SKIES' },
+  1:  { short: 'Mostly clear',   long: 'MOSTLY CLEAR' },
+  2:  { short: 'Partly cloudy',  long: 'PARTLY CLOUDY' },
+  3:  { short: 'Overcast',       long: 'OVERCAST' },
+  45: { short: 'Fog',            long: 'FOG' },
+  48: { short: 'Freezing fog',   long: 'FREEZING FOG' },
+  51: { short: 'Light drizzle',  long: 'LIGHT DRIZZLE' },
+  53: { short: 'Drizzle',        long: 'DRIZZLE' },
+  55: { short: 'Heavy drizzle',  long: 'HEAVY DRIZZLE' },
+  61: { short: 'Light rain',     long: 'LIGHT RAIN' },
+  63: { short: 'Rain',           long: 'RAIN' },
+  65: { short: 'Heavy rain',     long: 'HEAVY RAIN' },
+  71: { short: 'Light snow',     long: 'LIGHT SNOW' },
+  73: { short: 'Snow',           long: 'SNOW' },
+  75: { short: 'Heavy snow',     long: 'HEAVY SNOW' },
+  77: { short: 'Snow grains',    long: 'SNOW GRAINS' },
+  80: { short: 'Showers',        long: 'RAIN SHOWERS' },
+  81: { short: 'Showers',        long: 'HEAVY SHOWERS' },
+  82: { short: 'Downpour',       long: 'VIOLENT SHOWERS' },
+  85: { short: 'Snow showers',   long: 'SNOW SHOWERS' },
+  86: { short: 'Snow showers',   long: 'HEAVY SNOW SHOWERS' },
+  95: { short: 'Thunderstorm',   long: 'THUNDERSTORM' },
+  96: { short: 'Thunderstorm',   long: 'THUNDERSTORM + HAIL' },
+  99: { short: 'Severe storm',   long: 'SEVERE STORM + HAIL' },
 };
 
-function weatherSummary(code, tempF, windMph) {
+function weatherSummary(code, tempF) {
   const hot = tempF >= 85, warm = tempF >= 70 && tempF < 85;
   const mild = tempF >= 55 && tempF < 70, cool = tempF >= 40 && tempF < 55;
   const cold = tempF < 40;
@@ -449,7 +718,6 @@ function weatherSummary(code, tempF, windMph) {
   if (code === 3)                return 'Overcast but dry. A sweater is enough.';
   if (code === 2)                return 'Partly cloudy. Pleasant mix of sun and shade.';
   if (code === 1)                return 'Mostly sunny. Easy day to be outside.';
-
   if (hot)  return 'Clear and hot. Sunscreen, hat, carry water.';
   if (warm) return 'Clear and comfortable. Great day to be outside.';
   if (mild) return 'Clear and mild. A light layer is plenty.';
@@ -471,9 +739,9 @@ function hoursMinutesBetween(a, b) {
   const totalMin = Math.abs(Math.round((b - a) / 60000));
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;
-  if (h === 0) return m + ' min';
-  if (m === 0) return h + ' hr';
-  return h + ' hr ' + m + ' min';
+  if (h === 0) return m + ' MIN';
+  if (m === 0) return h + ' HR';
+  return h + 'H ' + m + 'M';
 }
 
 async function refreshWeather() {
@@ -484,7 +752,7 @@ async function refreshWeather() {
     const d = j.data, cur = d.current, daily = d.daily;
 
     const code = cur.weather_code;
-    const label = (WMO_LABEL[code] && WMO_LABEL[code].long) || 'Weather';
+    const label = (WMO_LABEL[code] && WMO_LABEL[code].long) || 'WEATHER';
     const tempF = cur.temperature_2m;
 
     document.getElementById('tempNow').textContent = Math.round(tempF);
@@ -492,16 +760,14 @@ async function refreshWeather() {
     document.getElementById('feelsLike').textContent =
       feelsLikeLine(tempF, cur.apparent_temperature, cur.relative_humidity_2m, cur.wind_speed_10m);
     document.getElementById('weatherAdvice').textContent =
-      weatherSummary(code, tempF, cur.wind_speed_10m);
+      weatherSummary(code, tempF);
     document.getElementById('weatherIcon').textContent = 'wmo:' + code;
 
-    // Today's high / low (daily[0])
     if (daily && daily.temperature_2m_max && daily.temperature_2m_max.length) {
       document.getElementById('hiTemp').textContent = Math.round(daily.temperature_2m_max[0]) + '°';
       document.getElementById('loTemp').textContent = Math.round(daily.temperature_2m_min[0]) + '°';
     }
 
-    // Sunrise / sunset / time remaining
     if (daily && daily.sunrise && daily.sunset) {
       const sunrise = new Date(daily.sunrise[0]);
       const sunset  = new Date(daily.sunset[0]);
@@ -510,20 +776,21 @@ async function refreshWeather() {
       const now = new Date();
       let label, value;
       if (now < sunrise) {
-        label = 'Until sunrise'; value = hoursMinutesBetween(now, sunrise);
+        label = 'Until Sunrise · До Рассвета'; value = hoursMinutesBetween(now, sunrise);
       } else if (now < sunset) {
-        label = 'Until sunset'; value = hoursMinutesBetween(now, sunset);
+        label = 'Until Sunset · До Заката'; value = hoursMinutesBetween(now, sunset);
       } else {
         const nextRise = daily.sunrise[1] ? new Date(daily.sunrise[1]) : null;
-        label = 'Until sunrise'; value = nextRise ? hoursMinutesBetween(now, nextRise) : '—';
+        label = 'Until Sunrise · До Рассвета'; value = nextRise ? hoursMinutesBetween(now, nextRise) : '—';
       }
       document.getElementById('sunDirLabel').textContent = label;
       document.getElementById('sunDaylight').textContent = value;
     }
 
-    // 6-hour forecast strip with precipitation %
+    // Forecast strip
     const strip = document.getElementById('forecastStrip');
-    strip.textContent = '';
+    // Remove existing dynamic cells (keep the .fc-label header cell)
+    [...strip.querySelectorAll('.fc-cell')].forEach(n => n.remove());
     const nowMs = Date.now();
     const picks = d.hourly.time
       .map((t, idx) => ({ ms: new Date(t).getTime(), idx }))
@@ -537,20 +804,18 @@ async function refreshWeather() {
       const cell = el('div', 'fc-cell');
       cell.appendChild(el('span', 'hr', h + ap));
       cell.appendChild(el('span', 't', Math.round(d.hourly.temperature_2m[p.idx]) + '°'));
-      const under = el('div', 'row-under');
       const wmo = d.hourly.weather_code[p.idx];
       const short = (WMO_LABEL[wmo] && WMO_LABEL[wmo].short) || '';
-      under.appendChild(el('span', 'c', short));
+      cell.appendChild(el('span', 'c', short));
       const precip = d.hourly.precipitation_probability && d.hourly.precipitation_probability[p.idx];
       if (precip != null && precip > 10) {
-        under.appendChild(el('span', 'p', precip + '%'));
+        cell.appendChild(el('span', 'p', precip + '% RAIN'));
       }
-      cell.appendChild(under);
       strip.appendChild(cell);
     });
   } catch (e) {
     console.warn('weather', e);
-    document.getElementById('weatherDesc').textContent = 'Weather unavailable';
+    document.getElementById('weatherDesc').textContent = 'WEATHER OFFLINE';
     document.getElementById('weatherAdvice').textContent =
       'Could not reach weather service. Will retry automatically.';
   }
@@ -562,57 +827,49 @@ async function refreshWeather() {
 function verdictForStation(stopName, trains) {
   const walk = WALK_MIN[stopName] ?? 5;
   if (!trains || !trains.length) {
-    return { klass: '', text: 'No trains', sub: 'Nothing scheduled. Check back soon.', meta: [] };
+    return { klass: '', text: 'NO TRAINS', sub: 'Nothing scheduled.', meta: [] };
   }
-
-  // First catchable train = arrival >= walk + 1 min buffer.
   const catchable = trains.find(m => m >= walk + 1);
-
   if (catchable == null) {
     const list = trains.slice(0, 3).map(x => x + ' min').join(', ');
     return {
       klass: 'soon',
-      text: 'Check back',
-      sub: 'Next trains (' + list + ') arrive before a ' + walk + '-min walk can get you there.',
-      meta: [['Walk', walk + ' min'], ['Next', list]]
+      text: 'WAIT',
+      sub: 'Next trains (' + list + ') arrive before a ' + walk + '-min walk gets you there.',
+      meta: [['WALK', walk + ' MIN'], ['NEXT', trains[0] + ' MIN']]
     };
   }
-
   const leaveIn = catchable - walk;
   const arriveAt = new Date(Date.now() + catchable * 60_000);
   const leaveAt  = new Date(Date.now() + leaveIn * 60_000);
   const backups = trains.filter(m => m > catchable).slice(0, 3);
 
   let klass, text;
-  if (leaveIn <= 0)      { klass = 'go';     text = 'Leave now'; }
-  else if (leaveIn <= 2) { klass = 'go';     text = 'Leave in ' + leaveIn + ' min'; }
-  else if (leaveIn <= 6) { klass = 'soon';   text = 'Leave in ' + leaveIn + ' min'; }
-  else                   { klass = 'plenty'; text = 'Leave in ' + leaveIn + ' min'; }
+  if (leaveIn <= 0)      { klass = 'go';     text = 'GO NOW'; }
+  else if (leaveIn <= 2) { klass = 'go';     text = 'LEAVE IN ' + leaveIn + ' MIN'; }
+  else if (leaveIn <= 6) { klass = 'soon';   text = 'LEAVE IN ' + leaveIn + ' MIN'; }
+  else                   { klass = 'plenty'; text = 'LEAVE IN ' + leaveIn + ' MIN'; }
 
   const sub = 'Catch the ' + fmtClock(arriveAt) + ' train' +
-              (backups.length ? ' · then ' + backups.map(x => x + ' min').join(', ') : '');
+              (backups.length ? ' · next ' + backups.map(x => x + ' min').join(', ') : '');
 
   return {
     klass, text, sub,
     meta: [
-      ['Walk',  walk + ' min'],
-      ['Leave', fmtClock(leaveAt)],
-      ['Train', fmtClock(arriveAt)],
+      ['WALK',  walk + ' MIN'],
+      ['LEAVE', fmtClock(leaveAt).replace(' ', '')],
+      ['TRAIN', fmtClock(arriveAt).replace(' ', '')],
     ],
   };
 }
 
-function buildStop(s) {
-  const wrap = el('div', 'stop');
+function buildStop(s, idx) {
+  const wrap = el('div', 'stop ' + (STATION_THEME[idx] || 'theme-cream'));
+  // big station number behind
+  wrap.appendChild(el('div', 'stop-num', String(idx + 1).padStart(2, '0')));
 
-  const head = el('div', 'stop-head');
-  head.appendChild(el('div', 'stop-name', s.name));
-  const badge = el('div', 'stop-badge');
-  const lBadge = el('span', 'L', 'L');
-  badge.appendChild(lBadge);
-  badge.appendChild(el('span', '', 'Manhattan'));
-  head.appendChild(badge);
-  wrap.appendChild(head);
+  wrap.appendChild(el('div', 'stop-name', (CYRILLIC_STATION[s.name] || '') + (CYRILLIC_STATION[s.name] ? ' · ' : '') + s.name.toUpperCase()));
+  wrap.appendChild(el('div', 'stop-badge', 'L LINE · MANHATTAN-BOUND'));
 
   const v = verdictForStation(s.name, s.manhattan_bound);
   wrap.appendChild(el('div', 'stop-verdict ' + v.klass, v.text));
@@ -625,16 +882,13 @@ function buildStop(s) {
     m.appendChild(el('span', 'v', val));
     meta.appendChild(m);
   });
-
-  // Return trains (Canarsie-bound)
   if (s.canarsie_bound && s.canarsie_bound.length) {
-    const retM = el('div', 'm');
-    retM.appendChild(el('span', 'k', 'Return'));
-    retM.appendChild(el('span', 'v', s.canarsie_bound.slice(0, 3).map(x => x + ' min').join(' · ')));
-    meta.appendChild(retM);
+    const m = el('div', 'm');
+    m.appendChild(el('span', 'k', 'RETURN'));
+    m.appendChild(el('span', 'v', s.canarsie_bound.slice(0, 2).map(x => x + 'M').join(' · ')));
+    meta.appendChild(m);
   }
   wrap.appendChild(meta);
-
   return wrap;
 }
 
@@ -647,29 +901,27 @@ async function refreshTrains() {
     host.textContent = '';
     const stations = (j.data && j.data.stations) || [];
     if (!stations.length) {
-      const box = el('div', 'stop');
-      box.appendChild(el('div', 'stop-name', 'No train data'));
+      const box = el('div', 'stop theme-cream');
+      box.appendChild(el('div', 'stop-name', 'NO DATA'));
       host.appendChild(box);
       return;
     }
-    stations.forEach(s => host.appendChild(buildStop(s)));
-    document.getElementById('statusRight').textContent = 'Live · ' + fmtClock(new Date());
-    document.getElementById('trainsUpdated').textContent = fmtClock(new Date());
+    stations.forEach((s, i) => host.appendChild(buildStop(s, i)));
+    document.getElementById('trainsUpdated').textContent = 'UPD ' + fmtClock(new Date());
+    document.getElementById('statusRight').textContent = 'В ЭФИРЕ · LIVE';
   } catch (e) {
     console.warn('trains', e);
     const host = document.getElementById('trainTiles');
     host.textContent = '';
-    const box = el('div', 'stop');
-    box.appendChild(el('div', 'stop-name', 'MTA feed unavailable'));
-    box.appendChild(el('div', 'stop-sub', 'Retrying in a few seconds.'));
+    const box = el('div', 'stop theme-black');
+    box.appendChild(el('div', 'stop-name', 'MTA FEED OFFLINE'));
+    box.appendChild(el('div', 'stop-sub', 'Retrying…'));
     host.appendChild(box);
-    document.getElementById('statusRight').textContent = 'Retrying';
+    document.getElementById('statusRight').textContent = 'RETRYING';
   }
 }
 
-// ═════════════════════════════════════════════════════════════════
-// KICKOFF
-// ═════════════════════════════════════════════════════════════════
+// Kickoff
 refreshWeather();
 setInterval(refreshWeather, 10 * 60 * 1000);
 refreshTrains();
