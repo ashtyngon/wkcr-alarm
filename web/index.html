@@ -349,15 +349,15 @@ const STATION_MOODS = {
   phalaphala:['world'],
   ligwalagwala:['world'],
   metrofmza:['world'],
-  peacefm:['world','talk'],
+  peacefm:['world'],
   joyfm:['world'],
   classiclagos:['world'],
   wazobia:['world'],
-  sudfm:['world','talk'],
+  sudfm:['world'],
   kledu:['world'],
-  okapi:['world','talk'],
+  okapi:['world'],
   topcongo:['world'],
-  kbctaifa:['world','talk'],
+  kbctaifa:['world'],
   citizen:['world'],
   cloudsfm:['world'],
   sanyufm:['world','indie'],
@@ -378,7 +378,7 @@ const STATION_MOODS = {
   cnr16:['folk','world'],
   rthk4:['classical','opera'],
   rthk5:['opera','world','folk'],
-  nhkr1:['folk','classical','talk'],
+  nhkr1:['folk','classical'],
   nhkworld:['talk'],
   kbs1fm:['classical'],
   warna:['world','folk'],
@@ -391,18 +391,18 @@ const STATION_MOODS = {
   waibidayuh:['folk','world'],
   aifm:['world'],
   cool93:['chill'],
-  mcot1005:['world','talk'],
-  vov1:['world','talk'],
+  mcot1005:['world'],
+  vov1:['world'],
   voh956:['world'],
   cityfm89:['indie'],
   pblahore:['folk','world'],
   pbpeshawar:['folk','world'],
   kantipur:['world'],
-  radiolibre:['world','talk'],
+  radiolibre:['world'],
   sawtghad:['world'],
   yabamazigh:['folk','world'],
   yabchaabi:['folk','world'],
-  chaine3:['world','talk'],
+  chaine3:['world'],
   tlemcen:['world','folk'],
   tiziouzou:['folk','world'],
   mostarab:['folk','classical','world'],
@@ -435,7 +435,7 @@ const STATION_MOODS = {
   filarmonia:['classical'],
   radiouchile:['world','folk','indie'],
   radiocultura:['classical','world'],
-  radiouruguay:['world','talk'],
+  radiouruguay:['world'],
   emisorasur:['folk','world'],
   babelfm:['world','eclectic'],
   batuta:['world','jazz'],
@@ -468,12 +468,12 @@ const STATION_MOODS = {
   novaparis:['world','eclectic'],
   cosmo:['world','eclectic'],
   dlfkultur:['talk','classical'],
-  orfoe1:['classical','talk'],
+  orfoe1:['classical'],
   yleklass:['classical'],
   drp2:['classical'],
   drp8jazz:['jazz'],
   klara:['classical','world'],
-  rai3:['classical','talk'],
+  rai3:['classical'],
   rai5:['classical'],
   espace2:['classical'],
   retedue:['classical','jazz'],
@@ -507,7 +507,7 @@ const STATION_MOODS = {
   rthk1:['talk','news'],
   rthk2:['world','indie'],
   rthk3:['talk'],
-  cnr1:['world','talk'],
+  cnr1:['world'],
   jia883:['world','folk'],
   nasional:['talk','world'],
   minnal:['world'],
@@ -515,7 +515,7 @@ const STATION_MOODS = {
   bkkfm:['indie'],
   voh610:['world','folk'],
   voh999:['world'],
-  voh877:['world','talk'],
+  voh877:['world'],
   vovgthn:['talk','world'],
   vovgthcm:['talk','world'],
   pbislamabad:['world','folk'],
@@ -529,7 +529,7 @@ const STATION_MOODS = {
   rrikbrn:['talk','news'],
   sawtleb:['talk','world'],
   radiomars:['talk'],
-  zitouna:['world','talk'],
+  zitouna:['world'],
   alifalif:['world'],
   alaraby:['talk','news','world'],
   trthaber:['talk','news'],
@@ -690,11 +690,25 @@ function renderStations() {
     }
   }
 
-  // Groups and sub-groups. Each group is only shown if it contains at
-  // least one station that matches the current filter — so when mood is
-  // 'jazz', only the Jazz group appears; when mood is 'world', only the
-  // World group (with its regional subheaders) appears; etc. This gives
-  // users consistent visual organization regardless of filter choice.
+  // When a SPECIFIC mood filter is active (not "all" or "favorites"), show
+  // the matching stations under a single mood-labeled section instead of
+  // splitting them across their original groups. Otherwise selecting
+  // "Talk & News" would still show ORF Ö1 under "Classical" (because that's
+  // its primary group) which is confusing — the user asked for Talk, so
+  // show them under "Talk" full stop.
+  if (activeMood !== 'all' && activeMood !== 'favorites') {
+    const moodInfo = MOODS.find(m => m.id === activeMood);
+    const moodLabel = moodInfo ? moodInfo.label : activeMood;
+    // Exclude favorites already rendered at top
+    const rest = filtered.filter(s => !favorites.includes(s.id));
+    if (rest.length) {
+      container.appendChild(makeGroupLabel(moodLabel, rest.length));
+      renderList(rest);
+    }
+    return;
+  }
+
+  // Groups and sub-groups (for the "All" view only).
   GROUPS.forEach(g => {
     if (g.subgroups) {
       // Gather matching stations per subgroup
