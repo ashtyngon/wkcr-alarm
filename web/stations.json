@@ -448,5 +448,917 @@
     "name": "Klassik Radio Oper",
     "genre": "Opera highlights — Germany",
     "url": "https://stream.klassikradio.de/opera/mp3-192/"
+  },
+  {
+    "id": "ukhozi",
+    "name": "Ukhozi FM",
+    "genre": "isiZulu — South Africa's biggest station",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/UKHOZIFMAAC_SC"
+  },
+  {
+    "id": "umhlobo",
+    "name": "Umhlobo Wenene FM",
+    "genre": "isiXhosa — Gqeberha, SA",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/UMHLOBOWENENEAAC_SC"
+  },
+  {
+    "id": "motsweding",
+    "name": "Motsweding FM",
+    "genre": "Setswana — South Africa",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/MOTSWEDINGAAC_SC"
+  },
+  {
+    "id": "thobela",
+    "name": "Thobela FM",
+    "genre": "Sepedi — Polokwane, SA",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/THOBELAAAC_SC"
+  },
+  {
+    "id": "lesedi",
+    "name": "Lesedi FM",
+    "genre": "Sesotho — South Africa",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/LESEDIAAC_SC"
+  },
+  {
+    "id": "phalaphala",
+    "name": "Phalaphala FM",
+    "genre": "Tshivenda — South Africa",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/PHALAPHALAAAC_SC"
+  },
+  {
+    "id": "ligwalagwala",
+    "name": "Ligwalagwala FM",
+    "genre": "SiSwati — South Africa",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/LIGWALAGWALAAAC_SC"
+  },
+  {
+    "id": "metrofmza",
+    "name": "Metro FM",
+    "genre": "Urban contemporary — South Africa",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/METROAAC_SC"
+  },
+  {
+    "id": "peacefm",
+    "name": "Peace FM",
+    "genre": "Akan talk & music — Accra, Ghana",
+    "url": "https://peacefm-atunwadigital.streamguys1.com/peacefm"
+  },
+  {
+    "id": "joyfm",
+    "name": "Joy FM",
+    "genre": "Hiplife & highlife — Accra, Ghana",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/JOY_FM.mp3"
+  },
+  {
+    "id": "classiclagos",
+    "name": "Classic FM Lagos",
+    "genre": "Smooth & classic hits — Lagos",
+    "url": "https://atunwadigital.streamguys1.com/classicfmlagos"
+  },
+  {
+    "id": "wazobia",
+    "name": "Wazobia FM",
+    "genre": "Nigerian Pidgin & afrobeats — Lagos",
+    "url": "https://wazobiafmlagos951-atunwadigital.streamguys1.com/wazobiafmlagos951"
+  },
+  {
+    "id": "sudfm",
+    "name": "Sud FM",
+    "genre": "Wolof & French — Dakar, Senegal",
+    "url": "https://stream.zenolive.com/8hddc402zbruv"
+  },
+  {
+    "id": "kledu",
+    "name": "Radio Kledu 101.2",
+    "genre": "Malian mix — Bamako",
+    "url": "https://stream.zeno.fm/f38bxpt3v2quv"
+  },
+  {
+    "id": "okapi",
+    "name": "Radio Okapi",
+    "genre": "UN French/Lingala — Kinshasa, DRC",
+    "url": "https://stream.zeno.fm/y9y2bhvzs4zuv"
+  },
+  {
+    "id": "topcongo",
+    "name": "Top Congo FM",
+    "genre": "French/Lingala — Kinshasa",
+    "url": "https://topcongofm2.ice.infomaniak.ch/topcongofm2-64.mp3"
+  },
+  {
+    "id": "kbctaifa",
+    "name": "KBC Radio Taifa",
+    "genre": "Swahili national — Nairobi",
+    "url": "https://stream.zeno.fm/ud2u96xst5quv"
+  },
+  {
+    "id": "citizen",
+    "name": "Radio Citizen",
+    "genre": "Swahili music/news — Nairobi",
+    "url": "https://radiocitizen-atunwadigital.streamguys1.com/radiocitizen"
+  },
+  {
+    "id": "cloudsfm",
+    "name": "Clouds FM",
+    "genre": "Bongo flava — Dar es Salaam",
+    "url": "https://eu6.fastcast4u.com/proxy/cloudsfm?mp=/1"
+  },
+  {
+    "id": "sanyufm",
+    "name": "Sanyu FM",
+    "genre": "English pop/urban — Kampala",
+    "url": "https://s44.myradiostream.com:8138/"
+  },
+  {
+    "id": "zifm",
+    "name": "ZiFM Stereo",
+    "genre": "Zimbabwean music/talk — Harare",
+    "url": "https://edge.iono.fm/xice/134_medium.aac"
+  },
+  {
+    "id": "moambq",
+    "name": "Rádio Moçambique",
+    "genre": "Portuguese national — Maputo",
+    "url": "https://node.stream-africa.com:8443/AntenaNacional"
+  },
+  {
+    "id": "airraagam",
+    "name": "AIR Raagam",
+    "genre": "Indian classical 24/7",
+    "url": "https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudioragam/hlspbaudioragam_Auto.m3u8"
+  },
+  {
+    "id": "airvividh",
+    "name": "AIR Vividh Bharati",
+    "genre": "Hindi film music",
+    "url": "https://air.pc.cdn.bitgravity.com/air/live/pbaudio001/playlist.m3u8"
+  },
+  {
+    "id": "airfmgold",
+    "name": "AIR FM Gold",
+    "genre": "Film & retro Hindi — Delhi",
+    "url": "https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudio005/hlspbaudio005_Auto.m3u8"
+  },
+  {
+    "id": "airrainbow",
+    "name": "AIR Rainbow Kolkata",
+    "genre": "Bangla pop & Rabindra — Kolkata",
+    "url": "https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudio058/hlspbaudio05864kbps.m3u8"
+  },
+  {
+    "id": "airmaitree",
+    "name": "AIR Maitree",
+    "genre": "Baul & Rabindra — Kolkata",
+    "url": "https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudio245/hlspbaudio24564kbps.m3u8"
+  },
+  {
+    "id": "airkozhikode",
+    "name": "AIR Kozhikode",
+    "genre": "Malayalam & Mappila",
+    "url": "https://air.pc.cdn.bitgravity.com/air/live/pbaudio082/playlist.m3u8"
+  },
+  {
+    "id": "airdharamshala",
+    "name": "AIR Dharamshala",
+    "genre": "Himachali & Tibetan region",
+    "url": "https://air.pc.cdn.bitgravity.com/air/live/pbaudio165/playlist.m3u8"
+  },
+  {
+    "id": "cnr3",
+    "name": "CNR-3 Music",
+    "genre": "Chinese music — Beijing",
+    "url": "https://satellitepull.cnr.cn/live/wxyyzs/playlist.m3u8"
+  },
+  {
+    "id": "cnr8",
+    "name": "CNR-8 Ethnic",
+    "genre": "Mongolian/Korean/ethnic",
+    "url": "https://satellitepull.cnr.cn/live/wxmzzs/playlist.m3u8"
+  },
+  {
+    "id": "cnr11",
+    "name": "CNR-11 Tibetan",
+    "genre": "Tibetan language radio",
+    "url": "https://satellitepull.cnr.cn/live/wxzygb/playlist.m3u8"
+  },
+  {
+    "id": "cnr13",
+    "name": "CNR-13 Uyghur",
+    "genre": "Uyghur language radio",
+    "url": "https://satellitepull.cnr.cn/live/wxwygb/playlist.m3u8"
+  },
+  {
+    "id": "cnr17",
+    "name": "CNR-17 Kazakh",
+    "genre": "Kazakh language radio",
+    "url": "https://satellitepull.cnr.cn/live/wxhygb/playlist.m3u8"
+  },
+  {
+    "id": "cnr16",
+    "name": "CNR-16 Village",
+    "genre": "Rural & folk music",
+    "url": "https://satellitepull.cnr.cn/live/wxxczs/playlist.m3u8"
+  },
+  {
+    "id": "rthk4",
+    "name": "RTHK Radio 4",
+    "genre": "Western + Chinese classical, Sunday Opera",
+    "url": "https://rthkradio4-live.akamaized.net/hls/live/2040080/radio4/master.m3u8"
+  },
+  {
+    "id": "rthk5",
+    "name": "RTHK Radio 5",
+    "genre": "Cantonese opera dedicated!",
+    "url": "https://rthkradio5-live.akamaized.net/hls/live/2040081/radio5/master.m3u8"
+  },
+  {
+    "id": "nhkr1",
+    "name": "NHK Radio 1",
+    "genre": "Japanese public (hōgaku, gagaku)",
+    "url": "https://masterpl.hls.nhkworld.jp/hls/r1/live/master.m3u8"
+  },
+  {
+    "id": "nhkworld",
+    "name": "NHK World",
+    "genre": "English international",
+    "url": "https://master.nhkworld.jp/nhkworld-radio/playlist/rs2/live.m3u8"
+  },
+  {
+    "id": "kbs1fm",
+    "name": "KBS 1FM Classic",
+    "genre": "Korean classical — Seoul",
+    "url": "https://1fm.gscdn.kbs.co.kr/1fm_192_2.m3u8"
+  },
+  {
+    "id": "warna",
+    "name": "Warna 94.2",
+    "genre": "Malay classics & dangdut — Singapore",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/WARNA942FMAAC.aac"
+  },
+  {
+    "id": "oli968",
+    "name": "Oli 96.8",
+    "genre": "Tamil classical — Singapore",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/OLI968FMAAC.aac"
+  },
+  {
+    "id": "capital958",
+    "name": "Capital 958",
+    "genre": "Mandarin & Hokkien oldies — Singapore",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/CAPITAL958FMAAC.aac"
+  },
+  {
+    "id": "love972",
+    "name": "Love 972",
+    "genre": "Mandarin classics — Singapore",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/LOVE972FMAAC.aac"
+  },
+  {
+    "id": "klasik",
+    "name": "Radio Klasik RTM",
+    "genre": "Classic Malay, keroncong, P. Ramlee",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_KLASIK.mp3"
+  },
+  {
+    "id": "asyik",
+    "name": "Asyik FM",
+    "genre": "Orang Asli indigenous",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/ASYIK_FM.mp3"
+  },
+  {
+    "id": "waiiban",
+    "name": "Wai FM Iban",
+    "genre": "Sarawak Iban & sape",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/WAI_FM_IBAN.mp3"
+  },
+  {
+    "id": "waibidayuh",
+    "name": "Wai FM Bidayuh",
+    "genre": "Sarawak Bidayuh",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/WAI_FM_BK.mp3"
+  },
+  {
+    "id": "aifm",
+    "name": "Ai FM",
+    "genre": "Mandarin — Malaysia",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/AI_FMAAC.aac"
+  },
+  {
+    "id": "cool93",
+    "name": "Cool Fahrenheit 93",
+    "genre": "Thai & Western chill",
+    "url": "https://coolism-web.cdn.byteark.com/;stream/1"
+  },
+  {
+    "id": "mcot1005",
+    "name": "MCOT FM 100.5",
+    "genre": "Thai news/music — Bangkok",
+    "url": "https://lcdn.mcot.net/RadioLive/smil:fm1005_live.smil/playlist.m3u8"
+  },
+  {
+    "id": "vov1",
+    "name": "VOV1",
+    "genre": "Vietnam national — Hanoi",
+    "url": "https://str.vov.gov.vn/vovlive/vov1vov5Vietnamese.sdp_aac/playlist.m3u8"
+  },
+  {
+    "id": "voh956",
+    "name": "VOH FM 95.6",
+    "genre": "HCMC radio",
+    "url": "https://strm.voh.com.vn/radio/channel1/chunklist_w829828563.m3u8"
+  },
+  {
+    "id": "cityfm89",
+    "name": "City FM 89",
+    "genre": "English & music — Pakistan",
+    "url": "https://radio.cityfm89.com/stream"
+  },
+  {
+    "id": "pblahore",
+    "name": "Radio Pakistan Lahore",
+    "genre": "Punjabi & ghazal",
+    "url": "https://whmsonic.radio.gov.pk:8026/relay"
+  },
+  {
+    "id": "pbpeshawar",
+    "name": "Radio Pakistan Peshawar",
+    "genre": "Pashto",
+    "url": "https://whmsonic.radio.gov.pk:8072/relay"
+  },
+  {
+    "id": "kantipur",
+    "name": "Radio Kantipur 96.1",
+    "genre": "Nepali — Kathmandu",
+    "url": "https://radio-broadcast.ekantipur.com/stream"
+  },
+  {
+    "id": "radiolibre",
+    "name": "Radio Liban Libre",
+    "genre": "Independent Lebanon",
+    "url": "https://edge.mixlr.com/channel/qtqeb"
+  },
+  {
+    "id": "sawtghad",
+    "name": "Sawt El Ghad",
+    "genre": "Popular Arabic — Beirut",
+    "url": "https://l3.itworkscdn.net/itwaudio/9030/stream"
+  },
+  {
+    "id": "yabamazigh",
+    "name": "Yabiladi Amazigh",
+    "genre": "Berber/Amazigh music",
+    "url": "https://radio.yabiladi.com:9002/;stream.mp3"
+  },
+  {
+    "id": "yabchaabi",
+    "name": "Yabiladi Chaabi",
+    "genre": "Moroccan Chaabi/folk",
+    "url": "https://radio.yabiladi.com:8102/;stream.mp3"
+  },
+  {
+    "id": "chaine3",
+    "name": "Algérie Chaîne 3",
+    "genre": "French RTA — Algiers",
+    "url": "https://radiochaine3.ice.infomaniak.ch/chaine3.mp3"
+  },
+  {
+    "id": "tlemcen",
+    "name": "Radio Tlemcen",
+    "genre": "Regional RTA — Tlemcen",
+    "url": "https://radiotlemcen.ice.infomaniak.ch/tlemcen.mp3"
+  },
+  {
+    "id": "tiziouzou",
+    "name": "Radio Tizi Ouzou",
+    "genre": "Kabyle/Berber — oldest Amazigh station",
+    "url": "https://radiotiziouzou.ice.infomaniak.ch/tiziouzou.mp3"
+  },
+  {
+    "id": "mostarab",
+    "name": "Mosaique Tarab",
+    "genre": "Classical Arabic tarab",
+    "url": "https://radio.mosaiquefm.net/mosatarab"
+  },
+  {
+    "id": "alarabiya",
+    "name": "Al Arabiya FM",
+    "genre": "Pan-Arab news/music",
+    "url": "https://fm.alarabiya.net/fm/myStream/playlist.m3u8"
+  },
+  {
+    "id": "ajarabic",
+    "name": "Al Jazeera Arabic",
+    "genre": "News audio — Doha",
+    "url": "https://live-hls-audio-web-aja.getaj.net/VOICE-AJA/01.m3u8"
+  },
+  {
+    "id": "ajenglish",
+    "name": "Al Jazeera English",
+    "genre": "News audio — Doha",
+    "url": "https://live-hls-audio-web-aje.getaj.net/VOICE-AJE/01.m3u8"
+  },
+  {
+    "id": "trtkurdi",
+    "name": "TRT Radyo Kurdî",
+    "genre": "Kurdish (Kurmanji/Zaza)",
+    "url": "https://radio-trtradyo6.medya.trt.com.tr/master.m3u8"
+  },
+  {
+    "id": "kafa",
+    "name": "Kafa Radyo",
+    "genre": "Turkish alternative — Istanbul",
+    "url": "https://moondigitalmaster.radyotvonline.net/kafaradyo/playlist.m3u8"
+  },
+  {
+    "id": "alaturka",
+    "name": "Radyo Alaturka",
+    "genre": "Turkish classical sanat",
+    "url": "https://yayin.jumboserver.net:9100/stream"
+  },
+  {
+    "id": "dinamocaffe",
+    "name": "Dinamo Caffe",
+    "genre": "Anatolian/jazz — Istanbul",
+    "url": "https://channels.dinamo.fm/caffe-mp3"
+  },
+  {
+    "id": "dinamolegacy",
+    "name": "Dinamo Legacy",
+    "genre": "Classic Anatolian rock",
+    "url": "https://channels.dinamo.fm/legacy-mp3"
+  },
+  {
+    "id": "dinamosmog",
+    "name": "Dinamo Smog",
+    "genre": "Dub/electronic",
+    "url": "https://channels.dinamo.fm/smog-mp3"
+  },
+  {
+    "id": "kurdistan24",
+    "name": "Kurdistan 24 Radio",
+    "genre": "Kurdish news — Erbil",
+    "url": "https://audio-edge-3mayu.fra.h.radiomast.io/04b1ce4c-24f2-4172-b756-065832ef78bf"
+  },
+  {
+    "id": "rudaw",
+    "name": "Rudaw News Radio",
+    "genre": "Kurdish news — Erbil",
+    "url": "https://l3.itworkscdn.net/itwaudio/9006/stream"
+  },
+  {
+    "id": "kan88",
+    "name": "Kan 88",
+    "genre": "Israeli jazz & world",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_88.mp3"
+  },
+  {
+    "id": "kanklass",
+    "name": "Kan Kol HaMusica",
+    "genre": "Israeli classical",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_KOL_HAMUSICA.mp3"
+  },
+  {
+    "id": "kangimmel",
+    "name": "Kan Gimmel",
+    "genre": "Israeli music, Mizrahi rotation",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_GIMMEL.mp3"
+  },
+  {
+    "id": "kanreka",
+    "name": "Kan Reka",
+    "genre": "Multilingual immigrant radio",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_REKA.mp3"
+  },
+  {
+    "id": "kanmoreshet",
+    "name": "Kan Moreshet",
+    "genre": "Heritage/religious",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_MORESHET.mp3"
+  },
+  {
+    "id": "kantarbut",
+    "name": "Kan Tarbut",
+    "genre": "Israeli culture/talk",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_TARBUT.mp3"
+  },
+  {
+    "id": "mizrahit",
+    "name": "Mizrahit Radio",
+    "genre": "Mizrahi dedicated",
+    "url": "https://mzr.mediacast.co.il/mzradio"
+  },
+  {
+    "id": "ashams",
+    "name": "Radio A-Shams",
+    "genre": "Arabic for Arab Israelis",
+    "url": "https://cdna.streamgates.net/Ashams/Live/icecast.audio"
+  },
+  {
+    "id": "opus94",
+    "name": "IMER Opus 94",
+    "genre": "Mexican classical",
+    "url": "https://s2.mexside.net/8016/stream"
+  },
+  {
+    "id": "horizonte",
+    "name": "IMER Horizonte",
+    "genre": "Mexican jazz & world",
+    "url": "https://s2.mexside.net/8014/stream"
+  },
+  {
+    "id": "reactor",
+    "name": "IMER Reactor",
+    "genre": "Mexican indie & alternative",
+    "url": "https://s2.mexside.net/8002/stream"
+  },
+  {
+    "id": "radiounam",
+    "name": "Radio UNAM 96.1",
+    "genre": "Cultural university — CDMX",
+    "url": "https://tv.radiohosting.online:9484/stream"
+  },
+  {
+    "id": "tgw",
+    "name": "TGW La Voz de Guatemala",
+    "genre": "National public, marimba",
+    "url": "https://stream.radiotgw.gob.gt/8002/stream"
+  },
+  {
+    "id": "radionalcol",
+    "name": "Radio Nacional Colombia",
+    "genre": "Cultural, regional, indigenous",
+    "url": "https://streaming.rtvc.gov.co/Radio_Radionacional/Radionacional.stream/playlist.m3u8"
+  },
+  {
+    "id": "radionica",
+    "name": "Señal Radiónica",
+    "genre": "Colombian indie/alternative",
+    "url": "https://streaming.rtvc.gov.co/Radio_Radionica/Radionica.stream/playlist.m3u8"
+  },
+  {
+    "id": "filarmonia",
+    "name": "Radio Filarmonía",
+    "genre": "Peruvian classical — Lima",
+    "url": "https://c22.radioboss.fm:18100/live"
+  },
+  {
+    "id": "radiouchile",
+    "name": "Radio Universidad de Chile",
+    "genre": "Nueva Canción heritage",
+    "url": "https://sonic-us.arkeo.cl/8186/stream"
+  },
+  {
+    "id": "radiocultura",
+    "name": "Radio Cultura Buenos Aires",
+    "genre": "Argentine classical/cultural",
+    "url": "https://streaming.escuchanosonline.com:7035/stream"
+  },
+  {
+    "id": "radiouruguay",
+    "name": "Radio Uruguay SODRE",
+    "genre": "National public — Montevideo",
+    "url": "https://radios.iwstreaming.uy/8036/stream"
+  },
+  {
+    "id": "emisorasur",
+    "name": "SODRE Emisora del Sur",
+    "genre": "Candombe, murga, tango",
+    "url": "https://radios.iwstreaming.uy/8034/stream"
+  },
+  {
+    "id": "babelfm",
+    "name": "Babel FM SODRE",
+    "genre": "World music — Uruguay",
+    "url": "https://radios.iwstreaming.uy/8030/stream"
+  },
+  {
+    "id": "batuta",
+    "name": "Rádio Batuta MPB",
+    "genre": "IMS MPB, samba, choro",
+    "url": "https://radioims.out.airtime.pro:8443/radioims_a"
+  },
+  {
+    "id": "batutaclass",
+    "name": "Rádio Batuta Clássicos",
+    "genre": "IMS classical archive",
+    "url": "https://classicoims.out.airtime.pro:8443/classicoims_a"
+  },
+  {
+    "id": "mecfm",
+    "name": "Rádio MEC FM",
+    "genre": "Brazilian classical/cultural",
+    "url": "https://radiomecfm-stream.ebc.com.br/ebc/radiomecfm/playlist.m3u8"
+  },
+  {
+    "id": "amazonia",
+    "name": "Rádio Nacional Amazônia",
+    "genre": "Northern Brazil, indigenous",
+    "url": "https://radionacionalamazonia-stream.ebc.com.br/ebc/radionacionalamazonia/playlist.m3u8"
+  },
+  {
+    "id": "culturasp",
+    "name": "Cultura FM São Paulo",
+    "genre": "Brazilian classical/cultural",
+    "url": "https://player-culturafm.stream.uol.com.br/live/culturafm.m3u8"
+  },
+  {
+    "id": "alphafm",
+    "name": "Alpha FM",
+    "genre": "Brazilian instrumental/smooth",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_ALPHAFM_ADP.aac"
+  },
+  {
+    "id": "uspfm",
+    "name": "Rádio USP FM",
+    "genre": "University cultural — SP",
+    "url": "https://flow.emm.usp.br:8008/radiousp-rp-64.mp3"
+  },
+  {
+    "id": "vibect",
+    "name": "Vibe CT 105",
+    "genre": "Trinidad soca/calypso",
+    "url": "https://audio-edge-vqwx4.yyz.g.radiomast.io/c35d311e-cc60-41b9-b0c5-339e62c14dee"
+  },
+  {
+    "id": "kooriradio",
+    "name": "Koori Radio",
+    "genre": "Sydney First Nations",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/2LND.mp3"
+  },
+  {
+    "id": "triplernation",
+    "name": "ABC Radio National",
+    "genre": "Australian culture/talk",
+    "url": "https://mediaserviceslive.akamaized.net/hls/live/2038316/radionational/index.m3u8"
+  },
+  {
+    "id": "triplej",
+    "name": "ABC Triple J",
+    "genre": "Youth/alt music",
+    "url": "https://mediaserviceslive.akamaized.net/hls/live/2038316/triplej/index.m3u8"
+  },
+  {
+    "id": "doublej",
+    "name": "ABC Double J",
+    "genre": "Grown-up alt rock",
+    "url": "https://mediaserviceslive.akamaized.net/hls/live/2038316/doublej/index.m3u8"
+  },
+  {
+    "id": "abccountry",
+    "name": "ABC Country",
+    "genre": "Australian country & folk",
+    "url": "https://mediaserviceslive.akamaized.net/hls/live/2038316/country/index.m3u8"
+  },
+  {
+    "id": "triplerr",
+    "name": "Triple R 102.7",
+    "genre": "Melbourne community eclectic",
+    "url": "https://ondemand.rrr.org.au/getstream?id=wshq"
+  },
+  {
+    "id": "niufm",
+    "name": "Niu FM 103.8",
+    "genre": "Pasifika — Auckland",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/NIUFMAAC.aac"
+  },
+  {
+    "id": "waatea",
+    "name": "Radio Waatea",
+    "genre": "Urban Māori — Auckland",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/NZME_223AAC.aac"
+  },
+  {
+    "id": "tehiku",
+    "name": "Te Hiku Media",
+    "genre": "Iwi te reo Māori — Kaitaia",
+    "url": "https://wowza.iwi.radio/icecast-to-hls/ngrp:TeHikuMedia.stream_all/playlist.m3u8"
+  },
+  {
+    "id": "nv1",
+    "name": "Native Voice One",
+    "genre": "US Native American network",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/NV1.mp3"
+  },
+  {
+    "id": "hpr1",
+    "name": "HPR-1 Hawaii",
+    "genre": "Hawaiian public, slack-key Sundays",
+    "url": "https://khpr-ice.streamguys1.com/khpr2.mp3"
+  },
+  {
+    "id": "hpr2",
+    "name": "HPR-2 Hawaii",
+    "genre": "Hawaiian public classical",
+    "url": "https://khpr-ice.streamguys1.com/kipo2.mp3"
+  },
+  {
+    "id": "ckua",
+    "name": "CKUA Radio",
+    "genre": "Alberta's eclectic public radio",
+    "url": "https://ais-sa1.streamon.fm/7000_48k.aac/playlist.m3u8"
+  },
+  {
+    "id": "cbconetor",
+    "name": "CBC Radio One Toronto",
+    "genre": "Canadian news/talk",
+    "url": "https://cbcradiolive.akamaized.net/hls/live/2041036/ES_R1ETR/master.m3u8"
+  },
+  {
+    "id": "wmbr",
+    "name": "WMBR",
+    "genre": "MIT community eclectic",
+    "url": "https://wmbr.org:8002/hi"
+  },
+  {
+    "id": "kalx",
+    "name": "KALX Berkeley",
+    "genre": "UC Berkeley college radio",
+    "url": "https://stream.kalx.berkeley.edu:8443/kalx-128.mp3"
+  },
+  {
+    "id": "kcsb",
+    "name": "KCSB Santa Barbara",
+    "genre": "UCSB college radio",
+    "url": "https://stream.revma.ihrhls.com/zc185"
+  },
+  {
+    "id": "finter",
+    "name": "France Inter",
+    "genre": "Public culture/news/music",
+    "url": "https://icecast.radiofrance.fr/franceinter-midfi.mp3"
+  },
+  {
+    "id": "fmusique",
+    "name": "France Musique",
+    "genre": "Classical, jazz, contemporary",
+    "url": "https://icecast.radiofrance.fr/francemusique-midfi.mp3"
+  },
+  {
+    "id": "novaparis",
+    "name": "Radio Nova Paris",
+    "genre": "Afro, Balkan, global crate-digging",
+    "url": "https://novazz.ice.infomaniak.ch/novazz-128.mp3"
+  },
+  {
+    "id": "cosmo",
+    "name": "WDR Cosmo",
+    "genre": "9-language world/diaspora — Cologne",
+    "url": "https://wdr-cosmo-live.icecast.wdr.de/wdr/cosmo/live/mp3/128/stream.mp3"
+  },
+  {
+    "id": "dlfkultur",
+    "name": "Deutschlandfunk Kultur",
+    "genre": "German public culture",
+    "url": "https://st02.sslstream.dlf.de/dlf/02/128/mp3/stream.mp3?aggregator=web"
+  },
+  {
+    "id": "orfoe1",
+    "name": "ORF Ö1",
+    "genre": "Austrian public culture/music",
+    "url": "https://orf-live.ors-shoutcast.at/oe1-q2a"
+  },
+  {
+    "id": "yleklass",
+    "name": "YLE Klassinen",
+    "genre": "Finnish public classical",
+    "url": "https://icecast.live.yle.fi/radio/YleKlassinen/icecast.audio"
+  },
+  {
+    "id": "drp2",
+    "name": "DR P2",
+    "genre": "Danish public classical",
+    "url": "https://live-icy.gss.dr.dk/A/A05H.mp3"
+  },
+  {
+    "id": "drp8jazz",
+    "name": "DR P8 Jazz",
+    "genre": "Danish public jazz",
+    "url": "https://live-icy.gss.dr.dk/A/A22H.mp3"
+  },
+  {
+    "id": "klara",
+    "name": "Klara VRT",
+    "genre": "Flemish classical/world",
+    "url": "https://quantumcast.vrtcdn.be/klara/mp3-128"
+  },
+  {
+    "id": "rai3",
+    "name": "RAI Radio 3",
+    "genre": "Italian public culture",
+    "url": "https://icestreaming.rai.it/3.mp3"
+  },
+  {
+    "id": "rai5",
+    "name": "RAI Radio 5 Classica",
+    "genre": "Italian public classical",
+    "url": "https://icestreaming.rai.it/5.mp3"
+  },
+  {
+    "id": "espace2",
+    "name": "RTS Espace 2",
+    "genre": "Swiss French classical/culture",
+    "url": "https://stream.srg-ssr.ch/m/espace-2/mp3_128"
+  },
+  {
+    "id": "retedue",
+    "name": "RSI Rete Due",
+    "genre": "Swiss Italian culture",
+    "url": "https://stream.srg-ssr.ch/m/rsp/mp3_128"
+  },
+  {
+    "id": "bnrhoro",
+    "name": "BNR Radio Horo",
+    "genre": "Bulgarian folk 24/7 — Sofia",
+    "url": "https://lb-hls.cdn.bg/2032/fls/RadioHoro.stream/playlist.m3u8"
+  },
+  {
+    "id": "errklass",
+    "name": "ERR Klassikaraadio",
+    "genre": "Estonian public classical",
+    "url": "https://icecast.err.ee/klassikaraadio.mp3"
+  },
+  {
+    "id": "errklarajazz",
+    "name": "ERR Klara Jazz",
+    "genre": "Estonian public jazz",
+    "url": "https://icecast.err.ee/klarajazz.mp3"
+  },
+  {
+    "id": "tilos",
+    "name": "Tilos Rádió",
+    "genre": "Budapest independent community",
+    "url": "https://stream.tilos.hu/tilos"
+  },
+  {
+    "id": "kioskradio",
+    "name": "Kiosk Radio",
+    "genre": "Curated, Nyege Nyege partner — Brussels",
+    "url": "https://kioskradiobxl.out.airtime.pro/kioskradiobxl_a"
+  },
+  {
+    "id": "raheem",
+    "name": "Radio Raheem",
+    "genre": "Independent culture — Milan",
+    "url": "https://radioraheem.out.airtime.pro/radioraheem_a"
+  },
+  {
+    "id": "czlive",
+    "name": "Concertzender Live",
+    "genre": "Classical/jazz/world main stream",
+    "url": "https://streams.greenhost.nl:8006/live"
+  },
+  {
+    "id": "czworld",
+    "name": "Concertzender Wereldmuziek",
+    "genre": "World music — Utrecht",
+    "url": "https://streams.greenhost.nl:8006/wereldmuziek"
+  },
+  {
+    "id": "czfolk",
+    "name": "Concertzender Folk it!",
+    "genre": "Folk — Utrecht",
+    "url": "https://streams.greenhost.nl:8006/folkit"
+  },
+  {
+    "id": "czorient",
+    "name": "Concertzender Oriënt Express",
+    "genre": "Middle Eastern/Asian",
+    "url": "https://streams.greenhost.nl:8006/orientexpress"
+  },
+  {
+    "id": "czchanson",
+    "name": "Concertzender Chanson",
+    "genre": "French chanson",
+    "url": "https://streams.greenhost.nl:8006/chanson"
+  },
+  {
+    "id": "czgregorian",
+    "name": "Concertzender Gregoriaans",
+    "genre": "Gregorian chant",
+    "url": "https://streams.greenhost.nl:8006/gregoriaans"
+  },
+  {
+    "id": "czearly",
+    "name": "Concertzender Oude Muziek",
+    "genre": "Early music",
+    "url": "https://streams.greenhost.nl:8006/oudemuziek"
+  },
+  {
+    "id": "czopera",
+    "name": "Concertzender Opera",
+    "genre": "Opera",
+    "url": "https://streams.greenhost.nl:8006/opera"
+  },
+  {
+    "id": "czbarok",
+    "name": "Concertzender Barok",
+    "genre": "Baroque",
+    "url": "https://streams.greenhost.nl:8006/barok"
+  },
+  {
+    "id": "czjazz",
+    "name": "Concertzender Jazz",
+    "genre": "World of Jazz",
+    "url": "https://streams.greenhost.nl:8006/jazz"
   }
 ]
