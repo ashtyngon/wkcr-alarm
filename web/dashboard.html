@@ -8,38 +8,39 @@
 <meta name="apple-mobile-web-app-title" content="Dashboard"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="mobile-web-app-capable" content="yes"/>
-<meta name="theme-color" content="#0a0a0a"/>
+<meta name="theme-color" content="#f0e4c8"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Alfa+Slab+One&family=Oswald:wght@400;500;600;700&family=Playfair+Display:ital@0;1&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
 <style>
 /* ──────────────────────────────────────────────────────────────────
-   Soviet avant-garde wall dashboard, v4.
-   Middle area is a carousel of 5 panels that rotate every 12s:
-     · Nassau Av (G)  trains
-     · Graham Av (L)  trains
-     · Bedford Av (L) trains
-     · 7-DAY outlook
-     · TODAY hourly
-   Time + current weather + UV NOW stay pinned at the top.
+   Soviet magazine dashboard, v5.
+   Inspired by Krokodil (Крокодил) №3, Sept 1922 — aged newsprint,
+   black ink + single-accent red, typographic hierarchy doing the
+   separation instead of heavy color blocks. Sleeker than v4.
    ────────────────────────────────────────────────────────────────── */
 :root {
-  --paper:   #f2e7cc;
+  --paper:   #f0e4c8;
   --paper-2: #e5d8b8;
-  --ink:     #0a0a0a;
-  --red:     #c4201e;
+  --ink:     #141210;
+  --ink-2:   #2f2a24;
+  --muted:   rgba(20, 18, 16, 0.55);
+  --mute-2:  rgba(20, 18, 16, 0.35);
+  --hair:    rgba(20, 18, 16, 0.18);  /* hairline rules */
+  --red:     #c02020;
   --red-2:   #8a1513;
-  --ochre:   #d4a017;
+  --ochre:   #c79033;
 
-  /* UV severity */
-  --uv-low:    #2e7d32;
-  --uv-mod:    #d4a017;
-  --uv-high:   #e65100;
-  --uv-vhigh:  #c4201e;
+  --uv-low:    #4a7c41;
+  --uv-mod:    #c79033;
+  --uv-high:   #d4620e;
+  --uv-vhigh:  #c02020;
   --uv-extrm:  #6a1b9a;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+html, body {
+  margin: 0; padding: 0; height: 100%; overflow: hidden;
+}
 body {
   background: var(--paper);
   color: var(--ink);
@@ -47,21 +48,38 @@ body {
   font-size: 18px;
   font-weight: 500;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* Warm radial lighting — like worn paper */
   background-image:
-    radial-gradient(ellipse at 70% 10%, rgba(0,0,0,0.04), transparent 60%),
-    radial-gradient(ellipse at 10% 90%, rgba(196, 32, 30, 0.06), transparent 55%);
+    radial-gradient(ellipse at 15% 10%, rgba(210, 180, 120, 0.22), transparent 60%),
+    radial-gradient(ellipse at 90% 95%, rgba(140, 90, 60, 0.14), transparent 55%);
+}
+
+/* PAPER GRAIN — subtle fractal noise, slightly yellowed */
+body::before {
+  content: "";
+  position: fixed; inset: 0; pointer-events: none; z-index: 1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='9'/><feColorMatrix values='0 0 0 0 0.25  0 0 0 0 0.18  0 0 0 0 0.10  0 0 0 0.20 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+}
+/* HALFTONE — tiny dot pattern, print-reproduction artifact */
+body::after {
+  content: "";
+  position: fixed; inset: 0; pointer-events: none; z-index: 2;
+  background-image:
+    radial-gradient(circle, rgba(20, 18, 16, 0.065) 0.6px, transparent 1px);
+  background-size: 3px 3px;
+  mix-blend-mode: multiply;
 }
 .frame {
+  position: relative; z-index: 3;
   display: grid;
   grid-template-rows: auto auto auto 1fr auto auto;
   height: 100vh;
-  padding: 20px 32px;
-  gap: 12px;
-  position: relative;
+  padding: 22px 40px;
+  gap: 14px;
 }
-/* Pin each section to its grid row explicitly. Without this, when
-   the alert ribbon is display:none the subsequent rows shift up,
-   handing the 1fr slot to the tabs instead of the carousel. */
 .top           { grid-row: 1; }
 .alert-ribbon  { grid-row: 2; }
 .slogan-bar    { grid-row: 3; }
@@ -70,140 +88,195 @@ body {
 .footer        { grid-row: 6; }
 
 /* ══════════════════════════════════════════════════════════════
-   TOP STRIP — time, current weather, UV NOW (always visible)
+   MASTHEAD — newspaper header, not a poster block.
+   Thick/thin rule pair above, editorial metadata ribbon, then
+   the big numerals on paper with red accents.
    ══════════════════════════════════════════════════════════════ */
 .top {
+  border-top: 6px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  padding: 0;
+  position: relative;
+}
+.top::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -6px;
+  height: 2px;
+  background: var(--ink);
+}
+
+/* Thin metadata ribbon running along the very top */
+.masthead-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 18px;
+  padding: 6px 2px 10px;
+  border-bottom: 1px dashed var(--hair);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.masthead-meta .left,
+.masthead-meta .center,
+.masthead-meta .right {
+  display: flex; gap: 18px; align-items: center;
+}
+.masthead-meta .ornament {
+  color: var(--red); font-weight: 700; letter-spacing: 0;
+}
+
+/* Main masthead row */
+.top-main {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  align-items: stretch;
-  border: 4px solid var(--ink);
+  gap: 32px;
+  align-items: center;
+  padding: 4px 2px 12px;
 }
 .time-box {
-  background: var(--red);
-  color: var(--paper);
-  padding: 10px 26px 12px;
-  display: flex; align-items: baseline; gap: 16px;
+  display: flex; align-items: baseline; gap: 14px;
+  padding-right: 28px;
+  border-right: 1px solid var(--ink);
 }
 .time-box .nums {
   font-family: 'Alfa Slab One', serif;
-  font-size: clamp(72px, 7.8vw, 130px);
-  line-height: 0.92;
+  font-size: clamp(78px, 8.6vw, 146px);
+  line-height: 0.9;
   letter-spacing: -0.02em;
+  color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 .time-box .ampm {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: clamp(20px, 1.8vw, 30px);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  opacity: 0.9;
+  font-family: 'Abril Fatface', serif;
+  font-size: clamp(26px, 2.4vw, 40px);
+  color: var(--red);
+  letter-spacing: 0.02em;
 }
-.wx-box {
-  background: var(--ink);
-  color: var(--paper);
-  padding: 10px 24px;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 22px;
+
+.wx-row {
+  display: flex; align-items: center; gap: 28px;
+  min-width: 0;
+}
+.wx-temp-block {
+  display: flex; flex-direction: column;
   align-items: center;
   min-width: 0;
 }
-.wx-box .temp-col { display: flex; flex-direction: column; align-items: center; }
-.wx-box .temp {
+.wx-temp {
   font-family: 'Alfa Slab One', serif;
-  font-size: clamp(56px, 6.5vw, 100px);
+  font-size: clamp(72px, 7.4vw, 130px);
   line-height: 0.9;
   letter-spacing: -0.02em;
+  color: var(--ink);
   font-variant-numeric: tabular-nums;
   display: flex; align-items: flex-start;
 }
-.wx-box .temp .deg { color: var(--red); font-size: 0.8em; }
-.wx-box .temp-c {
+.wx-temp .deg { color: var(--red); font-size: 0.75em; }
+.wx-temp-c {
   font-family: 'Roboto Mono', monospace;
   font-size: clamp(13px, 1.1vw, 16px);
-  letter-spacing: 0.08em;
-  opacity: 0.7;
-  font-weight: 500;
-  margin-top: -4px;
+  letter-spacing: 0.1em;
+  color: var(--muted); font-weight: 500;
+  margin-top: -2px;
 }
-.wx-box .caption { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
-.wx-box .caption .day-label {
+.wx-caption {
+  min-width: 0;
+  display: flex; flex-direction: column; gap: 5px;
+  padding-left: 8px;
+  border-left: 1px solid var(--hair);
+  padding-left: 20px;
+}
+.wx-caption .day-label {
   font-family: 'Roboto Mono', monospace;
-  font-size: clamp(11px, 1vw, 14px);
-  letter-spacing: 0.22em; text-transform: uppercase;
-  color: var(--ochre); font-weight: 700; line-height: 1;
+  font-size: clamp(11px, 0.95vw, 13px);
+  letter-spacing: 0.26em; text-transform: uppercase;
+  color: var(--red); font-weight: 700; line-height: 1;
+  margin-bottom: 2px;
 }
-.wx-box .caption .label {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: clamp(22px, 2.4vw, 38px);
-  letter-spacing: 0.02em; text-transform: uppercase; line-height: 1.02;
+.wx-caption .label {
+  font-family: 'Abril Fatface', serif;
+  font-size: clamp(28px, 3.0vw, 48px);
+  letter-spacing: 0;
+  line-height: 1.02; color: var(--ink);
 }
-.wx-box .caption .sub {
+.wx-caption .sub {
   font-family: 'Roboto Mono', monospace;
-  font-size: clamp(12px, 1vw, 14px);
-  letter-spacing: 0.08em; font-weight: 500; opacity: 0.75;
-  text-transform: uppercase;
+  font-size: clamp(12px, 0.95vw, 14px);
+  letter-spacing: 0.08em; font-weight: 500;
+  color: var(--muted); text-transform: uppercase;
 }
-.wx-box .caption .advice {
-  font-family: 'Oswald', sans-serif; font-weight: 500;
-  font-size: clamp(14px, 1.25vw, 18px);
-  line-height: 1.2; opacity: 0.9; max-width: 52ch;
+.wx-caption .advice {
+  font-family: 'Playfair Display', 'Abril Fatface', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(15px, 1.3vw, 20px);
+  line-height: 1.3;
+  color: var(--ink-2); max-width: 54ch;
 }
-.uv-box {
-  padding: 8px 18px;
-  min-width: 120px;
-  background: var(--paper);
-  border-left: 4px solid var(--ink);
-  display: flex; flex-direction: column; justify-content: center;
-  gap: 3px;
-  color: var(--ink);
+
+/* UV — inline, not a box */
+.uv-stack {
+  display: flex; flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding-left: 24px;
+  border-left: 1px solid var(--ink);
+  min-width: 160px;
 }
-.uv-box .k {
+.uv-stack .k {
   font-family: 'Roboto Mono', monospace;
-  font-size: 11px; letter-spacing: 0.22em;
-  text-transform: uppercase; font-weight: 600; opacity: 0.7;
+  font-size: 11px; letter-spacing: 0.24em;
+  text-transform: uppercase; font-weight: 600;
+  color: var(--muted);
 }
-.uv-box .v {
+.uv-stack .v {
   font-family: 'Alfa Slab One', serif;
-  font-size: clamp(34px, 3vw, 46px); line-height: 0.95;
+  font-size: clamp(48px, 4.2vw, 66px);
+  line-height: 0.9; color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
-.uv-box .l {
-  font-family: 'Oswald', sans-serif; font-weight: 700;
-  font-size: 13px; letter-spacing: 0.14em;
-  text-transform: uppercase; padding: 2px 6px;
-  color: var(--paper); align-self: flex-start;
+.uv-stack .level {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'Abril Fatface', serif;
+  font-size: clamp(18px, 1.6vw, 22px);
+  color: var(--ink);
 }
-.uv-box.low   .l { background: var(--uv-low); }
-.uv-box.mod   .l { background: var(--uv-mod); color: var(--ink); }
-.uv-box.high  .l { background: var(--uv-high); }
-.uv-box.vhigh .l { background: var(--uv-vhigh); }
-.uv-box.extrm .l { background: var(--uv-extrm); }
-.uv-box.high, .uv-box.vhigh, .uv-box.extrm { background: var(--paper-2); }
-.uv-box .warn {
-  font-family: 'Oswald', sans-serif;
-  font-size: 11px; letter-spacing: 0.1em;
-  font-weight: 600; opacity: 0.7; line-height: 1.15;
-  margin-top: 2px; max-width: 120px;
+.uv-stack .level::before {
+  content: "";
+  display: inline-block;
+  width: 12px; height: 12px;
+  background: var(--uv-low);
+  border-radius: 2px;
+}
+.uv-stack.mod   .level::before { background: var(--uv-mod); }
+.uv-stack.high  .level::before { background: var(--uv-high); }
+.uv-stack.vhigh .level::before { background: var(--uv-vhigh); }
+.uv-stack.extrm .level::before { background: var(--uv-extrm); }
+.uv-stack .warn {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: clamp(11px, 0.95vw, 13px);
+  color: var(--muted); line-height: 1.2;
+  max-width: 170px; text-align: right;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ALERT RIBBON
+   ALERT RIBBON — red accent bar, no border box
    ══════════════════════════════════════════════════════════════ */
 .alert-ribbon {
   display: none;
-  align-items: center;
-  gap: 14px;
-  padding: 8px 18px;
+  align-items: center; gap: 14px;
+  padding: 10px 16px;
   background: var(--red);
   color: var(--paper);
-  border: 3px solid var(--red-2);
 }
 .alert-ribbon.visible { display: flex; }
 .alert-ribbon .siren {
-  width: 22px; height: 22px; flex: 0 0 auto;
+  width: 20px; height: 20px; flex: 0 0 auto;
   background: var(--paper);
   -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2 C6 2 5 8 5 14 H3 V16 H21 V14 H19 C19 8 18 2 12 2 Z M11 18 H13 V22 H11 V18 Z' fill='black'/></svg>") center / contain no-repeat;
           mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2 C6 2 5 8 5 14 H3 V16 H21 V14 H19 C19 8 18 2 12 2 Z M11 18 H13 V22 H11 V18 Z' fill='black'/></svg>") center / contain no-repeat;
@@ -212,288 +285,338 @@ body {
 @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
 .alert-ribbon .label {
   font-family: 'Oswald', sans-serif; font-weight: 700;
-  font-size: 15px; letter-spacing: 0.18em;
-  text-transform: uppercase; flex: 0 0 auto;
-  padding-right: 14px; border-right: 2px solid rgba(255,255,255,0.4);
-  white-space: nowrap;
+  font-size: 13px; letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding-right: 14px; border-right: 1px solid rgba(255,255,255,0.4);
 }
 .alert-ribbon .body {
-  font-family: 'Oswald', sans-serif; font-weight: 500;
+  font-family: 'Playfair Display', serif; font-style: italic;
   font-size: clamp(13px, 1.1vw, 16px);
-  letter-spacing: 0.04em; line-height: 1.25;
   flex: 1; min-width: 0;
   overflow: hidden; text-overflow: ellipsis;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   SLOGAN BAR — Lenin + rotating quote
+   SLOGAN BAR — editorial margin-note with italic body.
+   Thin red rule below, no outer box.
    ══════════════════════════════════════════════════════════════ */
 .slogan-bar {
-  display: flex; align-items: center; gap: 18px;
-  padding: 8px 20px;
-  background: var(--ink); color: var(--paper);
-  border: 3px solid var(--ink);
-  min-height: 58px;
+  display: flex; align-items: center; gap: 20px;
+  padding: 8px 4px 10px;
+  border-bottom: 3px double var(--red);
+  min-height: 52px;
 }
 .slogan-bar .lenin {
-  flex: 0 0 auto; width: 46px; height: 54px;
+  flex: 0 0 auto; width: 38px; height: 46px;
   background-color: var(--red);
   -webkit-mask: url('/assets/lenin.svg') no-repeat center / contain;
           mask: url('/assets/lenin.svg') no-repeat center / contain;
 }
 .slogan-bar .star {
-  flex: 0 0 auto; width: 28px; height: 28px; color: var(--red);
+  flex: 0 0 auto; width: 22px; height: 22px; color: var(--red);
 }
 .slogan-bar .slogan-text {
-  font-family: 'Oswald', sans-serif; font-weight: 700;
-  font-size: clamp(14px, 1.4vw, 20px);
-  letter-spacing: 0.1em; text-transform: uppercase;
-  line-height: 1.2;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(15px, 1.45vw, 21px);
+  line-height: 1.3;
+  color: var(--ink);
   flex: 1; min-width: 0;
   transition: opacity 0.4s ease;
 }
 .slogan-bar .slogan-text.fade { opacity: 0; }
 .slogan-bar .slogan-text .attr {
-  display: inline-block; color: var(--red);
-  font-weight: 500; margin-left: 14px;
-  letter-spacing: 0.08em; white-space: nowrap;
+  display: inline-block;
+  font-style: normal;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  color: var(--red);
+  margin-left: 14px;
+  font-size: 0.78em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   CAROUSEL — the main rotating area. Each panel is absolutely
-   positioned; the active one is opacity 1, others fade out.
+   CAROUSEL — no outer border. Panels share an open paper surface
+   with thin dashed rule top and bottom.
    ══════════════════════════════════════════════════════════════ */
 .carousel {
   position: relative;
   min-height: 0;
-  border: 4px solid var(--ink);
-  background: var(--paper);
   overflow: hidden;
+  padding: 10px 0 14px;
+  border-top: 1px solid var(--hair);
+  border-bottom: 1px solid var(--hair);
 }
 .panel {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
+  position: absolute; inset: 0;
+  padding: 10px 8px 8px;
+  opacity: 0; pointer-events: none;
   transition: opacity 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
+  display: flex; flex-direction: column;
+  min-height: 0; overflow: hidden;
 }
 .panel.active { opacity: 1; pointer-events: auto; }
 
-/* ── Station panel (shared by all 3 station tabs) ──────────── */
-.station-header {
-  display: flex; justify-content: space-between; align-items: stretch;
-  background: var(--ink); color: var(--paper);
-  border-bottom: 4px solid var(--ink);
+/* ── Station panel ──────────────────────────────────────── */
+.station-masthead {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding-bottom: 10px; margin-bottom: 14px;
+  border-bottom: 1px solid var(--ink);
+  position: relative;
 }
-.station-header .L-badge {
-  padding: 12px 18px;
-  background: var(--ink); color: var(--paper);
-  display: flex; align-items: center;
-  border-right: 4px solid var(--red);
+.station-masthead::after {
+  content: ""; position: absolute;
+  left: 0; right: 0; bottom: -5px;
+  height: 2px; background: var(--ink);
 }
-.station-header .L-badge .circle {
-  width: 56px; height: 56px; border-radius: 50%;
-  background: #a7a9ac;
-  color: #fff;
-  display: flex; align-items: center; justify-content: center;
+.station-masthead .lhs {
+  display: flex; align-items: baseline; gap: 22px;
+  flex-wrap: wrap;
+}
+.station-masthead .circle {
+  width: 58px; height: 58px; border-radius: 50%;
+  background: #a7a9ac; color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
   font-family: 'Alfa Slab One', serif;
   font-size: 34px; line-height: 1;
+  align-self: center;
 }
-.station-header .L-badge .circle.line-L { background: #a7a9ac; }
-.station-header .L-badge .circle.line-G { background: #6cbe45; }
-.station-header .name {
-  padding: 16px 24px;
-  font-family: 'Alfa Slab One', serif;
-  font-size: clamp(36px, 4vw, 62px);
-  line-height: 1;
-  letter-spacing: -0.01em;
-  flex: 1; text-transform: uppercase;
-  display: flex; align-items: center;
+.station-masthead .circle.line-L { background: #a7a9ac; }
+.station-masthead .circle.line-G { background: #6cbe45; }
+.station-masthead .name {
+  font-family: 'Abril Fatface', serif;
+  font-size: clamp(44px, 4.6vw, 72px);
+  line-height: 0.9;
+  letter-spacing: 0;
+  color: var(--ink);
+  text-transform: uppercase;
 }
-.station-header .walk {
-  padding: 14px 22px;
-  background: var(--red); color: var(--paper);
-  display: flex; flex-direction: column;
-  justify-content: center; align-items: flex-end;
-  gap: 2px; min-width: 140px;
+.station-masthead .walk {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
 }
-.station-header .walk .k {
+.station-masthead .walk .k {
   font-family: 'Roboto Mono', monospace;
   font-size: 11px; letter-spacing: 0.22em;
-  text-transform: uppercase; font-weight: 500; opacity: 0.85;
+  text-transform: uppercase; color: var(--muted);
+  font-weight: 600;
 }
-.station-header .walk .v {
+.station-masthead .walk .v {
   font-family: 'Alfa Slab One', serif;
-  font-size: clamp(26px, 2.4vw, 38px);
-  line-height: 1; font-variant-numeric: tabular-nums;
+  font-size: clamp(30px, 2.6vw, 44px);
+  line-height: 1; color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
+.station-masthead .walk .v em {
+  color: var(--red); font-style: normal;
+  font-size: 0.55em; margin-left: 6px;
+}
+
 .dirs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1px 1fr;
   flex: 1; min-height: 0;
+  gap: 0;
 }
 .dir {
   display: flex; flex-direction: column;
-  padding: 16px 22px 14px;
-  min-height: 0; gap: 8px;
+  padding: 4px 20px 6px;
+  min-height: 0; gap: 10px;
 }
-.dir + .dir { border-left: 3px solid var(--ink); }
-.dir .dir-label {
-  font-family: 'Oswald', sans-serif; font-weight: 700;
-  font-size: clamp(14px, 1.3vw, 20px);
-  letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--red);
-  padding-bottom: 6px;
-  border-bottom: 2px solid var(--ink);
-  line-height: 1.15;
-  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+.dir-sep {
+  background: var(--hair);
+  align-self: stretch;
+  width: 1px;
 }
-.dir .dir-label .arrow {
+.dir-label {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--hair);
+  line-height: 1.1;
+}
+.dir-label .arrow {
   font-family: 'Alfa Slab One', serif;
-  font-size: 1.2em; line-height: 1;
+  font-size: clamp(20px, 1.8vw, 28px);
+  color: var(--red); line-height: 1;
 }
-.dir .dir-label .terminus {
+.dir-label .main {
+  font-family: 'Abril Fatface', serif;
+  font-size: clamp(19px, 1.7vw, 26px);
+  letter-spacing: 0;
+  color: var(--ink);
+}
+.dir-label .terminus {
   font-family: 'Roboto Mono', monospace;
-  font-size: 0.55em;
-  letter-spacing: 0.18em;
-  color: var(--ink); opacity: 0.55; font-weight: 500;
+  font-size: clamp(10px, 0.85vw, 13px);
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted); font-weight: 500;
 }
-.dir .train-list {
-  display: flex; flex-direction: column; gap: 2px;
-  flex: 1;
-}
+.train-list { display: flex; flex-direction: column; gap: 3px; flex: 1; }
 .train-row {
   display: grid;
   grid-template-columns: auto auto 1fr;
   align-items: baseline;
   gap: 10px;
-  padding: 5px 10px;
+  padding: 5px 2px;
+  border-bottom: 1px dotted var(--hair);
 }
+.train-row:last-child { border-bottom: none; }
 .train-row .clock {
   font-family: 'Alfa Slab One', serif;
   font-size: clamp(18px, 1.9vw, 28px);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
+  line-height: 1; font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
 .train-row .mins {
   font-family: 'Roboto Mono', monospace;
   font-size: 12px; letter-spacing: 0.08em;
-  text-transform: uppercase; font-weight: 500; opacity: 0.55;
+  text-transform: uppercase; font-weight: 500; color: var(--muted);
 }
 .train-row .tag {
   font-family: 'Oswald', sans-serif; font-weight: 600;
-  font-size: clamp(12px, 1.15vw, 17px);
+  font-size: clamp(12px, 1.1vw, 16px);
   letter-spacing: 0.06em; text-transform: uppercase;
-  text-align: right; opacity: 0.7; white-space: nowrap;
+  text-align: right; color: var(--muted);
+  white-space: nowrap;
 }
 .train-row.missed { opacity: 0.35; }
 .train-row.missed .tag { color: var(--red); font-weight: 700; opacity: 1; }
 .train-row.catch {
+  border-bottom: none;
+  padding: 10px 12px;
+  margin: 4px 0;
   background: var(--red);
   color: var(--paper);
-  padding: 10px 12px;
-  gap: 14px;
-  margin: 4px 0;
+  gap: 16px;
+  position: relative;
 }
-.train-row.catch .clock { font-size: clamp(26px, 2.8vw, 40px); }
-.train-row.catch .mins { color: var(--paper); opacity: 0.82; font-size: 12px; }
-.train-row.catch .tag {
-  font-size: clamp(15px, 1.5vw, 22px);
-  font-weight: 700; opacity: 1;
-}
-
-/* ── Week panel (7-day forecast, 4x2 grid) ─────────────────── */
-.week-panel { padding: 18px 24px; overflow: hidden; }
-.week-panel .header {
-  display: flex; justify-content: space-between; align-items: baseline;
-  border-bottom: 3px solid var(--ink);
-  padding-bottom: 8px; margin-bottom: 14px;
-}
-.week-panel .header .title {
-  font-family: 'Alfa Slab One', serif;
-  font-size: clamp(28px, 3vw, 42px);
+/* Small red arrow pointing to the catchable row */
+.train-row.catch::before {
+  content: "▸";
+  position: absolute;
+  left: -14px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--red);
+  font-size: 20px;
   line-height: 1;
 }
-.week-panel .header .title .cy { color: var(--red); margin-right: 16px; }
-.week-panel .header .sub {
+.train-row.catch .clock { font-size: clamp(26px, 2.8vw, 40px); }
+.train-row.catch .mins { color: var(--paper); opacity: 0.82; }
+.train-row.catch .tag {
+  color: var(--paper); opacity: 1;
+  font-weight: 700;
+  font-size: clamp(14px, 1.4vw, 20px);
+}
+
+/* ── Week panel ─────────────────────────────────────────── */
+.week-panel { padding: 4px 12px; overflow: hidden; }
+.week-panel .hdr {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding-bottom: 10px; margin-bottom: 16px;
+  border-bottom: 1px solid var(--ink);
+  position: relative;
+}
+.week-panel .hdr::after {
+  content: ""; position: absolute;
+  left: 0; right: 0; bottom: -5px;
+  height: 2px; background: var(--ink);
+}
+.week-panel .hdr .title {
+  font-family: 'Abril Fatface', serif;
+  font-size: clamp(30px, 3vw, 48px);
+  line-height: 1;
+}
+.week-panel .hdr .title .cy {
+  color: var(--red);
+  margin-right: 16px;
+  font-family: 'Alfa Slab One', serif;
+}
+.week-panel .hdr .sub {
   font-family: 'Roboto Mono', monospace;
-  font-size: 12px; letter-spacing: 0.18em;
+  font-size: 12px; letter-spacing: 0.2em;
   text-transform: uppercase; font-weight: 500;
-  opacity: 0.6;
+  color: var(--muted);
 }
 .week-panel .grid {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: 1fr 1fr;
-  gap: 12px;
+  gap: 14px;
   min-height: 0;
 }
 .week-panel .day {
   display: flex; flex-direction: column;
-  padding: 14px 16px;
-  border: 3px solid var(--ink);
-  background: var(--paper);
+  padding: 12px 14px;
   gap: 4px;
   min-height: 0;
+  border-top: 3px solid var(--ink);
 }
-.week-panel .day.today { background: var(--red); color: var(--paper); }
-.week-panel .day.inv { background: var(--ink); color: var(--paper); }
+.week-panel .day.today {
+  border-top-color: var(--red);
+}
+.week-panel .day.today .dow { color: var(--red); }
 .week-panel .day .dow {
-  font-family: 'Oswald', sans-serif; font-weight: 700;
-  font-size: clamp(18px, 1.8vw, 26px);
-  letter-spacing: 0.12em; text-transform: uppercase;
+  font-family: 'Abril Fatface', serif;
+  font-size: clamp(22px, 2vw, 30px);
+  letter-spacing: 0.02em;
   line-height: 1;
 }
 .week-panel .day .date {
   font-family: 'Roboto Mono', monospace;
-  font-size: 12px; letter-spacing: 0.18em;
-  opacity: 0.65; font-weight: 500;
+  font-size: 11px; letter-spacing: 0.2em;
+  color: var(--muted); font-weight: 500;
+  text-transform: uppercase;
 }
 .week-panel .day .temps {
   font-family: 'Alfa Slab One', serif;
-  font-size: clamp(30px, 3.2vw, 46px);
-  line-height: 1; font-variant-numeric: tabular-nums;
+  font-size: clamp(30px, 3vw, 44px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
   margin-top: 4px;
 }
-.week-panel .day .temps .lo { opacity: 0.5; font-size: 0.7em; margin-left: 10px; }
+.week-panel .day .temps .lo { color: var(--muted); font-size: 0.65em; margin-left: 8px; }
 .week-panel .day .cond {
-  font-family: 'Oswald', sans-serif; font-weight: 700;
-  font-size: clamp(14px, 1.3vw, 20px);
-  letter-spacing: 0.08em; text-transform: uppercase;
+  font-family: 'Oswald', sans-serif; font-weight: 600;
+  font-size: clamp(13px, 1.2vw, 18px);
+  letter-spacing: 0.06em; text-transform: uppercase;
   line-height: 1.2;
 }
 .week-panel .day .precip {
   font-family: 'Roboto Mono', monospace;
   font-size: 12px; font-weight: 700;
-  letter-spacing: 0.05em;
+  color: var(--red); letter-spacing: 0.04em;
   margin-top: auto;
-  color: var(--red);
 }
-.week-panel .day.today .precip,
-.week-panel .day.inv .precip { color: var(--ochre); }
 
-/* ── Today hourly panel ────────────────────────────────────── */
-.today-panel { padding: 18px 24px; overflow: hidden; }
-.today-panel .header {
+/* ── Today hourly panel ─────────────────────────────────── */
+.today-panel { padding: 4px 12px; overflow: hidden; }
+.today-panel .hdr {
   display: flex; justify-content: space-between; align-items: baseline;
-  border-bottom: 3px solid var(--ink);
-  padding-bottom: 8px; margin-bottom: 14px;
+  padding-bottom: 10px; margin-bottom: 14px;
+  border-bottom: 1px solid var(--ink);
+  position: relative;
 }
-.today-panel .header .title {
+.today-panel .hdr::after {
+  content: ""; position: absolute;
+  left: 0; right: 0; bottom: -5px;
+  height: 2px; background: var(--ink);
+}
+.today-panel .hdr .title {
+  font-family: 'Abril Fatface', serif;
+  font-size: clamp(30px, 3vw, 48px); line-height: 1;
+}
+.today-panel .hdr .title .cy {
+  color: var(--red); margin-right: 16px;
   font-family: 'Alfa Slab One', serif;
-  font-size: clamp(28px, 3vw, 42px); line-height: 1;
 }
-.today-panel .header .title .cy { color: var(--red); margin-right: 16px; }
-.today-panel .header .sub {
+.today-panel .hdr .sub {
   font-family: 'Roboto Mono', monospace;
-  font-size: 12px; letter-spacing: 0.18em;
-  text-transform: uppercase; font-weight: 500; opacity: 0.6;
+  font-size: 12px; letter-spacing: 0.2em;
+  text-transform: uppercase; font-weight: 500;
+  color: var(--muted);
 }
 .today-panel .hours {
   display: grid;
@@ -501,35 +624,31 @@ body {
   gap: 0;
   flex: 1;
   min-height: 0;
-  border: 3px solid var(--ink);
-  background: var(--ink);
 }
 .today-panel .hour {
-  background: var(--paper);
-  color: var(--ink);
   padding: 10px 8px;
-  border-right: 2px solid var(--ink);
+  border-right: 1px solid var(--hair);
   display: flex; flex-direction: column; gap: 3px;
   min-width: 0;
 }
 .today-panel .hour:last-child { border-right: none; }
-.today-panel .hour:nth-child(even) { background: var(--paper-2); }
 .today-panel .hour .h {
   font-family: 'Roboto Mono', monospace;
   font-size: clamp(11px, 1vw, 13px);
-  letter-spacing: 0.14em; text-transform: uppercase;
-  font-weight: 700; opacity: 0.75;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  font-weight: 700; color: var(--muted);
 }
 .today-panel .hour .t {
   font-family: 'Alfa Slab One', serif;
   font-size: clamp(20px, 2.2vw, 32px);
   line-height: 1; font-variant-numeric: tabular-nums;
+  color: var(--ink);
 }
 .today-panel .hour .c {
   font-family: 'Oswald', sans-serif; font-weight: 600;
   font-size: 11px; letter-spacing: 0.08em;
   text-transform: uppercase; line-height: 1.1;
-  opacity: 0.85;
+  color: var(--ink-2);
 }
 .today-panel .hour .p {
   font-family: 'Roboto Mono', monospace;
@@ -543,92 +662,107 @@ body {
   color: var(--ochre);
 }
 .today-panel .footer-band {
-  margin-top: 12px;
-  padding: 8px 16px;
-  background: var(--red); color: var(--paper);
+  margin-top: 14px;
+  padding: 10px 0;
+  border-top: 3px double var(--red);
   display: flex; justify-content: space-between; gap: 16px;
-  font-family: 'Oswald', sans-serif; font-weight: 700;
-  font-size: clamp(13px, 1.3vw, 18px);
-  letter-spacing: 0.14em; text-transform: uppercase;
+  font-family: 'Abril Fatface', serif;
+  font-size: clamp(15px, 1.4vw, 22px);
+  color: var(--ink);
 }
 .today-panel .footer-band .k {
   font-family: 'Roboto Mono', monospace; font-weight: 500;
-  font-size: 11px; letter-spacing: 0.22em; opacity: 0.85;
+  font-size: 11px; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--muted);
+  margin-right: 8px;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   CAROUSEL TABS — pagination below main carousel
+   CAROUSEL TABS — simple text ribbon, not blocks.
+   Active one underlined in red.
    ══════════════════════════════════════════════════════════════ */
 .carousel-tabs {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
-  border: 3px solid var(--ink);
+  gap: 0;
+  padding: 4px 0 0;
 }
 .carousel-tabs .tab {
-  padding: 9px 10px;
-  background: var(--paper);
-  color: var(--ink);
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: clamp(11px, 1vw, 14px);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  padding: 8px 4px;
   text-align: center;
-  border-right: 2px solid var(--ink);
-  opacity: 0.45;
+  border-top: 2px solid transparent;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: clamp(12px, 1.05vw, 15px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mute-2);
   display: flex; flex-direction: column; align-items: center; gap: 2px;
-  line-height: 1.1;
+  line-height: 1.15;
+  transition: color 0.3s, border-color 0.3s;
 }
-.carousel-tabs .tab:last-child { border-right: none; }
 .carousel-tabs .tab .sub {
   font-family: 'Roboto Mono', monospace;
-  font-size: 9px; letter-spacing: 0.2em;
-  opacity: 0.55; font-weight: 500;
+  font-size: 9px; letter-spacing: 0.22em;
+  font-weight: 500; opacity: 0.6;
 }
 .carousel-tabs .tab.active {
-  opacity: 1; background: var(--red); color: var(--paper);
+  color: var(--ink);
+  border-top-color: var(--red);
+  font-weight: 700;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   FOOTER
+   FOOTER — thin rule, small mono text, no heavy cells.
    ══════════════════════════════════════════════════════════════ */
 .footer {
-  display: flex; align-items: stretch;
-  border: 3px solid var(--ink);
+  display: flex; align-items: baseline;
+  padding: 8px 2px 2px;
+  border-top: 1px solid var(--ink);
+  gap: 28px;
+  position: relative;
+}
+.footer::before {
+  content: ""; position: absolute;
+  top: -5px; left: 0; right: 0;
+  height: 2px; background: var(--ink);
 }
 .footer .cell {
-  flex: 1;
-  padding: 8px 14px;
-  display: flex; align-items: center; gap: 12px;
-  border-right: 3px solid var(--ink);
+  display: flex; align-items: baseline; gap: 10px;
   min-width: 0;
 }
-.footer .cell:last-child { border-right: none; }
-.footer .cell.inv { background: var(--ink); color: var(--paper); }
-.footer .cell.red { background: var(--red); color: var(--paper); }
 .footer .cell .k {
   font-family: 'Roboto Mono', monospace;
-  font-size: 10px; letter-spacing: 0.22em;
-  text-transform: uppercase; opacity: 0.6; font-weight: 500;
-  white-space: nowrap;
+  font-size: 10px; letter-spacing: 0.26em;
+  text-transform: uppercase; color: var(--muted);
+  font-weight: 600;
 }
 .footer .cell .v {
-  font-family: 'Oswald', sans-serif; font-weight: 700;
-  font-size: clamp(14px, 1.4vw, 20px);
-  letter-spacing: 0.04em; text-transform: uppercase;
-  line-height: 1; font-variant-numeric: tabular-nums;
+  font-family: 'Abril Fatface', serif;
+  font-size: clamp(16px, 1.4vw, 22px);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
+  line-height: 1;
+}
+.footer .live {
+  margin-left: auto;
+  display: flex; align-items: baseline; gap: 10px;
+  color: var(--red);
 }
 .footer .live-dot {
-  display: inline-block; width: 10px; height: 10px;
-  background: var(--paper);
+  width: 9px; height: 9px;
+  background: var(--red);
   animation: blink 1.6s steps(2, start) infinite;
+  border-radius: 50%;
+  display: inline-block;
+  transform: translateY(1px);
 }
+.footer .live .v { color: var(--red); font-family: 'Oswald', sans-serif; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; font-size: 14px; }
 @keyframes blink { 0%, 50% { opacity: 1 } 51%, 100% { opacity: 0.25 } }
 
-/* legacy compat */
+/* legacy */
 .legacy { display: none; }
 </style>
 </head>
@@ -636,133 +770,173 @@ body {
 
 <div class="frame">
 
-  <!-- ═════ TOP STRIP (always visible) ═════ -->
+  <!-- ═════ MASTHEAD ═════ -->
   <div class="top">
-    <div class="time-box">
-      <span class="nums"><span id="bigClock">—</span></span>
-      <span class="ampm" id="ampm">—</span>
-    </div>
-    <div class="wx-box">
-      <div class="temp-col">
-        <div class="temp"><span id="tempNow">—</span><span class="deg">°</span></div>
-        <div class="temp-c" id="tempC">—</div>
+    <!-- Metadata ribbon — like an issue number strip -->
+    <div class="masthead-meta">
+      <div class="left">
+        <span>ГРИНПОЙНТ</span>
+        <span class="ornament">✶</span>
+        <span id="mastheadDate">—</span>
       </div>
-      <div class="caption">
-        <div class="day-label" id="wxDayLabel">NOW</div>
-        <div class="label" id="weatherDesc">LOADING…</div>
-        <div class="sub" id="feelsLike">—</div>
-        <div class="advice" id="weatherAdvice">—</div>
+      <div class="center">
+        <span>Live Dashboard</span>
+        <span class="ornament">✶</span>
+        <span>No. 617</span>
+      </div>
+      <div class="right">
+        <span id="mastheadMeta">—</span>
       </div>
     </div>
-    <div class="uv-box low" id="uvBox">
-      <span class="k">UV Now</span>
-      <span class="v" id="uvValue">—</span>
-      <span class="l" id="uvLabel">Low</span>
-      <span class="warn" id="uvWarn">—</span>
+
+    <!-- Main masthead row -->
+    <div class="top-main">
+      <div class="time-box">
+        <span class="nums"><span id="bigClock">—</span></span>
+        <span class="ampm" id="ampm">—</span>
+      </div>
+
+      <div class="wx-row">
+        <div class="wx-temp-block">
+          <div class="wx-temp"><span id="tempNow">—</span><span class="deg">°</span></div>
+          <div class="wx-temp-c" id="tempC">—</div>
+        </div>
+        <div class="wx-caption">
+          <div class="day-label" id="wxDayLabel">NOW</div>
+          <div class="label" id="weatherDesc">loading…</div>
+          <div class="sub" id="feelsLike">—</div>
+          <div class="advice" id="weatherAdvice">—</div>
+        </div>
+      </div>
+
+      <div class="uv-stack low" id="uvBox">
+        <span class="k">UV Now</span>
+        <span class="v" id="uvValue">—</span>
+        <span class="level"><span id="uvLabel">Low</span></span>
+        <span class="warn" id="uvWarn">—</span>
+      </div>
     </div>
   </div>
 
-  <!-- ═════ ALERT RIBBON (conditional) ═════ -->
+  <!-- ═════ ALERT RIBBON ═════ -->
   <div class="alert-ribbon" id="alertRibbon">
     <span class="siren"></span>
     <span class="label">L-Line Alert</span>
     <span class="body" id="alertBody">—</span>
   </div>
 
-  <!-- ═════ SLOGAN TICKER ═════ -->
+  <!-- ═════ SLOGAN ═════ -->
   <div class="slogan-bar">
     <div class="lenin" role="img" aria-label="Lenin silhouette"></div>
     <svg class="star" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <polygon fill="currentColor" points="50,5 61,39 97,39 68,60 79,94 50,73 21,94 32,60 3,39 39,39"/>
     </svg>
-    <div class="slogan-text" id="sloganText">WORKERS OF THE L-LINE, UNITE!<span class="attr">— K. MARX</span></div>
+    <div class="slogan-text" id="sloganText">Workers of the L-line, unite!<span class="attr">— K. Marx</span></div>
   </div>
 
-  <!-- ═════ CAROUSEL (rotating 5 panels) ═════ -->
+  <!-- ═════ CAROUSEL ═════ -->
   <main class="carousel" id="carousel">
 
-    <!-- Station panels — populated dynamically per station -->
+    <!-- Station panels — one per station -->
     <div class="panel active" id="panel-Nassau Av">
-      <div class="station-header">
-        <div class="L-badge"><div class="circle line-G" data-station-circle>G</div></div>
-        <div class="name" data-station-name>—</div>
-        <div class="walk"><span class="k">Walk</span><span class="v"><span data-station-walk>—</span> MIN</span></div>
+      <div class="station-masthead">
+        <div class="lhs">
+          <span class="circle line-G" data-station-circle>G</span>
+          <span class="name" data-station-name>—</span>
+        </div>
+        <div class="walk">
+          <span class="k">Walk from home</span>
+          <span class="v"><span data-station-walk>—</span> <em>min</em></span>
+        </div>
       </div>
       <div class="dirs">
         <div class="dir">
-          <div class="dir-label"><span class="arrow">←</span><span data-dir-n-label>—</span><span class="terminus" data-dir-n-term>—</span></div>
+          <div class="dir-label"><span class="arrow">←</span><span class="main" data-dir-n-label>—</span><span class="terminus" data-dir-n-term>—</span></div>
           <div class="train-list" data-trains-n></div>
         </div>
+        <div class="dir-sep"></div>
         <div class="dir">
-          <div class="dir-label"><span data-dir-s-label>—</span><span class="terminus" data-dir-s-term>—</span><span class="arrow">→</span></div>
+          <div class="dir-label"><span class="main" data-dir-s-label>—</span><span class="terminus" data-dir-s-term>—</span><span class="arrow">→</span></div>
           <div class="train-list" data-trains-s></div>
         </div>
       </div>
     </div>
 
     <div class="panel" id="panel-Graham Av">
-      <div class="station-header">
-        <div class="L-badge"><div class="circle line-L" data-station-circle>L</div></div>
-        <div class="name" data-station-name>—</div>
-        <div class="walk"><span class="k">Walk</span><span class="v"><span data-station-walk>—</span> MIN</span></div>
+      <div class="station-masthead">
+        <div class="lhs">
+          <span class="circle line-L" data-station-circle>L</span>
+          <span class="name" data-station-name>—</span>
+        </div>
+        <div class="walk">
+          <span class="k">Walk from home</span>
+          <span class="v"><span data-station-walk>—</span> <em>min</em></span>
+        </div>
       </div>
       <div class="dirs">
         <div class="dir">
-          <div class="dir-label"><span class="arrow">←</span><span data-dir-n-label>—</span><span class="terminus" data-dir-n-term>—</span></div>
+          <div class="dir-label"><span class="arrow">←</span><span class="main" data-dir-n-label>—</span><span class="terminus" data-dir-n-term>—</span></div>
           <div class="train-list" data-trains-n></div>
         </div>
+        <div class="dir-sep"></div>
         <div class="dir">
-          <div class="dir-label"><span data-dir-s-label>—</span><span class="terminus" data-dir-s-term>—</span><span class="arrow">→</span></div>
+          <div class="dir-label"><span class="main" data-dir-s-label>—</span><span class="terminus" data-dir-s-term>—</span><span class="arrow">→</span></div>
           <div class="train-list" data-trains-s></div>
         </div>
       </div>
     </div>
 
     <div class="panel" id="panel-Bedford Av">
-      <div class="station-header">
-        <div class="L-badge"><div class="circle line-L" data-station-circle>L</div></div>
-        <div class="name" data-station-name>—</div>
-        <div class="walk"><span class="k">Walk</span><span class="v"><span data-station-walk>—</span> MIN</span></div>
+      <div class="station-masthead">
+        <div class="lhs">
+          <span class="circle line-L" data-station-circle>L</span>
+          <span class="name" data-station-name>—</span>
+        </div>
+        <div class="walk">
+          <span class="k">Walk from home</span>
+          <span class="v"><span data-station-walk>—</span> <em>min</em></span>
+        </div>
       </div>
       <div class="dirs">
         <div class="dir">
-          <div class="dir-label"><span class="arrow">←</span><span data-dir-n-label>—</span><span class="terminus" data-dir-n-term>—</span></div>
+          <div class="dir-label"><span class="arrow">←</span><span class="main" data-dir-n-label>—</span><span class="terminus" data-dir-n-term>—</span></div>
           <div class="train-list" data-trains-n></div>
         </div>
+        <div class="dir-sep"></div>
         <div class="dir">
-          <div class="dir-label"><span data-dir-s-label>—</span><span class="terminus" data-dir-s-term>—</span><span class="arrow">→</span></div>
+          <div class="dir-label"><span class="main" data-dir-s-label>—</span><span class="terminus" data-dir-s-term>—</span><span class="arrow">→</span></div>
           <div class="train-list" data-trains-s></div>
         </div>
       </div>
     </div>
 
-    <!-- Week panel -->
+    <!-- Week -->
     <div class="panel week-panel" id="panel-week">
-      <div class="header">
-        <div class="title"><span class="cy">НЕДЕЛЯ</span>7-DAY OUTLOOK</div>
+      <div class="hdr">
+        <div class="title"><span class="cy">Неделя</span>The Week Ahead</div>
         <div class="sub" id="weekSubLabel">—</div>
       </div>
       <div class="grid" id="weekGrid"></div>
     </div>
 
-    <!-- Today hourly -->
+    <!-- Hourly -->
     <div class="panel today-panel" id="panel-today">
-      <div class="header">
-        <div class="title"><span class="cy">СЕГОДНЯ</span>TODAY · NEXT 12 HRS</div>
+      <div class="hdr">
+        <div class="title"><span class="cy">Сегодня</span>Next 12 Hours</div>
         <div class="sub" id="todaySubLabel">—</div>
       </div>
       <div class="hours" id="hourlyGrid"></div>
       <div class="footer-band">
-        <span><span class="k">Sunrise</span> <span id="tpSunrise">—</span></span>
-        <span><span class="k">Sunset</span> <span id="tpSunset">—</span></span>
-        <span><span class="k">Daylight</span> <span id="tpDaylight">—</span></span>
-        <span><span class="k">Today's Peak UV</span> <span id="tpPeakUV">—</span></span>
+        <span><span class="k">Sunrise</span><span id="tpSunrise">—</span></span>
+        <span><span class="k">Sunset</span><span id="tpSunset">—</span></span>
+        <span><span class="k">Daylight</span><span id="tpDaylight">—</span></span>
+        <span><span class="k">UV Peak</span><span id="tpPeakUV">—</span></span>
       </div>
     </div>
 
   </main>
 
-  <!-- Carousel tabs -->
+  <!-- Tabs -->
   <div class="carousel-tabs" id="carouselTabs"></div>
 
   <!-- ═════ FOOTER ═════ -->
@@ -771,7 +945,7 @@ body {
       <span class="k">Date</span>
       <span class="v" id="dateLabel">—</span>
     </div>
-    <div class="cell inv">
+    <div class="cell">
       <span class="k">Sunrise</span>
       <span class="v" id="sunrise">—</span>
     </div>
@@ -779,11 +953,11 @@ body {
       <span class="k" id="sunDirLabel">Until Sunset</span>
       <span class="v" id="sunDaylight">—</span>
     </div>
-    <div class="cell inv">
+    <div class="cell">
       <span class="k">Sunset</span>
       <span class="v" id="sunset">—</span>
     </div>
-    <div class="cell red">
+    <div class="cell live">
       <span class="live-dot"></span>
       <span class="v" id="statusRight">LIVE</span>
     </div>
@@ -791,7 +965,7 @@ body {
 
 </div>
 
-<!-- legacy DOM IDs retained for compat -->
+<!-- legacy IDs -->
 <span id="seconds" class="legacy"></span>
 <span id="weatherIcon" class="legacy"></span>
 <span id="dateSub" class="legacy"></span>
@@ -806,25 +980,21 @@ body {
 // ═════════════════════════════════════════════════════════════════
 // CONFIG
 // ═════════════════════════════════════════════════════════════════
-const WALK_MIN = {
-  'Nassau Av':  9,
-  'Graham Av':  12,
-  'Bedford Av': 20,
-};
+const WALK_MIN = { 'Nassau Av': 9, 'Graham Av': 12, 'Bedford Av': 20 };
 const STATION_ORDER = ['Nassau Av', 'Graham Av', 'Bedford Av'];
 const PANELS = [
-  { id: 'panel-Nassau Av',  type: 'station', station: 'Nassau Av',  label: 'NASSAU',  sub: 'G · 1 of 5' },
-  { id: 'panel-Graham Av',  type: 'station', station: 'Graham Av',  label: 'GRAHAM',  sub: 'L · 2 of 5' },
-  { id: 'panel-Bedford Av', type: 'station', station: 'Bedford Av', label: 'BEDFORD', sub: 'L · 3 of 5' },
-  { id: 'panel-week',       type: 'week',    label: 'WEEK',         sub: '7 DAYS · 4 of 5' },
-  { id: 'panel-today',      type: 'today',   label: 'HOURLY',       sub: 'NEXT 12H · 5 of 5' },
+  { id: 'panel-Nassau Av',  type: 'station', station: 'Nassau Av',  label: 'Nassau',  sub: 'G · 1/5' },
+  { id: 'panel-Graham Av',  type: 'station', station: 'Graham Av',  label: 'Graham',  sub: 'L · 2/5' },
+  { id: 'panel-Bedford Av', type: 'station', station: 'Bedford Av', label: 'Bedford', sub: 'L · 3/5' },
+  { id: 'panel-week',       type: 'week',    label: 'Week',         sub: '7 days · 4/5' },
+  { id: 'panel-today',      type: 'today',   label: 'Hourly',       sub: 'next 12h · 5/5' },
 ];
 const PANEL_ROTATE_MS = 12_000;
 const SLOGAN_ROTATE_MS = 12_000;
 const ALERT_ROTATE_MS  = 12_000;
 
 // ═════════════════════════════════════════════════════════════════
-// SAFE DOM
+// HELPERS
 // ═════════════════════════════════════════════════════════════════
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -851,9 +1021,9 @@ function hoursMinutesBetween(a, b) {
   const totalMin = Math.abs(Math.round((b - a) / 60000));
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;
-  if (h === 0) return m + ' MIN';
-  if (m === 0) return h + ' HR';
-  return h + 'H ' + m + 'M';
+  if (h === 0) return m + ' min';
+  if (m === 0) return h + ' hr';
+  return h + 'h ' + m + 'm';
 }
 
 // ═════════════════════════════════════════════════════════════════
@@ -873,6 +1043,10 @@ function tickClock() {
   const weekday = now.toLocaleDateString('en-US', { weekday: 'short' });
   const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   document.getElementById('dateLabel').textContent = weekday + ' · ' + md;
+
+  const longDate = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  document.getElementById('mastheadDate').textContent = longDate;
+  document.getElementById('mastheadMeta').textContent = 'Edition ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 tickClock();
 setInterval(tickClock, 1000);
@@ -881,14 +1055,14 @@ setInterval(tickClock, 1000);
 // WEATHER
 // ═════════════════════════════════════════════════════════════════
 const WMO_LABEL = {
-  0:'CLEAR', 1:'MOSTLY CLEAR', 2:'PARTLY CLOUDY', 3:'OVERCAST',
-  45:'FOG', 48:'FREEZING FOG',
-  51:'LIGHT DRIZZLE', 53:'DRIZZLE', 55:'HEAVY DRIZZLE',
-  61:'LIGHT RAIN', 63:'RAIN', 65:'HEAVY RAIN',
-  71:'LIGHT SNOW', 73:'SNOW', 75:'HEAVY SNOW', 77:'SNOW GRAINS',
-  80:'RAIN SHOWERS', 81:'HEAVY SHOWERS', 82:'VIOLENT SHOWERS',
-  85:'SNOW SHOWERS', 86:'HEAVY SNOW SHOWERS',
-  95:'THUNDERSTORM', 96:'THUNDERSTORM + HAIL', 99:'SEVERE STORM',
+  0:'Clear', 1:'Mostly clear', 2:'Partly cloudy', 3:'Overcast',
+  45:'Fog', 48:'Freezing fog',
+  51:'Light drizzle', 53:'Drizzle', 55:'Heavy drizzle',
+  61:'Light rain', 63:'Rain', 65:'Heavy rain',
+  71:'Light snow', 73:'Snow', 75:'Heavy snow', 77:'Snow grains',
+  80:'Rain showers', 81:'Heavy showers', 82:'Violent showers',
+  85:'Snow showers', 86:'Heavy snow showers',
+  95:'Thunderstorm', 96:'Thunderstorm + hail', 99:'Severe storm',
 };
 function weatherSummary(code, tempF) {
   if ([95,96,99].includes(code)) return 'Thunderstorms possible. Stay inside if you can.';
@@ -908,11 +1082,11 @@ function weatherSummary(code, tempF) {
 }
 function uvLevel(v) {
   if (v == null) return { key: 'low', label: 'N/A', warn: '' };
-  if (v < 3)  return { key: 'low',   label: 'Low',       warn: 'No protection needed' };
-  if (v < 6)  return { key: 'mod',   label: 'Moderate',  warn: 'Sunscreen if outside >1 hr' };
-  if (v < 8)  return { key: 'high',  label: 'High',      warn: 'Cover up · sunscreen + hat' };
-  if (v < 11) return { key: 'vhigh', label: 'Very High', warn: 'Avoid sun 10a-4p · SPF 30+' };
-  return        { key: 'extrm', label: 'Extreme',   warn: 'Stay inside if possible' };
+  if (v < 3)  return { key: 'low',   label: 'Low',       warn: 'No protection needed.' };
+  if (v < 6)  return { key: 'mod',   label: 'Moderate',  warn: 'Sunscreen if outside over an hour.' };
+  if (v < 8)  return { key: 'high',  label: 'High',      warn: 'Cover up — sunscreen and a hat.' };
+  if (v < 11) return { key: 'vhigh', label: 'Very High', warn: 'Avoid sun 10a–4p. SPF 30+.' };
+  return        { key: 'extrm', label: 'Extreme',   warn: 'Stay inside if possible.' };
 }
 
 let weatherData = null;
@@ -924,7 +1098,7 @@ function setUVNow(value, peakHint) {
   document.getElementById('uvValue').textContent = (value == null ? '—' : Math.round(value));
   document.getElementById('uvLabel').textContent = uv.label;
   document.getElementById('uvWarn').textContent =
-    peakHint ? uv.warn + ' · ' + peakHint : uv.warn;
+    peakHint ? uv.warn + ' ' + peakHint : uv.warn;
 }
 function renderCurrentWeather() {
   if (!weatherData) return;
@@ -934,12 +1108,12 @@ function renderCurrentWeather() {
   const now = new Date();
   const weekday = now.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
   const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
-  document.getElementById('wxDayLabel').textContent = 'NOW · ' + weekday + ' · ' + md;
+  document.getElementById('wxDayLabel').textContent = 'Now · ' + weekday + ' · ' + md;
   document.getElementById('tempNow').textContent = Math.round(tempF);
   document.getElementById('tempC').textContent = Math.round(fahrToCelsius(tempF)) + '°C';
-  document.getElementById('weatherDesc').textContent = WMO_LABEL[code] || 'WEATHER';
+  document.getElementById('weatherDesc').textContent = WMO_LABEL[code] || 'Weather';
 
-  const parts = ['Feels ' + Math.round(cur.apparent_temperature) + '°F / ' +
+  const parts = ['Feels ' + Math.round(cur.apparent_temperature) + '°F · ' +
                  Math.round(fahrToCelsius(cur.apparent_temperature)) + '°C'];
   if (cur.wind_speed_10m != null) parts.push(Math.round(cur.wind_speed_10m) + ' mph wind');
   if (cur.relative_humidity_2m != null) parts.push(cur.relative_humidity_2m + '% humidity');
@@ -962,7 +1136,7 @@ function renderCurrentWeather() {
       let ph = pd.getHours();
       const pap = ph >= 12 ? 'pm' : 'am';
       ph = ph % 12 || 12;
-      peakHint = 'Peaks at UV ' + Math.round(futurePeakVal) + ' ~' + ph + pap;
+      peakHint = 'Peaks at UV ' + Math.round(futurePeakVal) + ' ~' + ph + pap + '.';
     }
   }
   setUVNow(nowUV, peakHint);
@@ -988,7 +1162,6 @@ function renderSunInfo() {
     document.getElementById('sunDaylight').textContent = nextRise ? hoursMinutesBetween(now, nextRise) : '—';
   }
 }
-// ── Week panel render ──────────────────────────────────────────
 function renderWeekPanel() {
   if (!weatherData) return;
   const daily = weatherData.daily;
@@ -997,41 +1170,37 @@ function renderWeekPanel() {
   grid.textContent = '';
   const count = Math.min(daily.time.length, 7);
   const subLabel = (daily.time[0] && daily.time[count-1])
-    ? new Date(daily.time[0] + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() +
-      ' – ' + new Date(daily.time[count-1] + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase()
+    ? new Date(daily.time[0] + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+      ' – ' + new Date(daily.time[count-1] + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     : '';
   document.getElementById('weekSubLabel').textContent = subLabel;
-
   for (let k = 0; k < count; k++) {
     const date = new Date(daily.time[k] + 'T12:00:00');
-    const dow = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
-    const md  = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+    const dow = date.toLocaleDateString('en-US', { weekday: 'short' });
+    const md  = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const hi = Math.round(daily.temperature_2m_max[k]);
     const lo = Math.round(daily.temperature_2m_min[k]);
     const code = daily.weather_code[k];
     const precip = daily.precipitation_probability_max?.[k] ?? 0;
-    const cell = el('div', 'day' + (k === 0 ? ' today' : (k % 2 === 0 ? ' inv' : '')));
-    cell.appendChild(el('div', 'dow', (k === 0 ? 'TODAY · ' + dow : dow)));
+    const cell = el('div', 'day' + (k === 0 ? ' today' : ''));
+    cell.appendChild(el('div', 'dow', k === 0 ? 'Today · ' + dow : dow));
     cell.appendChild(el('div', 'date', md));
     const temps = el('div', 'temps');
     temps.appendChild(el('span', 'hi', hi + '°'));
     temps.appendChild(el('span', 'lo', lo + '°'));
     cell.appendChild(temps);
-    cell.appendChild(el('div', 'cond', (WMO_LABEL[code] || 'Weather')));
-    if (precip > 10) cell.appendChild(el('div', 'precip', precip + '% RAIN'));
+    cell.appendChild(el('div', 'cond', (WMO_LABEL[code] || 'Weather').toUpperCase()));
+    if (precip > 10) cell.appendChild(el('div', 'precip', precip + '% rain'));
     grid.appendChild(cell);
   }
 }
-// ── Today hourly panel render ──────────────────────────────────
 function renderTodayPanel() {
   if (!weatherData) return;
   const d = weatherData;
   const nowMs = Date.now();
   const picks = d.hourly.time
     .map((t, idx) => ({ ms: new Date(t).getTime(), idx }))
-    .filter(x => x.ms >= nowMs)
-    .slice(0, 12);
-
+    .filter(x => x.ms >= nowMs).slice(0, 12);
   const host = document.getElementById('hourlyGrid');
   host.textContent = '';
   picks.forEach(p => {
@@ -1049,11 +1218,9 @@ function renderTodayPanel() {
     const short = (WMO_LABEL[code] || '').split(' ')[0];
     cell.appendChild(el('div', 'c', short || '—'));
     cell.appendChild(el('div', 'p', (precip > 10 ? precip + '%' : '')));
-    cell.appendChild(el('div', 'uv', (uvv != null ? 'UV ' + Math.round(uvv) : '')));
+    cell.appendChild(el('div', 'uv', (uvv != null && uvv > 0.5 ? 'UV ' + Math.round(uvv) : '')));
     host.appendChild(cell);
   });
-
-  // Footer band: sunrise, sunset, daylight, today's peak UV + time
   const daily = d.daily;
   if (daily && daily.sunrise && daily.sunset) {
     const sr = new Date(daily.sunrise[0]);
@@ -1064,7 +1231,6 @@ function renderTodayPanel() {
   }
   if (daily && daily.uv_index_max) {
     const peak = daily.uv_index_max[0];
-    // find hour in hourly where uv is max
     let hAt = '', maxV = -1;
     if (d.hourly && d.hourly.uv_index) {
       for (let i = 0; i < Math.min(24, d.hourly.time.length); i++) {
@@ -1074,12 +1240,10 @@ function renderTodayPanel() {
     }
     document.getElementById('tpPeakUV').textContent = Math.round(peak) + hAt;
   }
-
   const now = new Date();
-  const md = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase();
+  const md = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
   document.getElementById('todaySubLabel').textContent = md;
 }
-
 async function refreshWeather() {
   try {
     const r = await fetch('/api/weather');
@@ -1092,7 +1256,7 @@ async function refreshWeather() {
     renderTodayPanel();
   } catch (e) {
     console.warn('weather', e);
-    document.getElementById('weatherDesc').textContent = 'OFFLINE';
+    document.getElementById('weatherDesc').textContent = 'Offline';
   }
 }
 refreshWeather();
@@ -1103,7 +1267,6 @@ setInterval(() => { if (weatherData) { renderCurrentWeather(); renderSunInfo(); 
 // TRAINS
 // ═════════════════════════════════════════════════════════════════
 let trainsData = null;
-
 function buildTrainRow(mins, walk, isCatch) {
   const arriveAt = new Date(Date.now() + mins * 60_000);
   const leaveIn = mins - walk;
@@ -1111,15 +1274,15 @@ function buildTrainRow(mins, walk, isCatch) {
   let tag;
   if (isCatch) {
     row.classList.add('catch');
-    tag = (leaveIn <= 0) ? 'LEAVE NOW' : 'LEAVE IN ' + leaveIn + ' MIN';
+    tag = (leaveIn <= 0) ? 'Leave now' : 'Leave in ' + leaveIn + ' min';
   } else if (leaveIn < 1) {
     row.classList.add('missed');
-    tag = 'MISSED';
+    tag = 'Missed';
   } else {
     tag = 'Leave in ' + leaveIn + ' min';
   }
   row.appendChild(el('span', 'clock', fmtClockShort(arriveAt)));
-  row.appendChild(el('span', 'mins', '+' + mins + ' MIN'));
+  row.appendChild(el('span', 'mins', '+' + mins + 'min'));
   row.appendChild(el('span', 'tag', tag));
   return row;
 }
@@ -1128,7 +1291,7 @@ function fillDirEl(listEl, trains, walk) {
   const arr = (trains || []).slice(0, 5);
   if (!arr.length) {
     const empty = el('div', 'train-row');
-    empty.appendChild(el('span', 'tag', 'NO TRAINS SCHEDULED'));
+    empty.appendChild(el('span', 'tag', 'No trains scheduled'));
     listEl.appendChild(empty);
     return;
   }
@@ -1136,7 +1299,7 @@ function fillDirEl(listEl, trains, walk) {
   arr.forEach((m, i) => listEl.appendChild(buildTrainRow(m, walk, i === catchIdx)));
   if (catchIdx === -1) {
     const note = el('div', 'train-row missed');
-    note.appendChild(el('span', 'tag', 'ALL TOO CLOSE — CHECK BACK'));
+    note.appendChild(el('span', 'tag', 'All too close — check back'));
     listEl.appendChild(note);
   }
 }
@@ -1147,16 +1310,16 @@ function renderStationPanel(stationName) {
   const panel = document.getElementById('panel-' + stationName);
   if (!panel) return;
   const walk = WALK_MIN[stationName];
-  panel.querySelector('[data-station-circle]').textContent = s.line;
   const circle = panel.querySelector('[data-station-circle]');
+  circle.textContent = s.line;
   circle.classList.remove('line-L', 'line-G');
   circle.classList.add('line-' + s.line);
-  panel.querySelector('[data-station-name]').textContent = stationName.toUpperCase();
+  panel.querySelector('[data-station-name]').textContent = stationName;
   panel.querySelector('[data-station-walk]').textContent = walk;
   const dN = s.directions?.N || {}, dS = s.directions?.S || {};
-  panel.querySelector('[data-dir-n-label]').textContent = (dN.label || '').toUpperCase();
+  panel.querySelector('[data-dir-n-label]').textContent = dN.label || '—';
   panel.querySelector('[data-dir-n-term]').textContent  = (dN.terminus || '').toUpperCase();
-  panel.querySelector('[data-dir-s-label]').textContent = (dS.label || '').toUpperCase();
+  panel.querySelector('[data-dir-s-label]').textContent = dS.label || '—';
   panel.querySelector('[data-dir-s-term]').textContent  = (dS.terminus || '').toUpperCase();
   fillDirEl(panel.querySelector('[data-trains-n]'), dN.trains, walk);
   fillDirEl(panel.querySelector('[data-trains-s]'), dS.trains, walk);
@@ -1169,17 +1332,17 @@ async function refreshTrains() {
     trainsData = j.data;
     renderAlerts(trainsData.alerts || []);
     STATION_ORDER.forEach(renderStationPanel);
-    document.getElementById('statusRight').textContent = 'LIVE';
+    document.getElementById('statusRight').textContent = 'Live';
   } catch (e) {
     console.warn('trains', e);
-    document.getElementById('statusRight').textContent = 'RETRY';
+    document.getElementById('statusRight').textContent = 'Retrying';
   }
 }
 refreshTrains();
 setInterval(refreshTrains, 20 * 1000);
 
 // ═════════════════════════════════════════════════════════════════
-// CAROUSEL ROTATION
+// CAROUSEL
 // ═════════════════════════════════════════════════════════════════
 let panelIdx = 0;
 function renderCarouselTabs() {
@@ -1203,10 +1366,7 @@ function showPanel(idx) {
   renderCarouselTabs();
 }
 showPanel(0);
-setInterval(() => {
-  panelIdx = (panelIdx + 1) % PANELS.length;
-  showPanel(panelIdx);
-}, PANEL_ROTATE_MS);
+setInterval(() => { panelIdx = (panelIdx + 1) % PANELS.length; showPanel(panelIdx); }, PANEL_ROTATE_MS);
 
 // ═════════════════════════════════════════════════════════════════
 // ALERTS
@@ -1228,18 +1388,13 @@ function rotateAlert() {
 setInterval(rotateAlert, ALERT_ROTATE_MS);
 
 // ═════════════════════════════════════════════════════════════════
-// SLOGAN BANK — expanded for ironic range
-//   · Classic Marxist canon (verbatim)
-//   · Commute-adapted parodies
-//   · Current discourse: abundance agenda (Klein, Demsas, Thompson)
-//   · Intra-left tension & MTA union-reform takes
-//   · Mamdani-tone absurdist made-up lines
-// Attributions intentionally mix real sources, lightly-adapted,
-// and clearly-fictitious ("apocryphal"). The joke works because
-// the aesthetic is Constructivist but the politics have evolved.
+// SLOGANS — 70+ quotes (Marx/Lenin canon, commute parodies,
+// abundance agenda, intra-left tension, Mamdani-tone absurdism,
+// Greenpoint kitsch).  Rendered in italic body text, attribution
+// in red Oswald caps — editorial margin-note style.
 // ═════════════════════════════════════════════════════════════════
 const SLOGANS = [
-  // ── Classic Marxist canon ─────────────────────────────────────
+  // Classic canon (verbatim / near-verbatim)
   { t: "Workers of the world, unite! You have nothing to lose but your chains.", a: "K. Marx & F. Engels, Manifesto (1848)" },
   { t: "The history of all hitherto existing society is the history of class struggles.", a: "K. Marx, Manifesto" },
   { t: "From each according to his ability, to each according to his needs.", a: "K. Marx, 1875" },
@@ -1255,7 +1410,7 @@ const SLOGANS = [
   { t: "We must dare to invent the future.", a: "T. Sankara" },
   { t: "At the risk of seeming ridiculous, let me say that the true revolutionary is guided by great feelings of love.", a: "Che Guevara" },
 
-  // ── Commute-adapted Marxist parodies ──────────────────────────
+  // Commute-adapted parodies
   { t: "Workers of the L-line, unite! But first, renegotiate the work rules.", a: "K. Marx, adapted 2025" },
   { t: "The philosophers have only interpreted the schedule; the point is to catch the train.", a: "K. Marx, adapted" },
   { t: "A spectre is haunting Greenpoint — the G train.", a: "Manifesto, adapted" },
@@ -1265,8 +1420,8 @@ const SLOGANS = [
   { t: "The means of production belong to the workers. The means of transportation belong to whoever can finish them in a decade.", a: "K. Marx, adapted" },
   { t: "There are decades where no train comes; then weeks where three arrive at once.", a: "V. Lenin, adapted" },
 
-  // ── Abundance agenda & current discourse ──────────────────────
-  { t: "Supply-side progressivism.", a: "E. Klein, New York Times, 2021" },
+  // Abundance agenda
+  { t: "Supply-side progressivism.", a: "E. Klein, NYT 2021" },
   { t: "Why we can't build.", a: "E. Klein, NYT op-ed" },
   { t: "We don't have a money problem. We have a process problem.", a: "E. Klein, adapted" },
   { t: "A country that can't build is a country that can't govern.", a: "D. Thompson" },
@@ -1274,14 +1429,13 @@ const SLOGANS = [
   { t: "If you want affordable housing, you need more housing.", a: "J. Demsas" },
   { t: "The environmental review is itself the environmental harm.", a: "E. Klein, adapted" },
   { t: "We pay four times what Paris pays per mile of subway. It is not about greed — it is about process.", a: "A. Levy, Pedestrian Observations" },
-  { t: "Abundance is a value, not just an outcome.", a: "Klein & Thompson, Abundance (2025)" },
+  { t: "Abundance is a value, not just an outcome.", a: "Klein & Thompson, 2025" },
   { t: "A progressivism that cannot build is not progressive.", a: "abundance agenda" },
   { t: "The obstacle to the green transition is not capital — it is the community meeting.", a: "E. Levitz, adapted" },
   { t: "The real enemy is not the capitalist. It is the discretionary review process.", a: "abundance progressive, 2025" },
-  { t: "Cost disease socialism: pay more, get less, call it solidarity.", a: "S. Hammond, adapted" },
   { t: "NEPA review has averaged 4.5 years for major projects this decade.", a: "M. Yglesias, Slow Boring" },
 
-  // ── Intra-left tension & MTA union reform ─────────────────────
+  // Intra-left tension
   { t: "Solidarity with the workers. Reform the work rules.", a: "DSA transit caucus, apocryphal" },
   { t: "The unions are not the problem. They are negotiating inside a broken system.", a: "R. Barkan, adapted" },
   { t: "There is no contradiction between labor rights and competent construction.", a: "fictional editorial" },
@@ -1291,10 +1445,9 @@ const SLOGANS = [
   { t: "The obstacle is zoning — and also capital.", a: "left abundance, 2025" },
   { t: "Solidarity forever. Except with the block association opposing the bike lane.", a: "urbanist Twitter" },
   { t: "Build it fast, build it cheap, build it union — pick two. Actually, pick one.", a: "NYC transit joke" },
-  { t: "The tenant and the builder may yet find common ground. (They haven't, but they may.)", a: "hopeful DSA" },
   { t: "You cannot tax your way out of a supply crisis. But you can try.", a: "urban economist, apocryphal" },
 
-  // ── Mamdani-tone absurdist ────────────────────────────────────
+  // Mamdani-tone
   { t: "Freeze the rent. Free the buses. Finish the Second Avenue Subway in this century.", a: "Z. Mamdani, apocryphal" },
   { t: "I promise three things: cheaper rent, faster trains, and a single-payer bodega system.", a: "Z. Mamdani, apocryphal" },
   { t: "Trust the tenants. Fund the buses. Tax the yachts.", a: "Z. Mamdani, apocryphal" },
@@ -1305,10 +1458,9 @@ const SLOGANS = [
   { t: "The class struggle continues — but first, a word about potholes.", a: "Z. Mamdani, apocryphal" },
   { t: "Seize the means of production. Start with the MTA procurement committee.", a: "Z. Mamdani, apocryphal" },
   { t: "Comrades, we will not stop until every bodega has a functional slushee machine.", a: "Z. Mamdani, apocryphal" },
-  { t: "Free the L. Free the G. Free the soul.", a: "Z. Mamdani, apocryphal" },
   { t: "Public transit, public housing, public parks — and yes, a public option for bagels.", a: "Z. Mamdani, apocryphal" },
 
-  // ── Greenpoint soviet kitsch ──────────────────────────────────
+  // Greenpoint soviet kitsch
   { t: "Comrade, hold the door.", a: "Greenpoint soviet" },
   { t: "Solidarity with the B43 bus.", a: "Greenpoint soviet" },
   { t: "Five-year plan: arrive on time.", a: "Politburo" },
@@ -1316,8 +1468,8 @@ const SLOGANS = [
   { t: "Weather has no politics. Umbrellas do.", a: "R. Luxemburg, adapted" },
   { t: "Comrade, have you read your Community Board's response to the shuttle bus plan?", a: "Greenpoint soviet" },
   { t: "The revolution will arrive on the 7:34 L — provided CBTC cuts over by 2030.", a: "Greenpoint soviet" },
-  { t: "A bagel for every worker. A bike lane for every avenue. A subway mile for under a billion dollars.", a: "Greenpoint soviet" },
   { t: "Dialectical materialism is fine, but have you tried the permitting office at 280 Broadway?", a: "Greenpoint soviet" },
+  { t: "A bagel for every worker. A bike lane for every avenue. A subway mile for under a billion dollars.", a: "Greenpoint soviet" },
   { t: "First they came for the bike lanes; I said nothing, because I drive. Then they came for the subways.", a: "Greenpoint soviet, adapted" },
 ];
 
@@ -1334,12 +1486,12 @@ function rotateSlogan() {
   setTimeout(() => {
     node.textContent = '';
     const body = document.createElement('span');
-    body.textContent = s.t.toUpperCase();
+    body.textContent = '"' + s.t + '"';
     node.appendChild(body);
     if (s.a) {
       const a = document.createElement('span');
       a.className = 'attr';
-      a.textContent = '— ' + s.a.toUpperCase();
+      a.textContent = '— ' + s.a;
       node.appendChild(a);
     }
     node.classList.remove('fade');
