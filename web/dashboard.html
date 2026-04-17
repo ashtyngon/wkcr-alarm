@@ -14,12 +14,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
 <style>
 /* ──────────────────────────────────────────────────────────────────
-   Soviet avant-garde wall dashboard, v3.
-   - One station shown at a time, rotating every 30s, BOTH directions.
-   - Weather rotates through current + next 7 days.
-   - UV warning badge, dual F/C temperature display.
-   - MTA service-alert ribbon when L-line delays are active.
-   - Expanded 60-quote ticker from real revolutionary sources.
+   Soviet avant-garde wall dashboard, v4.
+   Middle area is a carousel of 5 panels that rotate every 12s:
+     · Nassau Av (G)  trains
+     · Graham Av (L)  trains
+     · Bedford Av (L) trains
+     · 7-DAY outlook
+     · TODAY hourly
+   Time + current weather + UV NOW stay pinned at the top.
    ────────────────────────────────────────────────────────────────── */
 :root {
   --paper:   #f2e7cc;
@@ -29,14 +31,13 @@
   --red-2:   #8a1513;
   --ochre:   #d4a017;
 
-  /* UV severity scale */
-  --uv-low:    #2e7d32;  /* 0-2 */
-  --uv-mod:    #d4a017;  /* 3-5 */
-  --uv-high:   #e65100;  /* 6-7 */
-  --uv-vhigh:  #c4201e;  /* 8-10 */
-  --uv-extrm:  #6a1b9a;  /* 11+ */
+  /* UV severity */
+  --uv-low:    #2e7d32;
+  --uv-mod:    #d4a017;
+  --uv-high:   #e65100;
+  --uv-vhigh:  #c4201e;
+  --uv-extrm:  #6a1b9a;
 }
-
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
 body {
@@ -50,10 +51,9 @@ body {
     radial-gradient(ellipse at 70% 10%, rgba(0,0,0,0.04), transparent 60%),
     radial-gradient(ellipse at 10% 90%, rgba(196, 32, 30, 0.06), transparent 55%);
 }
-
 .frame {
   display: grid;
-  grid-template-rows: auto auto auto auto 1fr auto;
+  grid-template-rows: auto auto auto 1fr auto auto;
   height: 100vh;
   padding: 20px 32px;
   gap: 12px;
@@ -61,7 +61,7 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   TOP STRIP — clock, rotating weather, UV badge
+   TOP STRIP — time, current weather, UV NOW (always visible)
    ══════════════════════════════════════════════════════════════ */
 .top {
   display: grid;
@@ -69,7 +69,6 @@ body {
   align-items: stretch;
   border: 4px solid var(--ink);
 }
-
 .time-box {
   background: var(--red);
   color: var(--paper);
@@ -91,7 +90,6 @@ body {
   text-transform: uppercase;
   opacity: 0.9;
 }
-
 .wx-box {
   background: var(--ink);
   color: var(--paper);
@@ -101,17 +99,15 @@ body {
   gap: 22px;
   align-items: center;
   min-width: 0;
-  transition: opacity 0.3s ease;
 }
-.wx-box.fade { opacity: 0; }
-.wx-box .temp-col { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.wx-box .temp-col { display: flex; flex-direction: column; align-items: center; }
 .wx-box .temp {
   font-family: 'Alfa Slab One', serif;
   font-size: clamp(56px, 6.5vw, 100px);
   line-height: 0.9;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  display: flex; align-items: flex-start; line-height: 1;
+  display: flex; align-items: flex-start;
 }
 .wx-box .temp .deg { color: var(--red); font-size: 0.8em; }
 .wx-box .temp-c {
@@ -126,38 +122,26 @@ body {
 .wx-box .caption .day-label {
   font-family: 'Roboto Mono', monospace;
   font-size: clamp(11px, 1vw, 14px);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--ochre);
-  font-weight: 700;
-  line-height: 1;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--ochre); font-weight: 700; line-height: 1;
 }
 .wx-box .caption .label {
   font-family: 'Oswald', sans-serif;
   font-weight: 700;
   font-size: clamp(22px, 2.4vw, 38px);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  line-height: 1.02;
+  letter-spacing: 0.02em; text-transform: uppercase; line-height: 1.02;
 }
 .wx-box .caption .sub {
   font-family: 'Roboto Mono', monospace;
   font-size: clamp(12px, 1vw, 14px);
-  letter-spacing: 0.08em;
-  font-weight: 500;
-  opacity: 0.75;
+  letter-spacing: 0.08em; font-weight: 500; opacity: 0.75;
   text-transform: uppercase;
 }
 .wx-box .caption .advice {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 500;
+  font-family: 'Oswald', sans-serif; font-weight: 500;
   font-size: clamp(14px, 1.25vw, 18px);
-  line-height: 1.2;
-  opacity: 0.9;
-  max-width: 52ch;
+  line-height: 1.2; opacity: 0.9; max-width: 52ch;
 }
-
-/* UV box (top-right) */
 .uv-box {
   padding: 8px 18px;
   min-width: 120px;
@@ -169,150 +153,38 @@ body {
 }
 .uv-box .k {
   font-family: 'Roboto Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  font-weight: 600;
-  opacity: 0.7;
+  font-size: 11px; letter-spacing: 0.22em;
+  text-transform: uppercase; font-weight: 600; opacity: 0.7;
 }
 .uv-box .v {
   font-family: 'Alfa Slab One', serif;
-  font-size: clamp(34px, 3vw, 46px);
-  line-height: 0.95;
+  font-size: clamp(34px, 3vw, 46px); line-height: 0.95;
   font-variant-numeric: tabular-nums;
 }
 .uv-box .l {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  padding: 2px 6px;
-  color: var(--paper);
-  align-self: flex-start;
+  font-family: 'Oswald', sans-serif; font-weight: 700;
+  font-size: 13px; letter-spacing: 0.14em;
+  text-transform: uppercase; padding: 2px 6px;
+  color: var(--paper); align-self: flex-start;
 }
 .uv-box.low   .l { background: var(--uv-low); }
 .uv-box.mod   .l { background: var(--uv-mod); color: var(--ink); }
 .uv-box.high  .l { background: var(--uv-high); }
 .uv-box.vhigh .l { background: var(--uv-vhigh); }
 .uv-box.extrm .l { background: var(--uv-extrm); }
-.uv-box.high, .uv-box.vhigh, .uv-box.extrm {
-  background: var(--paper-2);
-}
+.uv-box.high, .uv-box.vhigh, .uv-box.extrm { background: var(--paper-2); }
 .uv-box .warn {
   font-family: 'Oswald', sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  font-weight: 600;
-  opacity: 0.7;
-  line-height: 1.15;
-  margin-top: 2px;
-  max-width: 120px;
+  font-size: 11px; letter-spacing: 0.1em;
+  font-weight: 600; opacity: 0.7; line-height: 1.15;
+  margin-top: 2px; max-width: 120px;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   7-DAY FORECAST STRIP — permanent, all 7 days side-by-side.
-   NOT a rotation. Today's weather is in the top strip; this is
-   the outlook for the days ahead.
-   ══════════════════════════════════════════════════════════════ */
-.forecast-week {
-  display: grid;
-  grid-template-columns: auto repeat(7, 1fr);
-  border: 4px solid var(--ink);
-  background: var(--ink);
-}
-.forecast-week .fw-label {
-  background: var(--red);
-  color: var(--paper);
-  padding: 10px 18px;
-  display: flex; flex-direction: column; justify-content: center;
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  text-transform: uppercase;
-  gap: 2px;
-  min-width: 110px;
-  letter-spacing: 0.1em;
-}
-.forecast-week .fw-label .big {
-  font-size: clamp(15px, 1.4vw, 20px);
-  letter-spacing: 0.14em;
-  line-height: 1;
-}
-.forecast-week .fw-label .small {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.22em;
-  font-weight: 500;
-  opacity: 0.85;
-}
-.forecast-week .fw-cell {
-  padding: 10px 12px;
-  background: var(--paper);
-  color: var(--ink);
-  border-left: 2px solid var(--ink);
-  display: flex; flex-direction: column; gap: 3px;
-  min-width: 0;
-}
-.forecast-week .fw-cell:nth-child(3),
-.forecast-week .fw-cell:nth-child(5),
-.forecast-week .fw-cell:nth-child(7) {
-  background: var(--ink); color: var(--paper);
-}
-.forecast-week .fw-cell .day {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: clamp(13px, 1.2vw, 16px);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  line-height: 1;
-}
-.forecast-week .fw-cell .date {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  opacity: 0.6;
-  font-weight: 500;
-}
-.forecast-week .fw-cell .temps {
-  font-family: 'Alfa Slab One', serif;
-  font-size: clamp(20px, 2vw, 28px);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-}
-.forecast-week .fw-cell .temps .lo {
-  opacity: 0.5;
-  font-size: 0.72em;
-  margin-left: 6px;
-}
-.forecast-week .fw-cell .cond {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  line-height: 1.15;
-  min-height: 1.15em;
-}
-.forecast-week .fw-cell .precip {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--red);
-  letter-spacing: 0.05em;
-}
-.forecast-week .fw-cell:nth-child(3) .precip,
-.forecast-week .fw-cell:nth-child(5) .precip,
-.forecast-week .fw-cell:nth-child(7) .precip {
-  color: var(--ochre);
-}
-
-/* ══════════════════════════════════════════════════════════════
-   ALERT RIBBON — MTA service delays / suspensions.
-   Hidden when there are no active L-line alerts.
+   ALERT RIBBON
    ══════════════════════════════════════════════════════════════ */
 .alert-ribbon {
-  display: none;  /* JS sets .visible when alerts exist */
+  display: none;
   align-items: center;
   gap: 14px;
   padding: 8px 18px;
@@ -322,8 +194,7 @@ body {
 }
 .alert-ribbon.visible { display: flex; }
 .alert-ribbon .siren {
-  width: 22px; height: 22px;
-  flex: 0 0 auto;
+  width: 22px; height: 22px; flex: 0 0 auto;
   background: var(--paper);
   -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2 C6 2 5 8 5 14 H3 V16 H21 V14 H19 C19 8 18 2 12 2 Z M11 18 H13 V22 H11 V18 Z' fill='black'/></svg>") center / contain no-repeat;
           mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2 C6 2 5 8 5 14 H3 V16 H21 V14 H19 C19 8 18 2 12 2 Z M11 18 H13 V22 H11 V18 Z' fill='black'/></svg>") center / contain no-repeat;
@@ -331,219 +202,156 @@ body {
 }
 @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
 .alert-ribbon .label {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  flex: 0 0 auto;
-  padding-right: 14px;
-  border-right: 2px solid rgba(255,255,255,0.4);
+  font-family: 'Oswald', sans-serif; font-weight: 700;
+  font-size: 15px; letter-spacing: 0.18em;
+  text-transform: uppercase; flex: 0 0 auto;
+  padding-right: 14px; border-right: 2px solid rgba(255,255,255,0.4);
   white-space: nowrap;
 }
 .alert-ribbon .body {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 500;
+  font-family: 'Oswald', sans-serif; font-weight: 500;
   font-size: clamp(13px, 1.1vw, 16px);
-  letter-spacing: 0.04em;
-  line-height: 1.25;
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  letter-spacing: 0.04em; line-height: 1.25;
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   SLOGAN BAR — Lenin + rotating communist quotes
+   SLOGAN BAR — Lenin + rotating quote
    ══════════════════════════════════════════════════════════════ */
 .slogan-bar {
   display: flex; align-items: center; gap: 18px;
   padding: 8px 20px;
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--ink); color: var(--paper);
   border: 3px solid var(--ink);
   min-height: 58px;
 }
 .slogan-bar .lenin {
-  flex: 0 0 auto;
-  width: 46px; height: 54px;
+  flex: 0 0 auto; width: 46px; height: 54px;
   background-color: var(--red);
   -webkit-mask: url('/assets/lenin.svg') no-repeat center / contain;
           mask: url('/assets/lenin.svg') no-repeat center / contain;
 }
 .slogan-bar .star {
-  flex: 0 0 auto;
-  width: 28px; height: 28px;
-  color: var(--red);
+  flex: 0 0 auto; width: 28px; height: 28px; color: var(--red);
 }
 .slogan-bar .slogan-text {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
+  font-family: 'Oswald', sans-serif; font-weight: 700;
   font-size: clamp(14px, 1.4vw, 20px);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.1em; text-transform: uppercase;
   line-height: 1.2;
   flex: 1; min-width: 0;
   transition: opacity 0.4s ease;
 }
 .slogan-bar .slogan-text.fade { opacity: 0; }
-.slogan-bar .slogan-text .quote-body {
-  display: inline;
-}
 .slogan-bar .slogan-text .attr {
-  display: inline-block;
-  color: var(--red);
-  font-weight: 500;
-  margin-left: 14px;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
+  display: inline-block; color: var(--red);
+  font-weight: 500; margin-left: 14px;
+  letter-spacing: 0.08em; white-space: nowrap;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   STATION VIEW — one station, both directions side-by-side
+   CAROUSEL — the main rotating area. Each panel is absolutely
+   positioned; the active one is opacity 1, others fade out.
    ══════════════════════════════════════════════════════════════ */
-.station-view {
+.carousel {
   position: relative;
-  display: flex; flex-direction: column;
+  min-height: 0;
   border: 4px solid var(--ink);
   background: var(--paper);
+  overflow: hidden;
+}
+.panel {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
   min-height: 0;
   overflow: hidden;
 }
-.station-view.fade { opacity: 0.3; }
-.station-view, .station-view.fade { transition: opacity 0.25s ease; }
+.panel.active { opacity: 1; pointer-events: auto; }
 
-/* STATION TABS — at top, so it's clear they're "which station"
-   pagination, not "next stops on the line". */
-.station-tabs {
-  display: flex;
-  border-bottom: 4px solid var(--ink);
-}
-.station-tabs .tab {
-  flex: 1;
-  padding: 8px 14px;
-  background: var(--paper);
-  color: var(--ink);
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: clamp(13px, 1.2vw, 17px);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-align: center;
-  border-right: 2px solid var(--ink);
-  opacity: 0.45;
-  transition: opacity 0.3s ease;
-}
-.station-tabs .tab:last-child { border-right: none; }
-.station-tabs .tab.active {
-  opacity: 1;
-  background: var(--red);
-  color: var(--paper);
-}
-
-/* STATION HEADER — L badge + station name + walk time */
+/* ── Station panel (shared by all 3 station tabs) ──────────── */
 .station-header {
   display: flex; justify-content: space-between; align-items: stretch;
-  background: var(--ink);
-  color: var(--paper);
-  padding: 0;
+  background: var(--ink); color: var(--paper);
   border-bottom: 4px solid var(--ink);
 }
 .station-header .L-badge {
-  padding: 10px 14px;
-  background: var(--ink);
-  color: var(--paper);
-  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px;
+  background: var(--ink); color: var(--paper);
+  display: flex; align-items: center;
   border-right: 4px solid var(--red);
 }
 .station-header .L-badge .circle {
-  width: 46px; height: 46px; border-radius: 50%;
-  background: #a7a9ac;    /* default MTA L-line grey */
+  width: 56px; height: 56px; border-radius: 50%;
+  background: #a7a9ac;
   color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-family: 'Alfa Slab One', serif;
-  font-size: 28px;
-  line-height: 1;
+  font-size: 34px; line-height: 1;
 }
-.station-header .L-badge .circle.line-L { background: #a7a9ac; }  /* MTA L grey */
-.station-header .L-badge .circle.line-G { background: #6cbe45; }  /* MTA G lime green */
-.station-header .L-badge .lbl {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  font-weight: 600;
-  opacity: 0.7;
-  line-height: 1.1;
-  max-width: 70px;
-}
+.station-header .L-badge .circle.line-L { background: #a7a9ac; }
+.station-header .L-badge .circle.line-G { background: #6cbe45; }
 .station-header .name {
-  padding: 14px 22px;
+  padding: 16px 24px;
   font-family: 'Alfa Slab One', serif;
-  font-size: clamp(36px, 4vw, 60px);
+  font-size: clamp(36px, 4vw, 62px);
   line-height: 1;
   letter-spacing: -0.01em;
-  flex: 1;
-  text-transform: uppercase;
+  flex: 1; text-transform: uppercase;
   display: flex; align-items: center;
 }
 .station-header .walk {
   padding: 14px 22px;
-  background: var(--red);
-  color: var(--paper);
-  display: flex; flex-direction: column; justify-content: center; align-items: flex-end;
-  gap: 2px;
-  min-width: 140px;
+  background: var(--red); color: var(--paper);
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: flex-end;
+  gap: 2px; min-width: 140px;
 }
 .station-header .walk .k {
   font-family: 'Roboto Mono', monospace;
-  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
-  font-weight: 500; opacity: 0.85;
+  font-size: 11px; letter-spacing: 0.22em;
+  text-transform: uppercase; font-weight: 500; opacity: 0.85;
 }
 .station-header .walk .v {
   font-family: 'Alfa Slab One', serif;
   font-size: clamp(26px, 2.4vw, 38px);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
+  line-height: 1; font-variant-numeric: tabular-nums;
 }
-
 .dirs {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  flex: 1;
-  min-height: 0;
+  flex: 1; min-height: 0;
 }
 .dir {
   display: flex; flex-direction: column;
   padding: 16px 22px 14px;
-  min-height: 0;
-  gap: 8px;
+  min-height: 0; gap: 8px;
 }
 .dir + .dir { border-left: 3px solid var(--ink); }
 .dir .dir-label {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
+  font-family: 'Oswald', sans-serif; font-weight: 700;
   font-size: clamp(14px, 1.3vw, 20px);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--red);
   padding-bottom: 6px;
   border-bottom: 2px solid var(--ink);
   line-height: 1.15;
-  display: flex; align-items: baseline; gap: 8px;
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
 }
 .dir .dir-label .arrow {
   font-family: 'Alfa Slab One', serif;
-  font-size: 1.2em;
-  line-height: 1;
+  font-size: 1.2em; line-height: 1;
 }
 .dir .dir-label .terminus {
   font-family: 'Roboto Mono', monospace;
   font-size: 0.55em;
   letter-spacing: 0.18em;
-  color: var(--ink);
-  opacity: 0.55;
-  font-weight: 500;
+  color: var(--ink); opacity: 0.55; font-weight: 500;
 }
 .dir .train-list {
   display: flex; flex-direction: column; gap: 2px;
@@ -565,21 +373,14 @@ body {
 }
 .train-row .mins {
   font-family: 'Roboto Mono', monospace;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-weight: 500;
-  opacity: 0.55;
+  font-size: 12px; letter-spacing: 0.08em;
+  text-transform: uppercase; font-weight: 500; opacity: 0.55;
 }
 .train-row .tag {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 600;
+  font-family: 'Oswald', sans-serif; font-weight: 600;
   font-size: clamp(12px, 1.15vw, 17px);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  text-align: right;
-  opacity: 0.7;
-  white-space: nowrap;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  text-align: right; opacity: 0.7; white-space: nowrap;
 }
 .train-row.missed { opacity: 0.35; }
 .train-row.missed .tag { color: var(--red); font-weight: 700; opacity: 1; }
@@ -590,33 +391,198 @@ body {
   gap: 14px;
   margin: 4px 0;
 }
-.train-row.catch .clock {
-  font-size: clamp(26px, 2.8vw, 40px);
-}
+.train-row.catch .clock { font-size: clamp(26px, 2.8vw, 40px); }
 .train-row.catch .mins { color: var(--paper); opacity: 0.82; font-size: 12px; }
 .train-row.catch .tag {
   font-size: clamp(15px, 1.5vw, 22px);
-  font-weight: 700;
-  opacity: 1;
+  font-weight: 700; opacity: 1;
 }
 
-/* Weather-rotation progress indicator — tiny bar below top strip
-   so viewer knows the weather slot is rotating. */
-.wx-progress {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 3px;
-  background: transparent;
-  pointer-events: none;
+/* ── Week panel (7-day forecast, 4x2 grid) ─────────────────── */
+.week-panel { padding: 18px 24px; overflow: hidden; }
+.week-panel .header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  border-bottom: 3px solid var(--ink);
+  padding-bottom: 8px; margin-bottom: 14px;
 }
-.wx-progress .fill {
-  height: 100%;
-  background: var(--red);
-  transition: width 0.3s linear;
+.week-panel .header .title {
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(28px, 3vw, 42px);
+  line-height: 1;
+}
+.week-panel .header .title .cy { color: var(--red); margin-right: 16px; }
+.week-panel .header .sub {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px; letter-spacing: 0.18em;
+  text-transform: uppercase; font-weight: 500;
+  opacity: 0.6;
+}
+.week-panel .grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: 1fr 1fr;
+  gap: 12px;
+  min-height: 0;
+}
+.week-panel .day {
+  display: flex; flex-direction: column;
+  padding: 14px 16px;
+  border: 3px solid var(--ink);
+  background: var(--paper);
+  gap: 4px;
+  min-height: 0;
+}
+.week-panel .day.today { background: var(--red); color: var(--paper); }
+.week-panel .day.inv { background: var(--ink); color: var(--paper); }
+.week-panel .day .dow {
+  font-family: 'Oswald', sans-serif; font-weight: 700;
+  font-size: clamp(18px, 1.8vw, 26px);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  line-height: 1;
+}
+.week-panel .day .date {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px; letter-spacing: 0.18em;
+  opacity: 0.65; font-weight: 500;
+}
+.week-panel .day .temps {
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(30px, 3.2vw, 46px);
+  line-height: 1; font-variant-numeric: tabular-nums;
+  margin-top: 4px;
+}
+.week-panel .day .temps .lo { opacity: 0.5; font-size: 0.7em; margin-left: 10px; }
+.week-panel .day .cond {
+  font-family: 'Oswald', sans-serif; font-weight: 700;
+  font-size: clamp(14px, 1.3vw, 20px);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  line-height: 1.2;
+}
+.week-panel .day .precip {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-top: auto;
+  color: var(--red);
+}
+.week-panel .day.today .precip,
+.week-panel .day.inv .precip { color: var(--ochre); }
+
+/* ── Today hourly panel ────────────────────────────────────── */
+.today-panel { padding: 18px 24px; overflow: hidden; }
+.today-panel .header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  border-bottom: 3px solid var(--ink);
+  padding-bottom: 8px; margin-bottom: 14px;
+}
+.today-panel .header .title {
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(28px, 3vw, 42px); line-height: 1;
+}
+.today-panel .header .title .cy { color: var(--red); margin-right: 16px; }
+.today-panel .header .sub {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px; letter-spacing: 0.18em;
+  text-transform: uppercase; font-weight: 500; opacity: 0.6;
+}
+.today-panel .hours {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  border: 3px solid var(--ink);
+  background: var(--ink);
+}
+.today-panel .hour {
+  background: var(--paper);
+  color: var(--ink);
+  padding: 10px 8px;
+  border-right: 2px solid var(--ink);
+  display: flex; flex-direction: column; gap: 3px;
+  min-width: 0;
+}
+.today-panel .hour:last-child { border-right: none; }
+.today-panel .hour:nth-child(even) { background: var(--paper-2); }
+.today-panel .hour .h {
+  font-family: 'Roboto Mono', monospace;
+  font-size: clamp(11px, 1vw, 13px);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  font-weight: 700; opacity: 0.75;
+}
+.today-panel .hour .t {
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(20px, 2.2vw, 32px);
+  line-height: 1; font-variant-numeric: tabular-nums;
+}
+.today-panel .hour .c {
+  font-family: 'Oswald', sans-serif; font-weight: 600;
+  font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase; line-height: 1.1;
+  opacity: 0.85;
+}
+.today-panel .hour .p {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  color: var(--red); letter-spacing: 0.04em;
+}
+.today-panel .hour .uv {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.06em; margin-top: auto;
+  color: var(--ochre);
+}
+.today-panel .footer-band {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: var(--red); color: var(--paper);
+  display: flex; justify-content: space-between; gap: 16px;
+  font-family: 'Oswald', sans-serif; font-weight: 700;
+  font-size: clamp(13px, 1.3vw, 18px);
+  letter-spacing: 0.14em; text-transform: uppercase;
+}
+.today-panel .footer-band .k {
+  font-family: 'Roboto Mono', monospace; font-weight: 500;
+  font-size: 11px; letter-spacing: 0.22em; opacity: 0.85;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   FOOTER — date + sun info + live status
+   CAROUSEL TABS — pagination below main carousel
+   ══════════════════════════════════════════════════════════════ */
+.carousel-tabs {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  border: 3px solid var(--ink);
+}
+.carousel-tabs .tab {
+  padding: 9px 10px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(11px, 1vw, 14px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+  border-right: 2px solid var(--ink);
+  opacity: 0.45;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  line-height: 1.1;
+}
+.carousel-tabs .tab:last-child { border-right: none; }
+.carousel-tabs .tab .sub {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 9px; letter-spacing: 0.2em;
+  opacity: 0.55; font-weight: 500;
+}
+.carousel-tabs .tab.active {
+  opacity: 1; background: var(--red); color: var(--paper);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FOOTER
    ══════════════════════════════════════════════════════════════ */
 .footer {
   display: flex; align-items: stretch;
@@ -634,27 +600,20 @@ body {
 .footer .cell.red { background: var(--red); color: var(--paper); }
 .footer .cell .k {
   font-family: 'Roboto Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  opacity: 0.6;
-  font-weight: 500;
+  font-size: 10px; letter-spacing: 0.22em;
+  text-transform: uppercase; opacity: 0.6; font-weight: 500;
   white-space: nowrap;
 }
 .footer .cell .v {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
+  font-family: 'Oswald', sans-serif; font-weight: 700;
   font-size: clamp(14px, 1.4vw, 20px);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  line-height: 1; font-variant-numeric: tabular-nums;
   white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis;
 }
 .footer .live-dot {
-  display: inline-block;
-  width: 10px; height: 10px;
+  display: inline-block; width: 10px; height: 10px;
   background: var(--paper);
   animation: blink 1.6s steps(2, start) infinite;
 }
@@ -668,13 +627,13 @@ body {
 
 <div class="frame">
 
-  <!-- ═════ TOP STRIP ═════ -->
+  <!-- ═════ TOP STRIP (always visible) ═════ -->
   <div class="top">
     <div class="time-box">
       <span class="nums"><span id="bigClock">—</span></span>
       <span class="ampm" id="ampm">—</span>
     </div>
-    <div class="wx-box" id="wxBox">
+    <div class="wx-box">
       <div class="temp-col">
         <div class="temp"><span id="tempNow">—</span><span class="deg">°</span></div>
         <div class="temp-c" id="tempC">—</div>
@@ -687,23 +646,14 @@ body {
       </div>
     </div>
     <div class="uv-box low" id="uvBox">
-      <span class="k">UV Index</span>
+      <span class="k">UV Now</span>
       <span class="v" id="uvValue">—</span>
       <span class="l" id="uvLabel">Low</span>
       <span class="warn" id="uvWarn">—</span>
     </div>
   </div>
 
-  <!-- ═════ 7-DAY FORECAST STRIP (permanent) ═════ -->
-  <div class="forecast-week" id="forecastWeek">
-    <div class="fw-label">
-      <span class="big">НЕДЕЛЯ</span>
-      <span class="small">7-DAY OUTLOOK</span>
-    </div>
-    <!-- 7 cells appended by JS -->
-  </div>
-
-  <!-- ═════ ALERT RIBBON ═════ -->
+  <!-- ═════ ALERT RIBBON (conditional) ═════ -->
   <div class="alert-ribbon" id="alertRibbon">
     <span class="siren"></span>
     <span class="label">L-Line Alert</span>
@@ -719,42 +669,92 @@ body {
     <div class="slogan-text" id="sloganText">WORKERS OF THE L-LINE, UNITE!<span class="attr">— K. MARX</span></div>
   </div>
 
-  <!-- ═════ STATION VIEW — single station, both directions ═════ -->
-  <section class="station-view" id="stationView">
-    <!-- Tabs at TOP, so it's clear this is "which station" pagination,
-         not "list of next stops on this line". -->
-    <div class="station-tabs" id="stationTabs"></div>
+  <!-- ═════ CAROUSEL (rotating 5 panels) ═════ -->
+  <main class="carousel" id="carousel">
 
-    <div class="station-header">
-      <div class="L-badge">
-        <div class="circle" id="lineCircle">L</div>
-        <div class="lbl" id="lineLabel">L Train · 14 St Line</div>
+    <!-- Station panels — populated dynamically per station -->
+    <div class="panel active" id="panel-Nassau Av">
+      <div class="station-header">
+        <div class="L-badge"><div class="circle line-G" data-station-circle>G</div></div>
+        <div class="name" data-station-name>—</div>
+        <div class="walk"><span class="k">Walk</span><span class="v"><span data-station-walk>—</span> MIN</span></div>
       </div>
-      <div class="name" id="stationName">—</div>
-      <div class="walk">
-        <span class="k">Walk</span>
-        <span class="v"><span id="stationWalk">—</span> MIN</span>
+      <div class="dirs">
+        <div class="dir">
+          <div class="dir-label"><span class="arrow">←</span><span data-dir-n-label>—</span><span class="terminus" data-dir-n-term>—</span></div>
+          <div class="train-list" data-trains-n></div>
+        </div>
+        <div class="dir">
+          <div class="dir-label"><span data-dir-s-label>—</span><span class="terminus" data-dir-s-term>—</span><span class="arrow">→</span></div>
+          <div class="train-list" data-trains-s></div>
+        </div>
       </div>
     </div>
-    <div class="dirs">
-      <div class="dir">
-        <div class="dir-label">
-          <span class="arrow">←</span>
-          <span id="dirN_label">—</span>
-          <span class="terminus" id="dirN_term">—</span>
-        </div>
-        <div class="train-list" id="trainsN"></div>
+
+    <div class="panel" id="panel-Graham Av">
+      <div class="station-header">
+        <div class="L-badge"><div class="circle line-L" data-station-circle>L</div></div>
+        <div class="name" data-station-name>—</div>
+        <div class="walk"><span class="k">Walk</span><span class="v"><span data-station-walk>—</span> MIN</span></div>
       </div>
-      <div class="dir">
-        <div class="dir-label">
-          <span id="dirS_label">—</span>
-          <span class="terminus" id="dirS_term">—</span>
-          <span class="arrow">→</span>
+      <div class="dirs">
+        <div class="dir">
+          <div class="dir-label"><span class="arrow">←</span><span data-dir-n-label>—</span><span class="terminus" data-dir-n-term>—</span></div>
+          <div class="train-list" data-trains-n></div>
         </div>
-        <div class="train-list" id="trainsS"></div>
+        <div class="dir">
+          <div class="dir-label"><span data-dir-s-label>—</span><span class="terminus" data-dir-s-term>—</span><span class="arrow">→</span></div>
+          <div class="train-list" data-trains-s></div>
+        </div>
       </div>
     </div>
-  </section>
+
+    <div class="panel" id="panel-Bedford Av">
+      <div class="station-header">
+        <div class="L-badge"><div class="circle line-L" data-station-circle>L</div></div>
+        <div class="name" data-station-name>—</div>
+        <div class="walk"><span class="k">Walk</span><span class="v"><span data-station-walk>—</span> MIN</span></div>
+      </div>
+      <div class="dirs">
+        <div class="dir">
+          <div class="dir-label"><span class="arrow">←</span><span data-dir-n-label>—</span><span class="terminus" data-dir-n-term>—</span></div>
+          <div class="train-list" data-trains-n></div>
+        </div>
+        <div class="dir">
+          <div class="dir-label"><span data-dir-s-label>—</span><span class="terminus" data-dir-s-term>—</span><span class="arrow">→</span></div>
+          <div class="train-list" data-trains-s></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Week panel -->
+    <div class="panel week-panel" id="panel-week">
+      <div class="header">
+        <div class="title"><span class="cy">НЕДЕЛЯ</span>7-DAY OUTLOOK</div>
+        <div class="sub" id="weekSubLabel">—</div>
+      </div>
+      <div class="grid" id="weekGrid"></div>
+    </div>
+
+    <!-- Today hourly -->
+    <div class="panel today-panel" id="panel-today">
+      <div class="header">
+        <div class="title"><span class="cy">СЕГОДНЯ</span>TODAY · NEXT 12 HRS</div>
+        <div class="sub" id="todaySubLabel">—</div>
+      </div>
+      <div class="hours" id="hourlyGrid"></div>
+      <div class="footer-band">
+        <span><span class="k">Sunrise</span> <span id="tpSunrise">—</span></span>
+        <span><span class="k">Sunset</span> <span id="tpSunset">—</span></span>
+        <span><span class="k">Daylight</span> <span id="tpDaylight">—</span></span>
+        <span><span class="k">Today's Peak UV</span> <span id="tpPeakUV">—</span></span>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Carousel tabs -->
+  <div class="carousel-tabs" id="carouselTabs"></div>
 
   <!-- ═════ FOOTER ═════ -->
   <div class="footer">
@@ -782,7 +782,7 @@ body {
 
 </div>
 
-<!-- legacy DOM ids the old Pi backend expected -->
+<!-- legacy DOM IDs retained for compat -->
 <span id="seconds" class="legacy"></span>
 <span id="weatherIcon" class="legacy"></span>
 <span id="dateSub" class="legacy"></span>
@@ -795,7 +795,7 @@ body {
 
 <script>
 // ═════════════════════════════════════════════════════════════════
-// CONFIG — walk times from 617 Humboldt St
+// CONFIG
 // ═════════════════════════════════════════════════════════════════
 const WALK_MIN = {
   'Nassau Av':  9,
@@ -803,9 +803,16 @@ const WALK_MIN = {
   'Bedford Av': 20,
 };
 const STATION_ORDER = ['Nassau Av', 'Graham Av', 'Bedford Av'];
-const STATION_ROTATE_MS = 10_000;   // 10 seconds per station (user request)
-const SLOGAN_ROTATE_MS  = 12_000;   // 12 seconds per slogan
-const ALERT_ROTATE_MS   = 12_000;   // 12 seconds between alerts
+const PANELS = [
+  { id: 'panel-Nassau Av',  type: 'station', station: 'Nassau Av',  label: 'NASSAU',  sub: 'G · 1 of 5' },
+  { id: 'panel-Graham Av',  type: 'station', station: 'Graham Av',  label: 'GRAHAM',  sub: 'L · 2 of 5' },
+  { id: 'panel-Bedford Av', type: 'station', station: 'Bedford Av', label: 'BEDFORD', sub: 'L · 3 of 5' },
+  { id: 'panel-week',       type: 'week',    label: 'WEEK',         sub: '7 DAYS · 4 of 5' },
+  { id: 'panel-today',      type: 'today',   label: 'HOURLY',       sub: 'NEXT 12H · 5 of 5' },
+];
+const PANEL_ROTATE_MS = 12_000;
+const SLOGAN_ROTATE_MS = 12_000;
+const ALERT_ROTATE_MS  = 12_000;
 
 // ═════════════════════════════════════════════════════════════════
 // SAFE DOM
@@ -817,10 +824,6 @@ function el(tag, cls, text) {
   return e;
 }
 function fahrToCelsius(f) { return (f - 32) * 5/9; }
-
-// ═════════════════════════════════════════════════════════════════
-// CLOCK + date
-// ═════════════════════════════════════════════════════════════════
 function fmtClockShort(date) {
   let h = date.getHours();
   const m = String(date.getMinutes()).padStart(2, '0');
@@ -828,6 +831,25 @@ function fmtClockShort(date) {
   h = h % 12 || 12;
   return h + ':' + m + ap.toLowerCase();
 }
+function fmtClockLong(date) {
+  let h = date.getHours();
+  const m = String(date.getMinutes()).padStart(2, '0');
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return h + ':' + m + ' ' + ap;
+}
+function hoursMinutesBetween(a, b) {
+  const totalMin = Math.abs(Math.round((b - a) / 60000));
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h === 0) return m + ' MIN';
+  if (m === 0) return h + ' HR';
+  return h + 'H ' + m + 'M';
+}
+
+// ═════════════════════════════════════════════════════════════════
+// CLOCK
+// ═════════════════════════════════════════════════════════════════
 function tickClock() {
   const now = new Date();
   let h = now.getHours();
@@ -847,7 +869,7 @@ tickClock();
 setInterval(tickClock, 1000);
 
 // ═════════════════════════════════════════════════════════════════
-// WEATHER labels + advice
+// WEATHER
 // ═════════════════════════════════════════════════════════════════
 const WMO_LABEL = {
   0:'CLEAR', 1:'MOSTLY CLEAR', 2:'PARTLY CLOUDY', 3:'OVERCAST',
@@ -875,7 +897,6 @@ function weatherSummary(code, tempF) {
   if (tempF >= 40) return 'Clear but cool. A jacket is a good idea.';
   return 'Clear and cold. Heavy coat and gloves.';
 }
-
 function uvLevel(v) {
   if (v == null) return { key: 'low', label: 'N/A', warn: '' };
   if (v < 3)  return { key: 'low',   label: 'Low',       warn: 'No protection needed' };
@@ -885,49 +906,22 @@ function uvLevel(v) {
   return        { key: 'extrm', label: 'Extreme',   warn: 'Stay inside if possible' };
 }
 
-function hoursMinutesBetween(a, b) {
-  const totalMin = Math.abs(Math.round((b - a) / 60000));
-  const h = Math.floor(totalMin / 60);
-  const m = totalMin % 60;
-  if (h === 0) return m + ' MIN';
-  if (m === 0) return h + ' HR';
-  return h + 'H ' + m + 'M';
-}
-
-// ═════════════════════════════════════════════════════════════════
-// WEATHER STATE
-// Top strip always shows CURRENT weather. 7-day strip below it shows
-// the week's outlook. No rotation in the top strip — today's weather
-// is always visible, as requested.
-// ═════════════════════════════════════════════════════════════════
 let weatherData = null;
-
-// UV always shows the PRESENT value. The warning line mentions the
-// daily peak if it's meaningfully higher — informational, not a label swap.
 function setUVNow(value, peakHint) {
   const uv = uvLevel(value);
   const box = document.getElementById('uvBox');
   box.classList.remove('low','mod','high','vhigh','extrm');
   box.classList.add(uv.key);
-
-  const kNode = document.querySelector('#uvBox .k');
-  if (kNode) kNode.textContent = 'UV Now';
-
   document.getElementById('uvValue').textContent = (value == null ? '—' : Math.round(value));
   document.getElementById('uvLabel').textContent = uv.label;
-
   document.getElementById('uvWarn').textContent =
     peakHint ? uv.warn + ' · ' + peakHint : uv.warn;
 }
-
-// Renders CURRENT weather into the top strip.
 function renderCurrentWeather() {
   if (!weatherData) return;
-  const d = weatherData;
-  const cur = d.current;
+  const d = weatherData, cur = d.current;
   const code = cur.weather_code;
   const tempF = cur.temperature_2m;
-
   const now = new Date();
   const weekday = now.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
   const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
@@ -943,9 +937,6 @@ function renderCurrentWeather() {
   document.getElementById('feelsLike').textContent = parts.join(' · ');
   document.getElementById('weatherAdvice').textContent = weatherSummary(code, tempF);
 
-  // UV: present-moment only. If today's peak is meaningfully higher
-  // than right now (and still in the future today), include a small
-  // informational hint — but the label always stays "UV Now".
   const nowUV = cur.uv_index;
   let peakHint = null;
   if (d.hourly && d.hourly.uv_index && d.hourly.time) {
@@ -953,7 +944,7 @@ function renderCurrentWeather() {
     let futurePeakVal = -1, futurePeakHour = null;
     for (let i = 0; i < d.hourly.time.length && i < 24; i++) {
       const ts = new Date(d.hourly.time[i]).getTime();
-      if (ts <= nowMs) continue;  // only future hours
+      if (ts <= nowMs) continue;
       const v = d.hourly.uv_index[i];
       if (v > futurePeakVal) { futurePeakVal = v; futurePeakHour = d.hourly.time[i]; }
     }
@@ -967,43 +958,117 @@ function renderCurrentWeather() {
   }
   setUVNow(nowUV, peakHint);
 }
-
-// Renders the static 7-day forecast strip.
-function renderForecastWeek() {
+function renderSunInfo() {
+  if (!weatherData) return;
+  const daily = weatherData.daily;
+  if (!daily || !daily.sunrise || !daily.sunset) return;
+  const sunrise = new Date(daily.sunrise[0]);
+  const sunset  = new Date(daily.sunset[0]);
+  document.getElementById('sunrise').textContent = fmtClockShort(sunrise);
+  document.getElementById('sunset').textContent  = fmtClockShort(sunset);
+  const now = new Date();
+  if (now < sunrise) {
+    document.getElementById('sunDirLabel').textContent = 'Until Sunrise';
+    document.getElementById('sunDaylight').textContent = hoursMinutesBetween(now, sunrise);
+  } else if (now < sunset) {
+    document.getElementById('sunDirLabel').textContent = 'Until Sunset';
+    document.getElementById('sunDaylight').textContent = hoursMinutesBetween(now, sunset);
+  } else {
+    const nextRise = daily.sunrise[1] ? new Date(daily.sunrise[1]) : null;
+    document.getElementById('sunDirLabel').textContent = 'Until Sunrise';
+    document.getElementById('sunDaylight').textContent = nextRise ? hoursMinutesBetween(now, nextRise) : '—';
+  }
+}
+// ── Week panel render ──────────────────────────────────────────
+function renderWeekPanel() {
   if (!weatherData) return;
   const daily = weatherData.daily;
   if (!daily || !daily.time) return;
-  const host = document.getElementById('forecastWeek');
-  // Remove any existing day cells (keep .fw-label header)
-  [...host.querySelectorAll('.fw-cell')].forEach(n => n.remove());
-
+  const grid = document.getElementById('weekGrid');
+  grid.textContent = '';
   const count = Math.min(daily.time.length, 7);
+  const subLabel = (daily.time[0] && daily.time[count-1])
+    ? new Date(daily.time[0] + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() +
+      ' – ' + new Date(daily.time[count-1] + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase()
+    : '';
+  document.getElementById('weekSubLabel').textContent = subLabel;
+
   for (let k = 0; k < count; k++) {
     const date = new Date(daily.time[k] + 'T12:00:00');
-    const day = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+    const dow = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
     const md  = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
     const hi = Math.round(daily.temperature_2m_max[k]);
     const lo = Math.round(daily.temperature_2m_min[k]);
     const code = daily.weather_code[k];
     const precip = daily.precipitation_probability_max?.[k] ?? 0;
-
-    const cell = el('div', 'fw-cell');
-    cell.appendChild(el('div', 'day', (k === 0 ? 'TODAY' : day)));
+    const cell = el('div', 'day' + (k === 0 ? ' today' : (k % 2 === 0 ? ' inv' : '')));
+    cell.appendChild(el('div', 'dow', (k === 0 ? 'TODAY · ' + dow : dow)));
     cell.appendChild(el('div', 'date', md));
     const temps = el('div', 'temps');
-    const hiEl = el('span', 'hi', hi + '°');
-    const loEl = el('span', 'lo', lo + '°');
-    temps.appendChild(hiEl);
-    temps.appendChild(loEl);
+    temps.appendChild(el('span', 'hi', hi + '°'));
+    temps.appendChild(el('span', 'lo', lo + '°'));
     cell.appendChild(temps);
-    cell.appendChild(el('div', 'cond', (WMO_LABEL[code] || 'Weather').split(' ')[0]));
-    if (precip > 10) {
-      cell.appendChild(el('div', 'precip', precip + '%'));
-    } else {
-      cell.appendChild(el('div', 'precip', ''));
-    }
-    host.appendChild(cell);
+    cell.appendChild(el('div', 'cond', (WMO_LABEL[code] || 'Weather')));
+    if (precip > 10) cell.appendChild(el('div', 'precip', precip + '% RAIN'));
+    grid.appendChild(cell);
   }
+}
+// ── Today hourly panel render ──────────────────────────────────
+function renderTodayPanel() {
+  if (!weatherData) return;
+  const d = weatherData;
+  const nowMs = Date.now();
+  const picks = d.hourly.time
+    .map((t, idx) => ({ ms: new Date(t).getTime(), idx }))
+    .filter(x => x.ms >= nowMs)
+    .slice(0, 12);
+
+  const host = document.getElementById('hourlyGrid');
+  host.textContent = '';
+  picks.forEach(p => {
+    const dt = new Date(d.hourly.time[p.idx]);
+    let h = dt.getHours();
+    const ap = h >= 12 ? 'pm' : 'am';
+    h = h % 12 || 12;
+    const tf = Math.round(d.hourly.temperature_2m[p.idx]);
+    const code = d.hourly.weather_code[p.idx];
+    const precip = d.hourly.precipitation_probability?.[p.idx] ?? 0;
+    const uvv = d.hourly.uv_index?.[p.idx];
+    const cell = el('div', 'hour');
+    cell.appendChild(el('div', 'h', h + ap));
+    cell.appendChild(el('div', 't', tf + '°'));
+    const short = (WMO_LABEL[code] || '').split(' ')[0];
+    cell.appendChild(el('div', 'c', short || '—'));
+    cell.appendChild(el('div', 'p', (precip > 10 ? precip + '%' : '')));
+    cell.appendChild(el('div', 'uv', (uvv != null ? 'UV ' + Math.round(uvv) : '')));
+    host.appendChild(cell);
+  });
+
+  // Footer band: sunrise, sunset, daylight, today's peak UV + time
+  const daily = d.daily;
+  if (daily && daily.sunrise && daily.sunset) {
+    const sr = new Date(daily.sunrise[0]);
+    const ss = new Date(daily.sunset[0]);
+    document.getElementById('tpSunrise').textContent = fmtClockLong(sr);
+    document.getElementById('tpSunset').textContent  = fmtClockLong(ss);
+    document.getElementById('tpDaylight').textContent = hoursMinutesBetween(sr, ss);
+  }
+  if (daily && daily.uv_index_max) {
+    const peak = daily.uv_index_max[0];
+    // find hour in hourly where uv is max
+    let hAt = '', maxV = -1;
+    if (d.hourly && d.hourly.uv_index) {
+      for (let i = 0; i < Math.min(24, d.hourly.time.length); i++) {
+        const v = d.hourly.uv_index[i];
+        if (v > maxV) { maxV = v; const ht = new Date(d.hourly.time[i]); let hh = ht.getHours(); const ap = hh >= 12 ? 'pm' : 'am'; hh = hh % 12 || 12; hAt = ' @ ' + hh + ap; }
+      }
+    }
+    document.getElementById('tpPeakUV').textContent = Math.round(peak) + hAt;
+  }
+
+  const now = new Date();
+  const md = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase();
+  document.getElementById('todaySubLabel').textContent = md;
 }
 
 async function refreshWeather() {
@@ -1012,47 +1077,23 @@ async function refreshWeather() {
     const j = await r.json();
     if (!j.ok) throw new Error(j.error);
     weatherData = j.data;
-
-    // Sunrise / sunset — always based on today (daily[0])
-    const daily = weatherData.daily;
-    if (daily && daily.sunrise && daily.sunset) {
-      const sunrise = new Date(daily.sunrise[0]);
-      const sunset  = new Date(daily.sunset[0]);
-      document.getElementById('sunrise').textContent = fmtClockShort(sunrise);
-      document.getElementById('sunset').textContent  = fmtClockShort(sunset);
-      const now = new Date();
-      if (now < sunrise) {
-        document.getElementById('sunDirLabel').textContent = 'Until Sunrise';
-        document.getElementById('sunDaylight').textContent = hoursMinutesBetween(now, sunrise);
-      } else if (now < sunset) {
-        document.getElementById('sunDirLabel').textContent = 'Until Sunset';
-        document.getElementById('sunDaylight').textContent = hoursMinutesBetween(now, sunset);
-      } else {
-        const nextRise = daily.sunrise[1] ? new Date(daily.sunrise[1]) : null;
-        document.getElementById('sunDirLabel').textContent = 'Until Sunrise';
-        document.getElementById('sunDaylight').textContent = nextRise ? hoursMinutesBetween(now, nextRise) : '—';
-      }
-    }
-
     renderCurrentWeather();
-    renderForecastWeek();
+    renderSunInfo();
+    renderWeekPanel();
+    renderTodayPanel();
   } catch (e) {
     console.warn('weather', e);
     document.getElementById('weatherDesc').textContent = 'OFFLINE';
   }
 }
 refreshWeather();
-// Current weather refreshes every 10 minutes (Open-Meteo caches anyway)
 setInterval(refreshWeather, 10 * 60 * 1000);
-// Re-render current weather every minute to keep "feels like" and
-// the UV peak-hint current as the hour rolls over.
-setInterval(() => { if (weatherData) renderCurrentWeather(); }, 60 * 1000);
+setInterval(() => { if (weatherData) { renderCurrentWeather(); renderSunInfo(); renderTodayPanel(); }}, 60 * 1000);
 
 // ═════════════════════════════════════════════════════════════════
-// TRAIN DATA + ROTATING STATION VIEW
+// TRAINS
 // ═════════════════════════════════════════════════════════════════
 let trainsData = null;
-let stationIdx = 0;
 
 function buildTrainRow(mins, walk, isCatch) {
   const arriveAt = new Date(Date.now() + mins * 60_000);
@@ -1073,98 +1114,53 @@ function buildTrainRow(mins, walk, isCatch) {
   row.appendChild(el('span', 'tag', tag));
   return row;
 }
-function fillDirection(hostId, trains, walk) {
-  const host = document.getElementById(hostId);
-  host.textContent = '';
+function fillDirEl(listEl, trains, walk) {
+  listEl.textContent = '';
   const arr = (trains || []).slice(0, 5);
   if (!arr.length) {
     const empty = el('div', 'train-row');
     empty.appendChild(el('span', 'tag', 'NO TRAINS SCHEDULED'));
-    host.appendChild(empty);
+    listEl.appendChild(empty);
     return;
   }
   const catchIdx = arr.findIndex(m => m >= walk + 1);
-  arr.forEach((m, i) => host.appendChild(buildTrainRow(m, walk, i === catchIdx)));
+  arr.forEach((m, i) => listEl.appendChild(buildTrainRow(m, walk, i === catchIdx)));
   if (catchIdx === -1) {
     const note = el('div', 'train-row missed');
     note.appendChild(el('span', 'tag', 'ALL TOO CLOSE — CHECK BACK'));
-    host.appendChild(note);
+    listEl.appendChild(note);
   }
 }
-
-function renderStationTabs() {
-  const tabs = document.getElementById('stationTabs');
-  tabs.textContent = '';
-  STATION_ORDER.forEach((name, i) => {
-    const t = el('div', 'tab' + (i === stationIdx ? ' active' : ''));
-    t.textContent = name.toUpperCase();
-    tabs.appendChild(t);
-  });
-}
-
-// Friendly full-name labels for each line (shown next to the circle badge).
-const LINE_LABELS = {
-  L: 'L Train · 14 St–Canarsie',
-  G: 'G Train · Brooklyn–Queens Xtown',
-};
-
-function showStation() {
+function renderStationPanel(stationName) {
   if (!trainsData) return;
-  const name = STATION_ORDER[stationIdx];
-  const s = (trainsData.stations || []).find(x => x.name === name);
+  const s = (trainsData.stations || []).find(x => x.name === stationName);
   if (!s) return;
-
-  const view = document.getElementById('stationView');
-  view.classList.add('fade');
-  setTimeout(() => {
-    document.getElementById('stationName').textContent = name.toUpperCase();
-    document.getElementById('stationWalk').textContent = WALK_MIN[name];
-
-    // Line badge — correct color + full label per line
-    const circle = document.getElementById('lineCircle');
-    circle.textContent = s.line;
-    circle.classList.remove('line-L', 'line-G');
-    circle.classList.add('line-' + s.line);
-    document.getElementById('lineLabel').textContent = LINE_LABELS[s.line] || (s.line + ' Train');
-
-    // Direction labels — driven by data so G stations don't get L labels
-    const dN = s.directions?.N || {};
-    const dS = s.directions?.S || {};
-    document.getElementById('dirN_label').textContent = (dN.label || '').toUpperCase();
-    document.getElementById('dirN_term').textContent  = (dN.terminus || '').toUpperCase();
-    document.getElementById('dirS_label').textContent = (dS.label || '').toUpperCase();
-    document.getElementById('dirS_term').textContent  = (dS.terminus || '').toUpperCase();
-
-    fillDirection('trainsN', dN.trains || [], WALK_MIN[name]);
-    fillDirection('trainsS', dS.trains || [], WALK_MIN[name]);
-    renderStationTabs();
-    view.classList.remove('fade');
-  }, 200);
+  const panel = document.getElementById('panel-' + stationName);
+  if (!panel) return;
+  const walk = WALK_MIN[stationName];
+  panel.querySelector('[data-station-circle]').textContent = s.line;
+  const circle = panel.querySelector('[data-station-circle]');
+  circle.classList.remove('line-L', 'line-G');
+  circle.classList.add('line-' + s.line);
+  panel.querySelector('[data-station-name]').textContent = stationName.toUpperCase();
+  panel.querySelector('[data-station-walk]').textContent = walk;
+  const dN = s.directions?.N || {}, dS = s.directions?.S || {};
+  panel.querySelector('[data-dir-n-label]').textContent = (dN.label || '').toUpperCase();
+  panel.querySelector('[data-dir-n-term]').textContent  = (dN.terminus || '').toUpperCase();
+  panel.querySelector('[data-dir-s-label]').textContent = (dS.label || '').toUpperCase();
+  panel.querySelector('[data-dir-s-term]').textContent  = (dS.terminus || '').toUpperCase();
+  fillDirEl(panel.querySelector('[data-trains-n]'), dN.trains, walk);
+  fillDirEl(panel.querySelector('[data-trains-s]'), dS.trains, walk);
 }
-
-function rotateStation() {
-  stationIdx = (stationIdx + 1) % STATION_ORDER.length;
-  showStation();
-}
-
 async function refreshTrains() {
   try {
     const r = await fetch('/api/trains');
     const j = await r.json();
     if (!j.ok) throw new Error(j.error);
     trainsData = j.data;
-
-    // Alerts
     renderAlerts(trainsData.alerts || []);
-
-    // Re-render currently-shown station with fresh numbers
-    if (trainsData.stations && trainsData.stations.length) {
-      if (stationIdx >= trainsData.stations.length) stationIdx = 0;
-      showStation();
-    }
-
+    STATION_ORDER.forEach(renderStationPanel);
     document.getElementById('statusRight').textContent = 'LIVE';
-    document.getElementById('trainsUpdated').textContent = fmtClockShort(new Date());
   } catch (e) {
     console.warn('trains', e);
     document.getElementById('statusRight').textContent = 'RETRY';
@@ -1172,20 +1168,45 @@ async function refreshTrains() {
 }
 refreshTrains();
 setInterval(refreshTrains, 20 * 1000);
-setInterval(rotateStation, STATION_ROTATE_MS);
 
 // ═════════════════════════════════════════════════════════════════
-// MTA ALERTS — rotating ribbon
+// CAROUSEL ROTATION
 // ═════════════════════════════════════════════════════════════════
-let alertList = [];
-let alertIdx = 0;
+let panelIdx = 0;
+function renderCarouselTabs() {
+  const host = document.getElementById('carouselTabs');
+  host.textContent = '';
+  PANELS.forEach((p, i) => {
+    const t = el('div', 'tab' + (i === panelIdx ? ' active' : ''));
+    t.appendChild(el('div', '', p.label));
+    t.appendChild(el('div', 'sub', p.sub));
+    host.appendChild(t);
+  });
+}
+function showPanel(idx) {
+  document.querySelectorAll('.carousel > .panel').forEach(p => p.classList.remove('active'));
+  const p = PANELS[idx];
+  const target = document.getElementById(p.id);
+  if (target) target.classList.add('active');
+  if (p.type === 'station') renderStationPanel(p.station);
+  else if (p.type === 'week') renderWeekPanel();
+  else if (p.type === 'today') renderTodayPanel();
+  renderCarouselTabs();
+}
+showPanel(0);
+setInterval(() => {
+  panelIdx = (panelIdx + 1) % PANELS.length;
+  showPanel(panelIdx);
+}, PANEL_ROTATE_MS);
+
+// ═════════════════════════════════════════════════════════════════
+// ALERTS
+// ═════════════════════════════════════════════════════════════════
+let alertList = [], alertIdx = 0;
 function renderAlerts(alerts) {
   alertList = alerts || [];
   const rib = document.getElementById('alertRibbon');
-  if (!alertList.length) {
-    rib.classList.remove('visible');
-    return;
-  }
+  if (!alertList.length) { rib.classList.remove('visible'); return; }
   rib.classList.add('visible');
   alertIdx = alertIdx % alertList.length;
   document.getElementById('alertBody').textContent = alertList[alertIdx].header;
@@ -1198,91 +1219,97 @@ function rotateAlert() {
 setInterval(rotateAlert, ALERT_ROTATE_MS);
 
 // ═════════════════════════════════════════════════════════════════
-// SLOGAN BANK — 60+ quotes from real revolutionary sources plus
-// commute-adapted parodies. Attribution runs in red.
+// SLOGAN BANK — expanded for ironic range
+//   · Classic Marxist canon (verbatim)
+//   · Commute-adapted parodies
+//   · Current discourse: abundance agenda (Klein, Demsas, Thompson)
+//   · Intra-left tension & MTA union-reform takes
+//   · Mamdani-tone absurdist made-up lines
+// Attributions intentionally mix real sources, lightly-adapted,
+// and clearly-fictitious ("apocryphal"). The joke works because
+// the aesthetic is Constructivist but the politics have evolved.
 // ═════════════════════════════════════════════════════════════════
 const SLOGANS = [
-  // ═ Karl Marx / Engels / Manifesto ═══════════════════════════════
-  { t: "Workers of the world, unite! You have nothing to lose but your chains.",                 a: "K. Marx & F. Engels, Manifesto (1848)" },
-  { t: "The history of all hitherto existing society is the history of class struggles.",        a: "K. Marx, Manifesto" },
-  { t: "From each according to his ability, to each according to his needs.",                    a: "K. Marx, 1875" },
-  { t: "The philosophers have only interpreted the world; the point is to change it.",           a: "K. Marx, Theses on Feuerbach" },
-  { t: "Religion is the sigh of the oppressed creature, the opium of the people.",               a: "K. Marx, 1844" },
-  { t: "Capital is dead labor which, vampire-like, lives only by sucking living labor.",         a: "K. Marx, Das Kapital" },
-  { t: "An ounce of action is worth a ton of theory.",                                           a: "F. Engels" },
-  { t: "Freedom is the recognition of necessity.",                                               a: "F. Engels" },
-  { t: "A spectre is haunting Europe — the spectre of communism.",                               a: "Manifesto (1848)" },
-
-  // ═ Lenin ════════════════════════════════════════════════════════
-  { t: "There are decades where nothing happens, and there are weeks where decades happen.",     a: "V. Lenin" },
-  { t: "Trust is good; control is better.",                                                       a: "V. Lenin" },
-  { t: "Without revolutionary theory there can be no revolutionary movement.",                    a: "V. Lenin, What Is to Be Done?" },
-  { t: "One man with a gun can control a hundred without one.",                                   a: "V. Lenin" },
-  { t: "The best way to control the opposition is to lead it ourselves.",                         a: "V. Lenin, apocryphal" },
-
-  // ═ Rosa Luxemburg ═══════════════════════════════════════════════
-  { t: "Those who do not move do not notice their chains.",                                       a: "R. Luxemburg" },
-  { t: "Freedom is always, and exclusively, freedom for the one who thinks differently.",        a: "R. Luxemburg, 1918" },
-  { t: "The masses are the decisive element, they are the rock on which the final victory is built.", a: "R. Luxemburg" },
-
-  // ═ Leon Trotsky ═════════════════════════════════════════════════
-  { t: "You may not be interested in war, but war is interested in you.",                        a: "L. Trotsky" },
-  { t: "The end may justify the means as long as there is something that justifies the end.",   a: "L. Trotsky, Their Morals and Ours" },
-  { t: "Old age is the most unexpected of all the things that happen to a man.",                 a: "L. Trotsky, Diary in Exile" },
-
-  // ═ Che Guevara ══════════════════════════════════════════════════
-  { t: "At the risk of seeming ridiculous, let me say that the true revolutionary is guided by great feelings of love.", a: "E. Che Guevara" },
-  { t: "The revolution is not an apple that falls when it is ripe. You have to make it fall.",  a: "Che Guevara" },
-  { t: "If you tremble with indignation at every injustice, then you are a comrade of mine.",   a: "Che Guevara" },
-  { t: "Be realistic: demand the impossible.",                                                   a: "Paris, May 1968" },
-
-  // ═ Mao Zedong ═══════════════════════════════════════════════════
-  { t: "Let a hundred flowers bloom; let a hundred schools of thought contend.",                 a: "Mao Zedong, 1956" },
-  { t: "Women hold up half the sky.",                                                             a: "Mao Zedong" },
-  { t: "Revolution is not a dinner party, nor an essay, nor painting, nor embroidery.",         a: "Mao, 1927" },
-
-  // ═ Ho Chi Minh / Gramsci / Castro / Sankara ═════════════════════
-  { t: "Nothing is more precious than independence and freedom.",                                 a: "Ho Chi Minh" },
-  { t: "When the prison doors are opened, the real dragon will fly out.",                         a: "Ho Chi Minh" },
-  { t: "Pessimism of the intellect, optimism of the will.",                                       a: "A. Gramsci, Prison Notebooks" },
+  // ── Classic Marxist canon ─────────────────────────────────────
+  { t: "Workers of the world, unite! You have nothing to lose but your chains.", a: "K. Marx & F. Engels, Manifesto (1848)" },
+  { t: "The history of all hitherto existing society is the history of class struggles.", a: "K. Marx, Manifesto" },
+  { t: "From each according to his ability, to each according to his needs.", a: "K. Marx, 1875" },
+  { t: "The philosophers have only interpreted the world; the point is to change it.", a: "K. Marx, Theses on Feuerbach" },
+  { t: "Capital is dead labor which, vampire-like, lives only by sucking living labor.", a: "K. Marx, Das Kapital" },
+  { t: "A spectre is haunting Europe — the spectre of communism.", a: "Manifesto (1848)" },
+  { t: "There are decades where nothing happens, and there are weeks where decades happen.", a: "V. Lenin" },
+  { t: "Those who do not move do not notice their chains.", a: "R. Luxemburg" },
+  { t: "Freedom is always, and exclusively, freedom for the one who thinks differently.", a: "R. Luxemburg, 1918" },
+  { t: "Pessimism of the intellect, optimism of the will.", a: "A. Gramsci" },
   { t: "The old world is dying, and the new world struggles to be born: now is the time of monsters.", a: "A. Gramsci" },
-  { t: "Indifference is the dead weight of history.",                                             a: "A. Gramsci, 1917" },
-  { t: "History will absolve me.",                                                                a: "F. Castro, 1953" },
-  { t: "A revolution is a struggle to the death between the future and the past.",                a: "F. Castro" },
-  { t: "We must dare to invent the future.",                                                      a: "T. Sankara" },
-  { t: "He who feeds you, controls you.",                                                         a: "T. Sankara" },
-  { t: "If I can't dance, I don't want to be in your revolution.",                                a: "E. Goldman, paraphrased" },
-  { t: "The most violent element in society is ignorance.",                                       a: "E. Goldman" },
+  { t: "Be realistic: demand the impossible.", a: "Paris, May 1968" },
+  { t: "We must dare to invent the future.", a: "T. Sankara" },
+  { t: "At the risk of seeming ridiculous, let me say that the true revolutionary is guided by great feelings of love.", a: "Che Guevara" },
 
-  // ═ Brecht, Orwell, fellow-traveler writers ═════════════════════
-  { t: "The man who laughs has not yet heard the terrible news.",                                 a: "B. Brecht" },
-  { t: "First comes the food, then comes morality.",                                              a: "B. Brecht, Threepenny Opera" },
+  // ── Commute-adapted Marxist parodies ──────────────────────────
+  { t: "Workers of the L-line, unite! But first, renegotiate the work rules.", a: "K. Marx, adapted 2025" },
+  { t: "The philosophers have only interpreted the schedule; the point is to catch the train.", a: "K. Marx, adapted" },
+  { t: "A spectre is haunting Greenpoint — the G train.", a: "Manifesto, adapted" },
+  { t: "A spectre is haunting New York — it is the Environmental Impact Statement.", a: "Manifesto, adapted 2024" },
+  { t: "From each according to their MetroCard, to each according to their arrival.", a: "K. Marx, adapted" },
+  { t: "History repeats itself — first as tragedy, then as community board meeting.", a: "K. Marx, adapted" },
+  { t: "The means of production belong to the workers. The means of transportation belong to whoever can finish them in a decade.", a: "K. Marx, adapted" },
+  { t: "There are decades where no train comes; then weeks where three arrive at once.", a: "V. Lenin, adapted" },
 
-  // ═ Commute-adapted parodies — the whole point ═══════════════════
-  { t: "Workers of the L-line, unite! You have nothing to lose but your MetroCards.",            a: "Manifesto, adapted" },
-  { t: "The philosophers have only interpreted the schedule; the point is to catch the train.",  a: "K. Marx, adapted" },
-  { t: "A spectre is haunting Greenpoint — the G train.",                                         a: "Manifesto, adapted" },
-  { t: "From each according to their MetroCard, to each according to their arrival.",             a: "K. Marx, adapted" },
-  { t: "Trust the MTA, but verify.",                                                               a: "V. Lenin, adapted" },
-  { t: "There are decades where no train comes; then weeks where three arrive at once.",         a: "V. Lenin, adapted" },
-  { t: "Religion is the opium of the people; rain is the opium of the commuter.",                a: "K. Marx, adapted" },
-  { t: "History repeats itself — first as tragedy, then as shuttle bus.",                         a: "K. Marx, adapted" },
-  { t: "The bourgeoisie takes a Lyft.",                                                            a: "Manifesto, adapted" },
-  { t: "A journey of a thousand stops begins with a single swipe.",                                a: "Lao Tzu, adapted" },
-  { t: "Those who do not move do not notice the delay.",                                           a: "R. Luxemburg, adapted" },
-  { t: "Pessimism of the MTA, optimism of the commuter.",                                          a: "A. Gramsci, adapted" },
-  { t: "The old schedule is dying; the new cannot be born; in this interregnum, shuttle buses appear.", a: "A. Gramsci, adapted" },
-  { t: "Let a hundred trains bloom; let a hundred routes contend.",                                a: "Mao Zedong, adapted" },
-  { t: "The revolution will arrive on the 7:34 L.",                                                a: "Greenpoint soviet" },
-  { t: "We must dare to invent the future. But first, check the weather.",                        a: "T. Sankara, adapted" },
-  { t: "You may not be interested in the MTA, but the MTA is interested in you.",                  a: "L. Trotsky, adapted" },
-  { t: "If I can't sit, I don't want to be in your subway.",                                       a: "E. Goldman, adapted" },
-  { t: "Comrade, hold the door.",                                                                    a: "Greenpoint soviet" },
-  { t: "Solidarity with the B43 bus.",                                                               a: "Greenpoint soviet" },
-  { t: "Five-year plan: arrive on time.",                                                             a: "Politburo" },
-  { t: "Punctuality is the politeness of proletarians.",                                              a: "V. Lenin, apocryphal" },
-  { t: "Nothing is more precious than an empty subway car.",                                         a: "Ho Chi Minh, adapted" },
-  { t: "Weather has no politics. Umbrellas do.",                                                     a: "R. Luxemburg, adapted" },
+  // ── Abundance agenda & current discourse ──────────────────────
+  { t: "Supply-side progressivism.", a: "E. Klein, New York Times, 2021" },
+  { t: "Why we can't build.", a: "E. Klein, NYT op-ed" },
+  { t: "We don't have a money problem. We have a process problem.", a: "E. Klein, adapted" },
+  { t: "A country that can't build is a country that can't govern.", a: "D. Thompson" },
+  { t: "The permit is the regulation.", a: "J. Demsas, The Atlantic" },
+  { t: "If you want affordable housing, you need more housing.", a: "J. Demsas" },
+  { t: "The environmental review is itself the environmental harm.", a: "E. Klein, adapted" },
+  { t: "We pay four times what Paris pays per mile of subway. It is not about greed — it is about process.", a: "A. Levy, Pedestrian Observations" },
+  { t: "Abundance is a value, not just an outcome.", a: "Klein & Thompson, Abundance (2025)" },
+  { t: "A progressivism that cannot build is not progressive.", a: "abundance agenda" },
+  { t: "The obstacle to the green transition is not capital — it is the community meeting.", a: "E. Levitz, adapted" },
+  { t: "The real enemy is not the capitalist. It is the discretionary review process.", a: "abundance progressive, 2025" },
+  { t: "Cost disease socialism: pay more, get less, call it solidarity.", a: "S. Hammond, adapted" },
+  { t: "NEPA review has averaged 4.5 years for major projects this decade.", a: "M. Yglesias, Slow Boring" },
+
+  // ── Intra-left tension & MTA union reform ─────────────────────
+  { t: "Solidarity with the workers. Reform the work rules.", a: "DSA transit caucus, apocryphal" },
+  { t: "The unions are not the problem. They are negotiating inside a broken system.", a: "R. Barkan, adapted" },
+  { t: "There is no contradiction between labor rights and competent construction.", a: "fictional editorial" },
+  { t: "A spectre is haunting the Second Avenue Subway — it is featherbedding.", a: "transit critics, 2024" },
+  { t: "Yes, we need abundance. Also yes, it has to be publicly-owned abundance.", a: "Jacobin, paraphrased" },
+  { t: "A progressivism that only serves the builder is not progressive.", a: "labor left, 2024" },
+  { t: "The obstacle is zoning — and also capital.", a: "left abundance, 2025" },
+  { t: "Solidarity forever. Except with the block association opposing the bike lane.", a: "urbanist Twitter" },
+  { t: "Build it fast, build it cheap, build it union — pick two. Actually, pick one.", a: "NYC transit joke" },
+  { t: "The tenant and the builder may yet find common ground. (They haven't, but they may.)", a: "hopeful DSA" },
+  { t: "You cannot tax your way out of a supply crisis. But you can try.", a: "urban economist, apocryphal" },
+
+  // ── Mamdani-tone absurdist ────────────────────────────────────
+  { t: "Freeze the rent. Free the buses. Finish the Second Avenue Subway in this century.", a: "Z. Mamdani, apocryphal" },
+  { t: "I promise three things: cheaper rent, faster trains, and a single-payer bodega system.", a: "Z. Mamdani, apocryphal" },
+  { t: "Trust the tenants. Fund the buses. Tax the yachts.", a: "Z. Mamdani, apocryphal" },
+  { t: "The L train belongs to those who ride it.", a: "Z. Mamdani, apocryphal" },
+  { t: "Rent is too damn high and the G train is too damn slow.", a: "Z. Mamdani, apocryphal" },
+  { t: "Greenpoint deserves better than an 11-year waitlist for a bike lane.", a: "Z. Mamdani, apocryphal" },
+  { t: "We will freeze the rent. We will free the buses. We will also fix the G.", a: "Z. Mamdani, apocryphal" },
+  { t: "The class struggle continues — but first, a word about potholes.", a: "Z. Mamdani, apocryphal" },
+  { t: "Seize the means of production. Start with the MTA procurement committee.", a: "Z. Mamdani, apocryphal" },
+  { t: "Comrades, we will not stop until every bodega has a functional slushee machine.", a: "Z. Mamdani, apocryphal" },
+  { t: "Free the L. Free the G. Free the soul.", a: "Z. Mamdani, apocryphal" },
+  { t: "Public transit, public housing, public parks — and yes, a public option for bagels.", a: "Z. Mamdani, apocryphal" },
+
+  // ── Greenpoint soviet kitsch ──────────────────────────────────
+  { t: "Comrade, hold the door.", a: "Greenpoint soviet" },
+  { t: "Solidarity with the B43 bus.", a: "Greenpoint soviet" },
+  { t: "Five-year plan: arrive on time.", a: "Politburo" },
+  { t: "Punctuality is the politeness of proletarians.", a: "V. Lenin, apocryphal" },
+  { t: "Weather has no politics. Umbrellas do.", a: "R. Luxemburg, adapted" },
+  { t: "Comrade, have you read your Community Board's response to the shuttle bus plan?", a: "Greenpoint soviet" },
+  { t: "The revolution will arrive on the 7:34 L — provided CBTC cuts over by 2030.", a: "Greenpoint soviet" },
+  { t: "A bagel for every worker. A bike lane for every avenue. A subway mile for under a billion dollars.", a: "Greenpoint soviet" },
+  { t: "Dialectical materialism is fine, but have you tried the permitting office at 280 Broadway?", a: "Greenpoint soviet" },
+  { t: "First they came for the bike lanes; I said nothing, because I drive. Then they came for the subways.", a: "Greenpoint soviet, adapted" },
 ];
 
 let sloganIdx = Math.floor(Math.random() * SLOGANS.length);
@@ -1294,12 +1321,10 @@ function rotateSlogan() {
   while (SLOGANS.length > 1 && next === sloganIdx);
   sloganIdx = next;
   const s = SLOGANS[sloganIdx];
-
   node.classList.add('fade');
   setTimeout(() => {
     node.textContent = '';
     const body = document.createElement('span');
-    body.className = 'quote-body';
     body.textContent = s.t.toUpperCase();
     node.appendChild(body);
     if (s.a) {
