@@ -12,13 +12,45 @@
 
 const DASH_LAT = 40.724;
 const DASH_LON = -73.951;
-const MTA_L_FEED = "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-l";
 
-// Station name → { N: manhattan-bound stop_id, S: canarsie-bound stop_id }
-const L_STATIONS = {
-  "Nassau Av":  { N: "L13N", S: "L13S" },
-  "Graham Av":  { N: "L15N", S: "L15S" },
-  "Bedford Av": { N: "L17N", S: "L17S" },
+// Per-line realtime GTFS-RT feed URLs (MTA NYCT).
+// https://api.mta.info/#/subwayRealTimeFeeds
+const FEEDS = {
+  L: "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-l",
+  G: "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-g",
+};
+
+// Station config — AUDITED against MTA's GTFS static stops.txt.
+// Each station has:
+//   line   — which feed to pull from ("L" or "G")
+//   stopN  — northbound / "first-stop-ward" platform stop_id
+//   stopS  — southbound / "last-stop-ward" platform stop_id
+//
+// Stop IDs corrected after prior bug where Nassau Av (G train) was
+// mislabeled L13 (actual: Montrose Av), Graham Av mislabeled L15
+// (actual: Jefferson St), and Bedford Av mislabeled L17 (actual:
+// Myrtle-Wyckoff Avs). Current values verified against MTA's
+// published stop codes:
+//   https://new.mta.info/maps/subway-line-maps
+const STATIONS = [
+  { name: "Nassau Av",  line: "G", stopN: "G28N", stopS: "G28S" },
+  { name: "Graham Av",  line: "L", stopN: "L11N", stopS: "L11S" },
+  { name: "Bedford Av", line: "L", stopN: "L08N", stopS: "L08S" },
+];
+
+// Direction labels per line. "N" and "S" suffixes in GTFS stop_ids
+// are relative to the route (first stop / last stop), NOT compass.
+// L line: 8 Av (N) ↔ Rockaway Pkwy/Canarsie (S)
+// G line: Court Sq/Queens (N) ↔ Church Av/south Brooklyn (S)
+const DIRECTIONS = {
+  L: {
+    N: { label: "To Manhattan",    terminus: "8 Av",            arrow: "left"  },
+    S: { label: "To Canarsie",     terminus: "Rockaway Pkwy",   arrow: "right" },
+  },
+  G: {
+    N: { label: "To Queens",       terminus: "Court Sq",        arrow: "left"  },
+    S: { label: "To S. Brooklyn",  terminus: "Church Av",       arrow: "right" },
+  },
 };
 
 // ─── Minimal GTFS-RT protobuf decoder ────────────────────────────────
@@ -77,16 +109,17 @@ function firstBytes(fields, tag) { return fields[tag]?.[0]?.val; }
 function allBytes(fields, tag)   { return (fields[tag] || []).map(f => f.val); }
 function firstVarint(fields, tag) { return fields[tag]?.[0]?.val; }
 
-// Given the raw L-line GTFS-RT protobuf bytes, return an object shaped
-// like the Pi's /api/trains response. Also extracts service alerts
-// (delays, suspensions) so the dashboard can surface them.
-function extractLArrivals(rawBytes) {
+// Parse one feed's protobuf bytes into {stopArrivals, alerts}.
+// stopArrivals: { stop_id: [eta_sec, ...] }
+// alerts: [{ header, description }]
+// Alerts are filtered by the allowedRoutes set (e.g. {"L"} or {"G"}).
+function parseFeed(rawBytes, allowedRoutes) {
   const nowSec = Math.floor(Date.now() / 1000);
   const feed = parseMessage(rawBytes);
 
   // FeedMessage.entity = field 2 (repeated FeedEntity)
   const entities = allBytes(feed, 2);
-  const stopMap = {}; // stop_id -> [eta_sec, ...]
+  const stopArrivals = {};
   const alerts = [];
 
   for (const entBytes of entities) {
@@ -113,7 +146,7 @@ function extractLArrivals(rawBytes) {
         if (timeField == null) continue;
         const eta = Number(timeField) - nowSec;
         if (eta < 0) continue;
-        (stopMap[stopId] ||= []).push(eta);
+        (stopArrivals[stopId] ||= []).push(eta);
       }
     }
 
@@ -123,17 +156,17 @@ function extractLArrivals(rawBytes) {
       const alert = parseMessage(alertBytes);
       // Alert.informed_entity = field 5 (repeated EntitySelector)
       const ies = allBytes(alert, 5);
-      let mentionsL = false;
+      let mentionsAllowed = false;
       for (const ieBytes of ies) {
         const ie = parseMessage(ieBytes);
         // EntitySelector.route_id = field 2 (string)
         const routeIdBytes = firstBytes(ie, 2);
         if (routeIdBytes) {
           const routeId = new TextDecoder().decode(routeIdBytes);
-          if (routeId === 'L') { mentionsL = true; break; }
+          if (allowedRoutes.has(routeId)) { mentionsAllowed = true; break; }
         }
       }
-      if (!mentionsL) continue;
+      if (!mentionsAllowed) continue;
 
       // Alert.header_text = field 10 (TranslatedString)
       const headerTsBytes = firstBytes(alert, 10);
@@ -166,26 +199,71 @@ function extractLArrivals(rawBytes) {
     }
   }
 
-  const stations = [];
-  for (const [name, dirs] of Object.entries(L_STATIONS)) {
-    const n = (stopMap[dirs.N] || []).sort((a, b) => a - b).slice(0, 8);
-    const s = (stopMap[dirs.S] || []).sort((a, b) => a - b).slice(0, 8);
-    stations.push({
-      name,
-      manhattan_bound: n.map(e => Math.round(e / 60)),
-      canarsie_bound:  s.map(e => Math.round(e / 60)),
-    });
-  }
+  return { stopArrivals, alerts };
+}
 
-  // Dedupe alerts by header text (MTA often sends multiple with same header)
+// Fetch one feed and parse it.
+async function fetchAndParseFeed(line) {
+  const url = FEEDS[line];
+  const r = await fetch(url, {
+    headers: { "User-Agent": "sensory-radio-worker/1.0" },
+    cf: { cacheTtl: 15, cacheEverything: true },
+  });
+  if (!r.ok) throw new Error(`${line} feed ${r.status}`);
+  const raw = new Uint8Array(await r.arrayBuffer());
+  return parseFeed(raw, new Set([line]));
+}
+
+// Coordinate: fetch every configured feed (de-duped), extract arrivals
+// for every configured station, and merge alerts.
+async function extractAllArrivals() {
+  const nowSec = Math.floor(Date.now() / 1000);
+  const neededLines = [...new Set(STATIONS.map(s => s.line))];
+
+  const results = await Promise.all(
+    neededLines.map(async (line) => {
+      try {
+        return { line, data: await fetchAndParseFeed(line), error: null };
+      } catch (e) {
+        return { line, data: { stopArrivals: {}, alerts: [] }, error: String(e) };
+      }
+    })
+  );
+
+  const byLine = Object.fromEntries(results.map(r => [r.line, r]));
+
+  const stations = STATIONS.map(conf => {
+    const bucket = byLine[conf.line]?.data?.stopArrivals || {};
+    const n = (bucket[conf.stopN] || []).sort((a, b) => a - b).slice(0, 8);
+    const s = (bucket[conf.stopS] || []).sort((a, b) => a - b).slice(0, 8);
+    return {
+      name:  conf.name,
+      line:  conf.line,
+      directions: {
+        N: { ...DIRECTIONS[conf.line].N, trains: n.map(e => Math.round(e / 60)) },
+        S: { ...DIRECTIONS[conf.line].S, trains: s.map(e => Math.round(e / 60)) },
+      },
+    };
+  });
+
+  // Merge + dedupe alerts from all feeds
+  const allAlerts = results.flatMap(r => r.data.alerts);
   const seenHeaders = new Set();
-  const uniqueAlerts = alerts.filter(a => {
+  const uniqueAlerts = allAlerts.filter(a => {
     if (seenHeaders.has(a.header)) return false;
     seenHeaders.add(a.header);
     return true;
   });
 
-  return { stations, alerts: uniqueAlerts, fetched_at: nowSec };
+  // Surface feed errors so the dashboard can show a warning
+  const feedErrors = results.filter(r => r.error).map(r => ({ line: r.line, error: r.error }));
+
+  return {
+    stations,
+    alerts: uniqueAlerts,
+    fetched_at: nowSec,
+    feed_errors: feedErrors,
+  };
 }
 
 // ─── JSON response helpers ───────────────────────────────────────────
@@ -235,14 +313,47 @@ async function handleWeather() {
 // ─── /api/trains ─────────────────────────────────────────────────────
 async function handleTrains() {
   try {
-    const r = await fetch(MTA_L_FEED, {
-      headers: { "User-Agent": "sensory-radio-worker/1.0" },
-      cf: { cacheTtl: 15, cacheEverything: true },
-    });
-    if (!r.ok) return json({ ok: false, error: `MTA ${r.status}` }, 502);
-    const raw = new Uint8Array(await r.arrayBuffer());
-    const data = extractLArrivals(raw);
+    const data = await extractAllArrivals();
     return json({ ok: true, data }, 200, 15);
+  } catch (e) {
+    return json({ ok: false, error: String(e) }, 502);
+  }
+}
+
+// ─── /api/debug ──────────────────────────────────────────────────────
+// Returns ALL stop_ids encountered in every feed we fetch, with
+// sample arrival minutes. Use this to verify which stop_ids map to
+// which station names — protects against the Nassau-Av-on-the-L bug.
+async function handleDebug() {
+  try {
+    const neededLines = [...new Set(STATIONS.map(s => s.line))];
+    const results = await Promise.all(
+      neededLines.map(async (line) => {
+        const data = await fetchAndParseFeed(line);
+        const sample = {};
+        for (const [stopId, etas] of Object.entries(data.stopArrivals)) {
+          sample[stopId] = etas.sort((a, b) => a - b).slice(0, 3)
+            .map(e => Math.round(e / 60) + 'm');
+        }
+        return {
+          line,
+          num_stops_with_arrivals: Object.keys(data.stopArrivals).length,
+          sample_by_stop_id: sample,
+          alerts: data.alerts,
+        };
+      })
+    );
+    const matched = STATIONS.map(conf => {
+      const feed = results.find(r => r.line === conf.line);
+      const sN = feed?.sample_by_stop_id[conf.stopN];
+      const sS = feed?.sample_by_stop_id[conf.stopS];
+      return {
+        ...conf,
+        stopN_found: !!sN, stopN_sample: sN || null,
+        stopS_found: !!sS, stopS_sample: sS || null,
+      };
+    });
+    return json({ ok: true, feeds: results, station_audit: matched }, 200);
   } catch (e) {
     return json({ ok: false, error: String(e) }, 502);
   }
@@ -255,6 +366,7 @@ export default {
 
     if (url.pathname === "/api/weather") return handleWeather();
     if (url.pathname === "/api/trains")  return handleTrains();
+    if (url.pathname === "/api/debug")   return handleDebug();
 
     // Pretty path: /dashboard → serve /dashboard.html from assets
     if (url.pathname === "/dashboard") {

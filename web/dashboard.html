@@ -458,13 +458,15 @@ body {
 }
 .station-header .L-badge .circle {
   width: 46px; height: 46px; border-radius: 50%;
-  background: #a7a9ac;    /* MTA L-line grey */
+  background: #a7a9ac;    /* default MTA L-line grey */
   color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-family: 'Alfa Slab One', serif;
   font-size: 28px;
   line-height: 1;
 }
+.station-header .L-badge .circle.line-L { background: #a7a9ac; }  /* MTA L grey */
+.station-header .L-badge .circle.line-G { background: #6cbe45; }  /* MTA G lime green */
 .station-header .L-badge .lbl {
   font-family: 'Roboto Mono', monospace;
   font-size: 11px;
@@ -725,8 +727,8 @@ body {
 
     <div class="station-header">
       <div class="L-badge">
-        <div class="circle">L</div>
-        <div class="lbl">L Train · 14&nbsp;St Line</div>
+        <div class="circle" id="lineCircle">L</div>
+        <div class="lbl" id="lineLabel">L Train · 14 St Line</div>
       </div>
       <div class="name" id="stationName">—</div>
       <div class="walk">
@@ -738,15 +740,15 @@ body {
       <div class="dir">
         <div class="dir-label">
           <span class="arrow">←</span>
-          <span>TO MANHATTAN</span>
-          <span class="terminus">8 AV</span>
+          <span id="dirN_label">—</span>
+          <span class="terminus" id="dirN_term">—</span>
         </div>
         <div class="train-list" id="trainsN"></div>
       </div>
       <div class="dir">
         <div class="dir-label">
-          <span>TO BROOKLYN</span>
-          <span class="terminus">ROCKAWAY PKWY · CANARSIE</span>
+          <span id="dirS_label">—</span>
+          <span class="terminus" id="dirS_term">—</span>
           <span class="arrow">→</span>
         </div>
         <div class="train-list" id="trainsS"></div>
@@ -1100,6 +1102,12 @@ function renderStationTabs() {
   });
 }
 
+// Friendly full-name labels for each line (shown next to the circle badge).
+const LINE_LABELS = {
+  L: 'L Train · 14 St–Canarsie',
+  G: 'G Train · Brooklyn–Queens Xtown',
+};
+
 function showStation() {
   if (!trainsData) return;
   const name = STATION_ORDER[stationIdx];
@@ -1111,8 +1119,24 @@ function showStation() {
   setTimeout(() => {
     document.getElementById('stationName').textContent = name.toUpperCase();
     document.getElementById('stationWalk').textContent = WALK_MIN[name];
-    fillDirection('trainsN', s.manhattan_bound, WALK_MIN[name]);
-    fillDirection('trainsS', s.canarsie_bound,  WALK_MIN[name]);
+
+    // Line badge — correct color + full label per line
+    const circle = document.getElementById('lineCircle');
+    circle.textContent = s.line;
+    circle.classList.remove('line-L', 'line-G');
+    circle.classList.add('line-' + s.line);
+    document.getElementById('lineLabel').textContent = LINE_LABELS[s.line] || (s.line + ' Train');
+
+    // Direction labels — driven by data so G stations don't get L labels
+    const dN = s.directions?.N || {};
+    const dS = s.directions?.S || {};
+    document.getElementById('dirN_label').textContent = (dN.label || '').toUpperCase();
+    document.getElementById('dirN_term').textContent  = (dN.terminus || '').toUpperCase();
+    document.getElementById('dirS_label').textContent = (dS.label || '').toUpperCase();
+    document.getElementById('dirS_term').textContent  = (dS.terminus || '').toUpperCase();
+
+    fillDirection('trainsN', dN.trains || [], WALK_MIN[name]);
+    fillDirection('trainsS', dS.trains || [], WALK_MIN[name]);
     renderStationTabs();
     view.classList.remove('fade');
   }, 200);
