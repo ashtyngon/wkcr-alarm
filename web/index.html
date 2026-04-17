@@ -95,14 +95,20 @@
 
 <!-- TOP BAR -->
 <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 pt-4 pb-3 bg-transparent">
-  <button id="castBtn" class="w-10 h-10 flex items-center justify-start text-on-surface-variant hover:text-primary-dim transition-colors" onclick="castClicked()" title="Cast to a speaker" style="display:none;" aria-label="Cast">
-    <span class="material-symbols-outlined text-xl" id="castIcon">cast</span>
-  </button>
-  <div id="castBtnSpacer" class="w-10 flex items-center"></div>
+  <div class="flex items-center gap-1 w-16">
+    <button id="castBtn" class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary-dim transition-colors" onclick="castClicked()" title="Cast to a speaker" style="display:none;" aria-label="Cast">
+      <span class="material-symbols-outlined text-xl" id="castIcon">cast</span>
+    </button>
+    <button id="airplayBtn" class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary-dim transition-colors" onclick="airplayClicked()" title="AirPlay to an Apple speaker" style="display:none;" aria-label="AirPlay">
+      <span class="material-symbols-outlined text-xl">airplay</span>
+    </button>
+  </div>
   <h1 class="font-headline font-bold text-xl tracking-tight text-on-surface">Sensory Radio</h1>
-  <button class="w-10 h-10 flex items-center justify-end text-on-surface-variant hover:text-primary-dim transition-colors" onclick="toggleSleepTimer()" title="Sleep timer" aria-label="Sleep timer">
-    <span class="material-symbols-outlined text-xl" id="timerIcon">bedtime</span>
-  </button>
+  <div class="w-16 flex justify-end">
+    <button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary-dim transition-colors" onclick="toggleSleepTimer()" title="Sleep timer" aria-label="Sleep timer">
+      <span class="material-symbols-outlined text-xl" id="timerIcon">bedtime</span>
+    </button>
+  </div>
 </header>
 
 <!-- MAIN -->
@@ -202,6 +208,10 @@
 <!-- Hidden audio element. x-webkit-airplay enables AirPlay casting on Safari/iOS. -->
 <audio id="player" crossorigin="anonymous" preload="none" x-webkit-airplay="allow"></audio>
 
+<!-- hls.js for browsers that don't support HLS natively (Chrome, Firefox).
+     Safari plays HLS directly and ignores this library. -->
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+
 <!-- Google Cast SDK (Chrome only) -->
 <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
 
@@ -223,13 +233,18 @@ let sleepTimerInterval = null;
 let favorites = JSON.parse(localStorage.getItem(LS.favs) || '[]');
 
 // --- Mood system (copied from main app) ---
+// Kept in requested order: Opera/Jazz/Classical up front, then the bigger
+// catalog flows into Folk/World/Curator/Genre. A 'folk' mood was added since
+// the station set now includes ~15 traditional music stations.
 const MOODS = [
   { id:'all',       label:'All' },
   { id:'favorites', label:'★ Favorites' },
   { id:'jazz',      label:'Jazz' },
   { id:'classical', label:'Classical' },
   { id:'opera',     label:'Opera' },
+  { id:'folk',      label:'Folk' },
   { id:'world',     label:'World' },
+  { id:'eclectic',  label:'Eclectic' },
   { id:'indie',     label:'Indie' },
   { id:'groove',    label:'Groove' },
   { id:'chill',     label:'Chill' },
@@ -237,42 +252,60 @@ const MOODS = [
 ];
 const STATION_MOODS = {
   wkcr:['jazz','morning'],swissjazz:['jazz','chill'],jazzradio:['jazz'],tsfjazz:['jazz'],
-  abcjazz:['jazz'],fipjazz:['jazz','groove'],swissclassic:['classical','chill','morning'],
+  abcjazz:['jazz'],fipjazz:['jazz','groove'],wwoz:['jazz','folk','groove'],wbgo:['jazz','morning'],
+  swissclassic:['classical','chill','morning'],
   classicfm:['classical'],wqxr:['classical','morning'],ancientfm:['classical','chill'],
   wcpe:['classical'],abcclassical:['classical'],naim:['classical'],
-  classicalradio:['classical'],operafm:['opera'],francemusiqueopera:['opera'],
-  operavore:['opera','classical','morning'],operamrg:['opera'],capriceopera:['opera'],
+  classicalradio:['classical'],srp2:['classical','folk','morning'],
+  operafm:['opera'],francemusiqueopera:['opera'],klassikopera:['opera'],
+  operavore:['opera','classical','morning'],
   fip:['indie','groove','chill'],fiprock:['indie','groove'],fippop:['indie','groove'],
   fipgroove:['groove'],fipnouveautes:['indie','morning'],fipworld:['world','groove'],
-  fipreggae:['world','chill'],fipelectro:['groove'],chantefrance:['indie','chill'],
-  radionova:['groove','indie'],icichanson:['indie'],croonerlove:['chill','indie'],
+  fipreggae:['world','chill'],fipelectro:['groove'],
+  chantefrance:['indie','chill'],radionova:['groove','indie'],icichanson:['indie'],croonerlove:['chill','indie'],
   kexp:['indie','morning'],bytefm:['indie','morning'],thelot:['chill','groove'],
-  koolfm:['indie','world'],dublab:['chill','groove'],erttrito:['classical','chill'],
-  radiocaprice:['classical'],egyptianpop:['world','groove'],radioegypt:['world'],
-  radioarthebrew:['world'],ictyunus:['world'],kayahan:['world'],
-  trtfm:['world'],radiolebanon:['world'],ictvradio:['world'],
+  koolfm:['indie','world'],dublab:['chill','groove','eclectic'],
+  nts1:['eclectic','groove'],nts2:['eclectic','groove'],wfmu:['eclectic','indie'],
+  eclectic24:['eclectic','groove'],wwfm:['eclectic','world','groove'],cbcmusic:['eclectic','morning'],
+  erttrito:['classical','chill'],radiocaprice:['classical'],
+  egyptianpop:['world','groove'],radioegypt:['world'],radioarthebrew:['world'],
+  ictyunus:['world'],kayahan:['world'],trtfm:['world'],trtturku:['world','folk'],trtnagme:['world','classical'],
+  radiolebanon:['world'],ictvradio:['world'],ocora:['world','folk','classical'],
+  gugakfm:['folk','world','classical'],dankoradio:['folk','world'],brheimat:['folk','world'],
+  folklorica:['folk','world'],rnag:['folk','world'],pikan:['folk','world','groove'],
+  la2x4:['world','chill'],fado:['world','chill'],sheger:['world','jazz'],rne3:['world','eclectic'],
+  iriefm:['world','groove','chill'],
   wnyc:['morning','indie'],sunshinelive:['groove'],
 };
+// Groups are the visual order within a filtered list. Opera/Jazz/Classical
+// stay at the top as requested; newer categories fall below.
 const GROUPS = [
-  { label:'Jazz',      ids:['wkcr','swissjazz','jazzradio','tsfjazz','abcjazz','fipjazz'] },
-  { label:'Classical', ids:['swissclassic','classicfm','wqxr','ancientfm','wcpe','abcclassical','naim','classicalradio'] },
-  { label:'Opera',     ids:['operafm','francemusiqueopera','operavore','operamrg','capriceopera'] },
-  { label:'FIP family',ids:['fip','fiprock','fippop','fipgroove','fipnouveautes','fipworld','fipreggae','fipelectro'] },
-  { label:'Chanson',   ids:['chantefrance','radionova','icichanson','croonerlove'] },
-  { label:'Indie',     ids:['kexp','bytefm','koolfm','dublab'] },
-  { label:'Chill',     ids:['thelot'] },
-  { label:'World',     ids:['erttrito','radiocaprice','egyptianpop','radioegypt','radioarthebrew','ictyunus','kayahan','trtfm','radiolebanon','ictvradio'] },
-  { label:'Talk',      ids:['wnyc'] },
-  { label:'Electronic',ids:['sunshinelive'] },
+  { label:'Jazz',                   ids:['wkcr','wwoz','wbgo','swissjazz','jazzradio','tsfjazz','abcjazz','fipjazz'] },
+  { label:'Classical',              ids:['swissclassic','classicfm','wqxr','ancientfm','wcpe','abcclassical','naim','classicalradio','srp2'] },
+  { label:'Opera',                  ids:['operavore','francemusiqueopera','operafm','klassikopera'] },
+  { label:'Folk & Traditional',     ids:['gugakfm','dankoradio','brheimat','folklorica','rnag','pikan','trtturku','trtnagme','ocora'] },
+  { label:'Fado & Tango',           ids:['fado','la2x4'] },
+  { label:'Curator & Eclectic',     ids:['nts1','nts2','wfmu','dublab','eclectic24','wwfm','cbcmusic'] },
+  { label:'FIP family',             ids:['fip','fiprock','fippop','fipgroove','fipnouveautes','fipworld','fipreggae','fipelectro'] },
+  { label:'French & Chanson',       ids:['chantefrance','radionova','icichanson','croonerlove'] },
+  { label:'World: Middle East',     ids:['egyptianpop','radioegypt','radioarthebrew','ictyunus','kayahan','trtfm','radiolebanon','ictvradio','radiocaprice','sheger'] },
+  { label:'World: Iberian & Latin', ids:['rne3'] },
+  { label:'Reggae & Dub',           ids:['iriefm'] },
+  { label:'Indie & Underground',    ids:['kexp','bytefm','koolfm'] },
+  { label:'Chill',                  ids:['thelot'] },
+  { label:'Electronic',             ids:['sunshinelive'] },
+  { label:'Eclectic Greek',         ids:['erttrito'] },
+  { label:'Talk & NPR',             ids:['wnyc'] },
 ];
 const STATION_COLORS = {
   jazz:['#c8475d','#362459'],classical:['#544178','#006161'],opera:['#8a1632','#332300'],
-  world:['#006262','#332300'],indie:['#69558d','#c8475d'],groove:['#eaaf00','#c8475d'],
+  folk:['#765600','#006161'],world:['#006262','#332300'],eclectic:['#69558d','#eaaf00'],
+  indie:['#69558d','#c8475d'],groove:['#eaaf00','#c8475d'],
   chill:['#006161','#544178'],morning:['#fbbc00','#69558d'],
 };
 const STATION_ICONS = {
-  jazz:'music_note',classical:'piano',opera:'mic',world:'public',
-  indie:'headphones',groove:'equalizer',chill:'spa',morning:'wb_sunny',
+  jazz:'music_note',classical:'piano',opera:'mic',world:'public',folk:'forest',
+  eclectic:'graphic_eq',indie:'headphones',groove:'equalizer',chill:'spa',morning:'wb_sunny',
 };
 function getStationVisual(s) {
   const moods = STATION_MOODS[s.id] || ['indie'];
@@ -452,6 +485,48 @@ function togglePlay() {
   else play();
 }
 
+// Track the current Hls.js instance so we can tear it down on stop/change
+let _hlsInstance = null;
+
+function _destroyHls() {
+  if (_hlsInstance) {
+    try { _hlsInstance.destroy(); } catch (e) {}
+    _hlsInstance = null;
+  }
+}
+
+function _isHls(url) {
+  return /\.m3u8(\?|$)/i.test(url);
+}
+
+function _loadStream(player, url) {
+  _destroyHls();
+  if (_isHls(url)) {
+    // Safari plays HLS natively via the <audio> src attribute
+    if (player.canPlayType('application/vnd.apple.mpegurl')) {
+      player.src = url;
+    } else if (window.Hls && window.Hls.isSupported()) {
+      // Chrome/Firefox need hls.js as a shim
+      _hlsInstance = new window.Hls({ lowLatencyMode: false });
+      _hlsInstance.loadSource(url);
+      _hlsInstance.attachMedia(player);
+      _hlsInstance.on(window.Hls.Events.ERROR, (_, data) => {
+        if (data.fatal) {
+          console.error('HLS error:', data);
+          toast('Stream failed — try another station');
+          isPlaying = false;
+          updatePlayButton();
+        }
+      });
+    } else {
+      toast('This stream format is not supported in this browser');
+      throw new Error('no HLS support');
+    }
+  } else {
+    player.src = url;
+  }
+}
+
 function play() {
   const s = stations.find(x => x.id === selectedId);
   if (!s) return;
@@ -468,7 +543,11 @@ function play() {
   }
 
   const player = $('player');
-  player.src = s.url;
+  try {
+    _loadStream(player, s.url);
+  } catch (e) {
+    return; // toast already shown
+  }
   // Optimistic UI
   isPlaying = true;
   updatePlayButton();
@@ -494,6 +573,7 @@ function stop() {
   }
   const player = $('player');
   player.pause();
+  _destroyHls();
   player.src = '';
   isPlaying = false;
   updatePlayButton();
@@ -542,6 +622,34 @@ function initAudioEvents() {
   player.addEventListener('stalled', () => {
     // Show brief indicator but don't stop
   });
+
+  // --- AirPlay (Safari only) ---
+  // The WebKit API fires 'webkitplaybacktargetavailabilitychanged' when
+  // AirPlay-compatible devices appear/disappear on the network.
+  // Only Apple speakers (HomePod, AirPlay TVs, AirPlay-enabled Sonos, etc.)
+  // are detected. Google Home is NOT AirPlay; if that's all you have,
+  // the button will correctly stay hidden.
+  if (typeof player.webkitShowPlaybackTargetPicker === 'function') {
+    player.addEventListener('webkitplaybacktargetavailabilitychanged', (e) => {
+      const btn = $('airplayBtn');
+      if (!btn) return;
+      btn.style.display = e.availability === 'available' ? 'flex' : 'none';
+    });
+    player.addEventListener('webkitcurrentplaybacktargetiswirelesschanged', () => {
+      const btn = $('airplayBtn');
+      if (!btn) return;
+      btn.classList.toggle('text-primary-dim', player.webkitCurrentPlaybackTargetIsWireless);
+    });
+  }
+}
+
+function airplayClicked() {
+  const player = $('player');
+  if (typeof player.webkitShowPlaybackTargetPicker === 'function') {
+    player.webkitShowPlaybackTargetPicker();
+  } else {
+    toast('AirPlay is only available in Safari');
+  }
 }
 
 // --- Sleep timer ---
