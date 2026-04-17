@@ -1,127 +1,640 @@
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Greenpoint Dashboard</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<title>Greenpoint, a mood report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
-  html, body { background: #0a0b0f; color: #e4e5ef; font-family: Manrope, sans-serif; }
-  body { min-height: 100dvh; overflow: hidden; }
-  .headline { font-family: 'Space Grotesk', sans-serif; }
-  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 48; }
-  .living-gradient {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background:
-      radial-gradient(circle at 15% 20%, rgba(225,207,255,0.08) 0%, transparent 50%),
-      radial-gradient(circle at 85% 80%, rgba(156,251,250,0.05) 0%, transparent 50%);
-  }
-  .dim-overlay {
-    position: fixed; inset: 0; z-index: 100;
-    background: rgba(0,0,0,var(--night-dim, 0));
-    pointer-events: none;
-    transition: background 2s ease;
-  }
-  @keyframes breathe { 0%,100% { opacity: 0.4 } 50% { opacity: 1 } }
-  .breathe { animation: breathe 8s ease-in-out infinite; }
-  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
-  .pulse-dot { animation: pulse 1.8s ease-in-out infinite; }
-  ::-webkit-scrollbar { display: none; }
+/* ──────────────────────────────────────────────────────────────────
+   Mood palette. Four states, cross-faded by time + weather.
+   Every surface color on the page is one of these vars so the whole
+   screen shifts atmosphere when conditions change.
+   ────────────────────────────────────────────────────────────────── */
+:root {
+  /* Defaults = bright golden day */
+  --sky-top:    #f5d5a4;
+  --sky-bot:    #e89a6d;
+  --ink:        #2b1a12;   /* warm near-black */
+  --paper:      #f3e6cc;
+  --accent:     #d94a2d;   /* persimmon */
+  --accent-2:   #1d5b7a;   /* peacock */
+  --muted:      #8a6d50;
+  --glow:       255, 215, 160;
+  --grain-op:   0.12;
+}
+html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); min-height: 100dvh; overflow: hidden; }
+body {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 18px;
+  transition: background 3s ease, color 3s ease;
+  background:
+    radial-gradient(ellipse 90% 60% at 20% 0%, rgba(var(--glow),0.55) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 85% 90%, rgba(217, 74, 45, 0.22) 0%, transparent 55%),
+    linear-gradient(170deg, var(--sky-top) 0%, var(--paper) 55%, var(--sky-bot) 100%);
+}
+
+/* Grain overlay for texture */
+body::before {
+  content: "";
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' seed='4'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  opacity: var(--grain-op);
+  mix-blend-mode: multiply;
+}
+
+/* Faint decorative horizon line */
+body::after {
+  content: "";
+  position: fixed; left: 0; right: 0; top: 42%; height: 1px; z-index: 0;
+  background: linear-gradient(90deg, transparent 0%, var(--ink) 20%, var(--ink) 80%, transparent 100%);
+  opacity: 0.08;
+}
+
+/* ── Layout ─────────────────────────────────────────────────────── */
+.stage {
+  position: relative; z-index: 2;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100dvh;
+  padding: 44px 56px 32px;
+  gap: 14px;
+}
+
+/* ── Header: tiny meta line ─────────────────────────────────────── */
+.meta {
+  display: flex; align-items: baseline; justify-content: space-between;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--muted); font-weight: 500;
+}
+.meta .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 3s ease-in-out infinite; vertical-align: middle; margin-right: 8px;}
+@keyframes blink { 0%,100% { opacity: 1 } 50% { opacity: 0.25 } }
+
+/* ── Middle: the poem ──────────────────────────────────────────── */
+.canvas { position: relative; overflow: hidden; }
+
+/* The mood sentence — dominant, overlapping */
+.mood {
+  font-family: 'Fraunces', serif;
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+  font-weight: 300; font-style: italic;
+  line-height: 0.92; letter-spacing: -0.02em;
+  color: var(--ink);
+  font-size: clamp(48px, 7.2vw, 130px);
+  max-width: 88%;
+}
+.mood em {
+  font-style: italic;
+  font-weight: 600;
+  font-variation-settings: "opsz" 144, "SOFT" 0;
+  color: var(--accent);
+  background-image: linear-gradient(transparent 70%, rgba(217, 74, 45, 0.22) 70%);
+  padding: 0 6px;
+}
+
+/* A quiet follow-up line */
+.mood-sub {
+  margin-top: 24px;
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(16px, 1.4vw, 24px);
+  font-style: italic;
+  color: var(--muted);
+  max-width: 62%;
+  line-height: 1.35;
+}
+
+/* The clock — decorative, not dominant. Upper right. */
+.clock {
+  position: absolute; top: 0; right: 0;
+  font-family: 'Fraunces', serif;
+  font-variation-settings: "opsz" 144, "SOFT" 0;
+  font-weight: 200;
+  font-size: clamp(120px, 15vw, 280px);
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+  color: var(--ink);
+  opacity: 0.94;
+}
+.clock .sep { color: var(--accent); }
+.clock .sep.blink { animation: blink 1.8s steps(2, end) infinite; }
+.clock-date {
+  position: absolute; top: 0; right: 0;
+  transform: translate(4px, -14px);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--muted); white-space: nowrap;
+}
+
+/* Temperature — huge numeral, thin stroke, bottom-anchored */
+.temp-block {
+  position: absolute; left: 0; bottom: 8px;
+  display: flex; align-items: flex-end; gap: 24px;
+}
+.temp-num {
+  font-family: 'Fraunces', serif;
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+  font-weight: 300;
+  font-size: clamp(160px, 18vw, 320px);
+  line-height: 0.82;
+  letter-spacing: -0.06em;
+  color: var(--ink);
+  position: relative;
+}
+.temp-num .deg { color: var(--accent); font-weight: 400; }
+
+.temp-meta {
+  padding-bottom: 32px;
+  font-family: 'Instrument Serif', serif; font-style: italic;
+  font-size: clamp(14px, 1.2vw, 18px);
+  color: var(--muted);
+  line-height: 1.45;
+  max-width: 220px;
+}
+
+/* Weather "sticker" — SVG character top-right over the clock */
+.mascot {
+  position: absolute;
+  top: 14vh;
+  right: 4vw;
+  width: 22vw; max-width: 260px;
+  animation: drift 20s ease-in-out infinite;
+  z-index: 0;
+  opacity: 0.92;
+}
+@keyframes drift { 0%,100% { transform: translate(0,0) rotate(-4deg) } 50% { transform: translate(12px, -14px) rotate(3deg) } }
+
+/* ── Forecast ribbon (hours) ───────────────────────────────────── */
+.ribbon {
+  position: absolute;
+  left: 0; right: 45%;
+  bottom: 0;
+  display: flex; gap: 0;
+  padding-bottom: 20px;
+  border-top: 1px dashed rgba(43, 26, 18, 0.25);
+  padding-top: 18px;
+  margin-top: 20px;
+  transform: translateY(0);
+}
+.ribbon-cell {
+  flex: 1;
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 0 8px;
+  border-left: 1px solid rgba(43, 26, 18, 0.12);
+  position: relative;
+}
+.ribbon-cell:first-child { border-left: none; }
+.ribbon-cell .hr {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--muted);
+}
+.ribbon-cell .tmp {
+  font-family: 'Fraunces', serif; font-variation-settings: "opsz" 72, "SOFT" 50;
+  font-weight: 300; font-size: 32px; line-height: 1; color: var(--ink);
+}
+.ribbon-cell .word {
+  font-family: 'Instrument Serif', serif; font-style: italic;
+  font-size: 12px; color: var(--muted); line-height: 1.15;
+}
+
+/* ── Trains: lower band ─────────────────────────────────────────── */
+.trains {
+  display: grid; grid-template-columns: auto 1fr 1fr 1fr;
+  gap: 18px 36px;
+  align-items: stretch;
+  padding: 24px 0 0;
+  border-top: 2px solid var(--ink);
+  position: relative;
+}
+.trains::before {
+  content: "";
+  position: absolute; left: 0; right: 0; top: -6px; height: 2px;
+  background: var(--accent);
+  opacity: 0.9;
+}
+
+.trains-head {
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding-right: 18px; border-right: 1px solid rgba(43, 26, 18, 0.2);
+}
+.trains-head .label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  letter-spacing: 0.28em; text-transform: uppercase; color: var(--muted);
+}
+.trains-head .bullet {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--ink); color: var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fraunces', serif; font-weight: 700; font-size: 34px;
+  margin: 6px 0;
+  font-variation-settings: "opsz" 72, "SOFT" 0;
+}
+.trains-head .tick { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 13px; color: var(--muted); }
+
+.stop {
+  display: flex; flex-direction: column; justify-content: flex-start;
+  gap: 4px;
+}
+.stop-name {
+  font-family: 'Fraunces', serif;
+  font-variation-settings: "opsz" 72, "SOFT" 20;
+  font-weight: 500; font-size: 22px;
+  color: var(--ink); line-height: 1;
+}
+.stop-sub {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 6px;
+}
+.verdict {
+  display: flex; align-items: baseline; gap: 10px;
+  margin-bottom: 4px;
+}
+.verdict .word {
+  font-family: 'Fraunces', serif; font-style: italic;
+  font-variation-settings: "opsz" 72, "SOFT" 50;
+  font-weight: 600; font-size: 28px; line-height: 1;
+  color: var(--accent);
+}
+.verdict .nums {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 22px; font-weight: 400;
+  color: var(--ink); letter-spacing: -0.02em;
+}
+.verdict .nums .lead {
+  font-size: 34px; font-weight: 500; color: var(--accent);
+}
+.verdict .nums .rest { color: var(--muted); }
+.direction-sub {
+  margin-top: 6px;
+  display: flex; align-items: baseline; gap: 8px;
+  font-size: 14px;
+}
+.direction-sub .word {
+  font-family: 'Instrument Serif', serif; font-style: italic;
+  color: var(--muted);
+}
+.direction-sub .nums {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px; color: var(--muted); letter-spacing: -0.02em;
+}
+
+/* ── Weather-state themes ───────────────────────────────────────── */
+body[data-mood="overcast"] {
+  --sky-top: #cfd4cf; --sky-bot: #b6b8b0; --paper: #e4e3dd;
+  --ink: #2a2c2a; --accent: #7a8f6b; --accent-2: #355166; --muted: #7a7a70;
+  --glow: 210, 215, 205; --grain-op: 0.18;
+}
+body[data-mood="rain"] {
+  --sky-top: #4b6a78; --sky-bot: #233947; --paper: #d5dce0;
+  --ink: #10161b; --accent: #e8a95c; --accent-2: #68a6b5; --muted: #6b7982;
+  --glow: 120, 160, 180; --grain-op: 0.2;
+}
+body[data-mood="storm"] {
+  --sky-top: #3a2e50; --sky-bot: #1a1628; --paper: #bfbbd4;
+  --ink: #130e22; --accent: #ffd23f; --accent-2: #ab59ff; --muted: #5e4f7a;
+  --glow: 180, 140, 240; --grain-op: 0.22;
+}
+body[data-mood="snow"] {
+  --sky-top: #e9eef2; --sky-bot: #b9c6d0; --paper: #f4f6f8;
+  --ink: #1f2930; --accent: #6aa5c8; --accent-2: #8f9aa3; --muted: #8894a0;
+  --glow: 210, 230, 240; --grain-op: 0.12;
+}
+body[data-mood="night"] {
+  --sky-top: #1a2340; --sky-bot: #0a0f1c; --paper: #e7dfcb;
+  --ink: #f3eadb; --accent: #ffc168; --accent-2: #9ac7ff; --muted: #8c8570;
+  --glow: 100, 120, 180; --grain-op: 0.16;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(var(--glow),0.4) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 60% at 85% 90%, rgba(155, 108, 255, 0.18) 0%, transparent 55%),
+    linear-gradient(170deg, #0a0f1c 0%, #111929 55%, #040612 100%);
+}
+body[data-mood="night"] .mood { color: #f3eadb; }
+body[data-mood="night"] .clock { color: #f3eadb; }
+body[data-mood="night"] .temp-num { color: #f3eadb; }
+body[data-mood="night"] .trains { border-top-color: #f3eadb; }
+body[data-mood="night"] .trains-head .bullet { background: #f3eadb; color: #0a0f1c; }
+body[data-mood="night"] .stop-name { color: #f3eadb; }
+body[data-mood="night"] .ribbon { border-top-color: rgba(243,234,219,0.3); }
+body[data-mood="night"] .ribbon-cell .tmp { color: #f3eadb; }
+body[data-mood="night"] .ribbon-cell { border-left-color: rgba(243,234,219,0.18); }
+body[data-mood="night"] .verdict .nums { color: #f3eadb; }
+body[data-mood="night"] .mood em { color: var(--accent); background-image: linear-gradient(transparent 70%, rgba(255, 193, 104, 0.28) 70%); }
 </style>
 </head>
-<body class="font-body antialiased">
+<body data-mood="clear">
 
-<div class="living-gradient"></div>
-<div class="fixed top-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-purple-500/5 blur-[140px] breathe pointer-events-none z-0"></div>
-<div class="fixed bottom-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-cyan-500/4 blur-[120px] breathe pointer-events-none z-0" style="animation-delay:-4s"></div>
+<!-- Fixed background handled via body::before grain + body::after horizon line -->
 
-<main class="relative z-10 h-screen flex flex-col p-10 gap-6">
+<div class="stage">
 
-  <section class="flex gap-6 min-h-[40vh]">
-    <div class="flex-1 flex flex-col justify-center">
-      <p class="headline text-[11px] tracking-[0.3em] uppercase text-zinc-500 mb-2" id="dateLabel">—</p>
-      <div class="headline font-light tracking-tighter leading-none text-[14rem] text-white" id="bigClock">--:--</div>
-      <p class="headline text-lg text-zinc-400 mt-3" id="seconds">—</p>
-    </div>
-
-    <div class="w-[38%] flex flex-col justify-center px-8 py-6 rounded-2xl bg-white/[0.03] border border-white/5">
-      <p class="headline text-[11px] tracking-[0.3em] uppercase text-zinc-500 mb-3">Greenpoint · weather</p>
-      <div class="flex items-start gap-5">
-        <span class="material-symbols-outlined !text-[6rem] text-amber-200" id="weatherIcon">cloud</span>
-        <div class="flex-1">
-          <div class="headline font-light text-7xl text-white leading-none" id="tempNow">—°</div>
-          <p class="text-zinc-400 text-sm mt-2" id="weatherDesc">Loading…</p>
-          <p class="text-zinc-500 text-xs mt-1" id="feelsLike">—</p>
-        </div>
-      </div>
-      <div class="flex justify-between mt-5 pt-4 border-t border-white/5" id="forecastStrip"></div>
-    </div>
-  </section>
-
-  <section class="flex-1 flex flex-col">
-    <div class="flex items-baseline justify-between mb-3">
-      <p class="headline text-[11px] tracking-[0.3em] uppercase text-zinc-500">L train · upcoming</p>
-      <div class="flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
-        <span class="text-[10px] tracking-[0.15em] uppercase text-zinc-500" id="trainsUpdated">Live</span>
-      </div>
-    </div>
-    <div class="grid grid-cols-3 gap-4 flex-1" id="trainTiles"></div>
-  </section>
-
-  <section class="flex items-center justify-between text-[11px] tracking-[0.2em] uppercase text-zinc-600 border-t border-white/5 pt-4">
-    <span id="statusLeft">Sensory Dashboard · Greenpoint, 11222</span>
+  <!-- top meta -->
+  <div class="meta">
+    <span><span class="dot"></span><span id="location">Greenpoint · 11222</span></span>
     <span id="statusRight">—</span>
-  </section>
-</main>
+  </div>
 
-<div class="dim-overlay"></div>
+  <!-- middle canvas -->
+  <div class="canvas">
+    <!-- Clock, upper right -->
+    <div class="clock-date" id="dateLabel">—</div>
+    <div class="clock">
+      <span id="bigClockH">—</span><span class="sep blink">:</span><span id="bigClockM">—</span>
+    </div>
+    <div class="clock" aria-hidden="true" style="display:none;">
+      <span id="bigClock">--:--</span>
+    </div>
+    <span id="seconds" style="display:none;">—</span>
+
+    <!-- Weather mascot SVG -->
+    <svg class="mascot" id="weatherMascot" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+
+    <!-- The poem -->
+    <div class="mood" id="mood">
+      <em id="moodPunchline">good morning</em><br>
+      <span id="moodLine2">the sky is warming up</span>
+    </div>
+    <div class="mood-sub" id="feelsLike">—</div>
+
+    <!-- Temperature, bottom-left -->
+    <div class="temp-block">
+      <div class="temp-num"><span id="tempNow">—</span><span class="deg">°</span></div>
+      <div class="temp-meta">
+        <div id="weatherDesc">loading…</div>
+        <div style="margin-top:6px; opacity:0.7;" id="weatherAdvice">—</div>
+      </div>
+    </div>
+
+    <!-- Forecast ribbon -->
+    <div class="ribbon" id="forecastStrip"></div>
+
+    <!-- Hidden element: weatherIcon (preserved for backend compatibility) -->
+    <span id="weatherIcon" style="display:none;">—</span>
+  </div>
+
+  <!-- trains band -->
+  <section class="trains">
+    <div class="trains-head">
+      <span class="label">· next L ·</span>
+      <span class="bullet">L</span>
+      <span class="tick" id="trainsUpdated">live</span>
+    </div>
+    <div id="trainTiles" style="display:contents;"></div>
+  </section>
+
+</div>
 
 <script>
-// ----- Safe DOM helpers (avoid innerHTML on any user-derived data) -----
+// ═════════════════════════════════════════════════════════════════
+//  HELPERS — safe DOM (no innerHTML with user data)
+// ═════════════════════════════════════════════════════════════════
 function el(tag, cls, text) {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
   if (text != null) e.textContent = String(text);
   return e;
 }
-function icon(name, cls) {
-  const s = el('span', 'material-symbols-outlined ' + (cls||''), name);
-  return s;
+function svgEl(tag, attrs) {
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  if (attrs) for (const [k,v] of Object.entries(attrs)) e.setAttribute(k, v);
+  return e;
 }
 
-// ----- Clock -----
+// ═════════════════════════════════════════════════════════════════
+//  CLOCK — characterful, colon blinks, date in small caps above
+// ═════════════════════════════════════════════════════════════════
 function tickClock() {
   const now = new Date();
-  document.getElementById('bigClock').textContent =
-    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-  document.getElementById('seconds').textContent =
-    String(now.getSeconds()).padStart(2,'0') + ' seconds';
-  document.getElementById('dateLabel').textContent =
-    now.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'});
-
-  const hour = now.getHours() + now.getMinutes()/60;
-  let dim = 0;
-  if (hour >= 22 || hour < 6) dim = 0.35;
-  else if (hour >= 21 && hour < 22) dim = (hour - 21) * 0.35;
-  else if (hour >= 6  && hour < 7)  dim = 0.35 - (hour - 6) * 0.35;
-  document.body.style.setProperty('--night-dim', dim.toFixed(2));
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const ss = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('bigClockH').textContent = hh;
+  document.getElementById('bigClockM').textContent = mm;
+  // Keep the original-id bigClock populated too for any external consumers
+  document.getElementById('bigClock').textContent = hh + ':' + mm;
+  document.getElementById('seconds').textContent = ss;
+  const weekday = now.toLocaleDateString('en-US', { weekday: 'long' });
+  const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  document.getElementById('dateLabel').textContent = weekday + ' · ' + md;
 }
 tickClock(); setInterval(tickClock, 1000);
 
-// ----- Weather -----
-const WMO = {
-  0:{i:'wb_sunny',d:'Clear'}, 1:{i:'partly_cloudy_day',d:'Mostly clear'},
-  2:{i:'partly_cloudy_day',d:'Partly cloudy'}, 3:{i:'cloud',d:'Overcast'},
-  45:{i:'foggy',d:'Fog'}, 48:{i:'foggy',d:'Rime fog'},
-  51:{i:'rainy',d:'Light drizzle'}, 53:{i:'rainy',d:'Drizzle'}, 55:{i:'rainy',d:'Heavy drizzle'},
-  61:{i:'rainy',d:'Light rain'}, 63:{i:'rainy',d:'Rain'}, 65:{i:'rainy',d:'Heavy rain'},
-  71:{i:'weather_snowy',d:'Light snow'}, 73:{i:'weather_snowy',d:'Snow'}, 75:{i:'weather_snowy',d:'Heavy snow'},
-  80:{i:'rainy',d:'Rain showers'}, 81:{i:'rainy',d:'Rain showers'}, 82:{i:'thunderstorm',d:'Violent showers'},
-  95:{i:'thunderstorm',d:'Thunderstorm'}, 96:{i:'thunderstorm',d:'Thunderstorm & hail'},
-  99:{i:'thunderstorm',d:'Thunderstorm & hail'},
+// ═════════════════════════════════════════════════════════════════
+//  WEATHER MOOD LANGUAGE — the whole point of this redesign
+//  Replace "Mostly clear, 74°F" with a little poem.
+// ═════════════════════════════════════════════════════════════════
+
+// Maps WMO weather code → [bucket, phrase options]
+// Bucket used for theme. Phrases chosen at random to keep it fresh.
+const MOOD_LIBRARY = {
+  clearDay: {
+    bucket: 'clear',
+    punch: ['golden hour, all day', 'blue and patient', 'honeyed light', 'a clean hot plate', 'shouting-yellow sky'],
+    line2: ['the sun is showing off', 'every brick is warm', 'long shadows, generous', 'wear the good sunglasses', 'air smells faintly of sunscreen'],
+    advice: ['SPF, water, a hat', 'good day for walking nowhere in particular', 'do the thing outside', 'leave the jacket at home', 'your plants will forgive you']
+  },
+  partly: {
+    bucket: 'clear',
+    punch: ['sky is doing laundry', 'a moody blue, edited', 'patchwork afternoon', 'broken-egg clouds', 'sun playing hide-and-seek'],
+    line2: ['clouds drift through like slow thoughts', 'you will see both shadow and sun', 'Brooklyn is wearing a mixed outfit', 'the light keeps changing its mind', 'soft, uncommitted weather'],
+    advice: ['layer up, just in case', 'a light sweater, pockets optional', 'nice for a slow walk', 'film-camera light', 'the kind of day that reads well']
+  },
+  overcast: {
+    bucket: 'overcast',
+    punch: ['the city is under a gray lid', 'tupperware sky', 'stage-light overcast', 'wool-blanket afternoon', 'a soft, unbothered gray'],
+    line2: ['the sky is one long sigh', 'everything looks flattered by soft light', 'it feels like a library', 'colors are turned down a notch', 'the day is rehearsing rain'],
+    advice: ['gentle mood · gentle plans', 'sweater weather quietly', 'good for thinking', 'take the long way home', 'a coffee will fix half of it']
+  },
+  drizzle: {
+    bucket: 'rain',
+    punch: ['the sky is just barely crying', 'wet-pavement gray', 'a damp, slow mist', 'not quite rain, but rude'],
+    line2: ['umbrellas open and close, indecisive', 'hair will not cooperate', 'the sidewalk smells like sidewalk', 'car headlights look prettier than usual'],
+    advice: ['take the light jacket', 'a hood will do', 'don\'t trust the sky', 'the L will be more crowded']
+  },
+  rain: {
+    bucket: 'rain',
+    punch: ['it\'s that kind of day', 'glossy streets, full commitment', 'the sky\'s serious today', 'rain with a plan'],
+    line2: ['Greenpoint smells like Greenpoint again', 'wear the sturdy shoes', 'cars hiss, not roar', 'every awning is a friend'],
+    advice: ['umbrella. yes.', 'tuck everything under layers', 'stay in, if you can', 'a big bowl of soup is correct']
+  },
+  storm: {
+    bucket: 'storm',
+    punch: ['the sky is putting on a show', 'lightning weather', 'a full-throated downpour', 'dramatic · unapologetic'],
+    line2: ['thunder rolls somewhere past Williamsburg', 'umbrellas will lose, be warned', 'unplug what you love', 'a very theatrical afternoon'],
+    advice: ['stay in. watch it.', 'the L will be wet', 'today is for candles', 'tea · blanket · window']
+  },
+  snow: {
+    bucket: 'snow',
+    punch: ['the city is being erased, gently', 'soft, cold, cinematic', 'quiet snow-day light', 'a hush over everything'],
+    line2: ['sidewalks are pretending to be clean', 'every noise feels polite', 'your boots have a job today', 'everyone walks slower'],
+    advice: ['boots, gloves, patience', 'mittens over gloves', 'make hot chocolate anyway', 'trains may shrug']
+  },
+  fog: {
+    bucket: 'overcast',
+    punch: ['the block is holding its breath', 'soft-focus Brooklyn', 'the city is inside a cloud', 'romantic, if you squint'],
+    line2: ['headlights look like haloes', 'buildings keep vanishing politely', 'sound travels differently today', 'a film noir kind of morning'],
+    advice: ['lights on, patience high', 'walk slower, notice more', 'nice day for a jazz album', 'drivers need extra space today']
+  },
+  night: {
+    bucket: 'night',
+    punch: ['the night is soft', 'a plum-colored hour', 'city on low volume', 'navy air, small lamps'],
+    line2: ['windows glow like little films', 'bodegas hum their yellow hum', 'the avenue is mostly quiet', 'stars doing their best, over brooklyn'],
+    advice: ['a jacket. just one.', 'tea · book · window', 'the L still comes, always', 'reasonable bedtime · maybe']
+  }
+};
+
+function wmoToMoodKey(code, isDay) {
+  if (!isDay) return 'night';
+  if (code === 0)                     return 'clearDay';
+  if ([1,2].includes(code))           return 'partly';
+  if (code === 3)                     return 'overcast';
+  if ([45,48].includes(code))         return 'fog';
+  if ([51,53,55].includes(code))      return 'drizzle';
+  if ([61,63,65,80,81].includes(code))return 'rain';
+  if ([71,73,75,77,85,86].includes(code)) return 'snow';
+  if ([82,95,96,99].includes(code))   return 'storm';
+  return 'clearDay';
+}
+
+function pickOne(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function feelsPhrase(tempF, apparentF, wind) {
+  const diff = apparentF - tempF;
+  if (apparentF >= 90) return 'sticky. move slowly.';
+  if (apparentF >= 82) return 'the kind of warm where ice cream makes sense';
+  if (apparentF >= 70 && apparentF < 82) return 'a perfect sweater-in-your-bag temperature';
+  if (apparentF >= 55 && apparentF < 70) return 'technically spring. maybe a light jacket.';
+  if (apparentF >= 40 && apparentF < 55) return 'brisk · the kind that wakes you up';
+  if (apparentF >= 25 && apparentF < 40) return 'cold-ish · two-coat weather';
+  if (apparentF < 25) return 'bone-serious cold. respect it.';
+  return '—';
+}
+
+// ═════════════════════════════════════════════════════════════════
+//  WEATHER MASCOT — handmade SVG, one per mood bucket
+// ═════════════════════════════════════════════════════════════════
+function renderMascot(mood) {
+  const mascot = document.getElementById('weatherMascot');
+  mascot.textContent = ''; // clear
+  const palette = {
+    clear:    { body: '#f5b14a', rim: '#d94a2d', accent: '#2b1a12' },
+    overcast: { body: '#cfd4cf', rim: '#7a8f6b', accent: '#2a2c2a' },
+    rain:     { body: '#4b6a78', rim: '#68a6b5', accent: '#e8a95c' },
+    storm:    { body: '#3a2e50', rim: '#ffd23f', accent: '#ab59ff' },
+    snow:     { body: '#ffffff', rim: '#6aa5c8', accent: '#8f9aa3' },
+    night:    { body: '#1f2b4a', rim: '#ffc168', accent: '#9ac7ff' },
+  }[mood] || { body: '#f5b14a', rim: '#d94a2d', accent: '#2b1a12' };
+
+  if (mood === 'clear') {
+    // Sun with sunglasses
+    const sun = svgEl('circle', { cx: 150, cy: 150, r: 80, fill: palette.body });
+    mascot.appendChild(sun);
+    // Rays
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      const x1 = 150 + Math.cos(a) * 95;
+      const y1 = 150 + Math.sin(a) * 95;
+      const x2 = 150 + Math.cos(a) * 125;
+      const y2 = 150 + Math.sin(a) * 125;
+      mascot.appendChild(svgEl('line', { x1, y1, x2, y2, stroke: palette.rim, 'stroke-width': 6, 'stroke-linecap': 'round', opacity: 0.85 }));
+    }
+    // Shades
+    mascot.appendChild(svgEl('rect', { x: 100, y: 140, width: 40, height: 26, rx: 8, fill: palette.accent }));
+    mascot.appendChild(svgEl('rect', { x: 160, y: 140, width: 40, height: 26, rx: 8, fill: palette.accent }));
+    mascot.appendChild(svgEl('line',  { x1: 140, y1: 152, x2: 160, y2: 152, stroke: palette.accent, 'stroke-width': 4 }));
+    // Mouth
+    const mouth = svgEl('path', { d: 'M 125 188 Q 150 205 175 188', stroke: palette.accent, 'stroke-width': 5, fill: 'none', 'stroke-linecap': 'round' });
+    mascot.appendChild(mouth);
+  } else if (mood === 'overcast') {
+    // Three layered clouds
+    const c1 = svgEl('ellipse', { cx: 130, cy: 155, rx: 80, ry: 38, fill: palette.body, stroke: palette.accent, 'stroke-width': 3 });
+    const c2 = svgEl('ellipse', { cx: 180, cy: 135, rx: 70, ry: 32, fill: palette.body, stroke: palette.accent, 'stroke-width': 3, opacity: 0.82 });
+    const c3 = svgEl('ellipse', { cx: 210, cy: 175, rx: 60, ry: 28, fill: palette.rim, opacity: 0.65 });
+    mascot.appendChild(c3); mascot.appendChild(c2); mascot.appendChild(c1);
+    // Sleepy face
+    mascot.appendChild(svgEl('line', { x1: 105, y1: 155, x2: 125, y2: 155, stroke: palette.accent, 'stroke-width': 4, 'stroke-linecap': 'round' }));
+    mascot.appendChild(svgEl('line', { x1: 140, y1: 155, x2: 160, y2: 155, stroke: palette.accent, 'stroke-width': 4, 'stroke-linecap': 'round' }));
+    mascot.appendChild(svgEl('path', { d: 'M 115 175 Q 135 180 155 175', stroke: palette.accent, 'stroke-width': 3, fill: 'none', 'stroke-linecap': 'round' }));
+  } else if (mood === 'rain' || mood === 'storm') {
+    // Cloud with rain streaks
+    mascot.appendChild(svgEl('ellipse', { cx: 150, cy: 120, rx: 95, ry: 42, fill: palette.body, stroke: palette.accent, 'stroke-width': 3 }));
+    mascot.appendChild(svgEl('ellipse', { cx: 200, cy: 100, rx: 60, ry: 30, fill: palette.body, opacity: 0.7 }));
+    // Rain streaks animated
+    for (let i = 0; i < 6; i++) {
+      const x = 80 + i * 25;
+      const streak = svgEl('line', { x1: x, y1: 170, x2: x - 10, y2: 220, stroke: palette.rim, 'stroke-width': 4, 'stroke-linecap': 'round', opacity: 0.85 });
+      const anim = svgEl('animate', { attributeName: 'y1', values: '170;230', dur: (0.8 + i*0.15) + 's', repeatCount: 'indefinite' });
+      const anim2 = svgEl('animate', { attributeName: 'y2', values: '220;280', dur: (0.8 + i*0.15) + 's', repeatCount: 'indefinite' });
+      streak.appendChild(anim); streak.appendChild(anim2);
+      mascot.appendChild(streak);
+    }
+    if (mood === 'storm') {
+      // Yellow zigzag lightning
+      const bolt = svgEl('polygon', { points: '150,140 130,210 160,210 140,280 195,195 165,195 185,140', fill: palette.rim, stroke: palette.accent, 'stroke-width': 2 });
+      mascot.appendChild(bolt);
+    }
+  } else if (mood === 'snow') {
+    // Cloud + snowflakes
+    mascot.appendChild(svgEl('ellipse', { cx: 150, cy: 110, rx: 95, ry: 42, fill: palette.body, stroke: palette.rim, 'stroke-width': 3 }));
+    mascot.appendChild(svgEl('ellipse', { cx: 200, cy: 95, rx: 60, ry: 28, fill: palette.body, opacity: 0.85 }));
+    for (let i = 0; i < 7; i++) {
+      const x = 75 + i * 28;
+      const y = 175 + (i % 2) * 25;
+      const flake = svgEl('text', { x, y, 'font-size': 28, fill: palette.accent, 'font-family': 'serif' });
+      flake.textContent = '❋';
+      const anim = svgEl('animate', { attributeName: 'y', values: `${y};${y+60}`, dur: (2 + i*0.3) + 's', repeatCount: 'indefinite' });
+      const opAnim = svgEl('animate', { attributeName: 'opacity', values: '1;0', dur: (2 + i*0.3) + 's', repeatCount: 'indefinite' });
+      flake.appendChild(anim); flake.appendChild(opAnim);
+      mascot.appendChild(flake);
+    }
+  } else if (mood === 'night') {
+    // Crescent moon + stars
+    mascot.appendChild(svgEl('circle', { cx: 160, cy: 150, r: 80, fill: palette.rim }));
+    mascot.appendChild(svgEl('circle', { cx: 190, cy: 130, r: 75, fill: '#0a0f1c' }));
+    // Stars
+    for (let i = 0; i < 5; i++) {
+      const x = 50 + Math.random() * 240;
+      const y = 30 + Math.random() * 240;
+      const sz = 3 + Math.random() * 4;
+      const st = svgEl('circle', { cx: x, cy: y, r: sz, fill: palette.accent, opacity: 0.6 + Math.random() * 0.4 });
+      const twinkle = svgEl('animate', { attributeName: 'opacity', values: '0.3;1;0.3', dur: (2 + Math.random()*2) + 's', repeatCount: 'indefinite' });
+      st.appendChild(twinkle);
+      mascot.appendChild(st);
+    }
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════
+//  MOOD STATE — sets body[data-mood] + renders mascot
+// ═════════════════════════════════════════════════════════════════
+function applyMood(moodKey) {
+  const lib = MOOD_LIBRARY[moodKey];
+  if (!lib) return;
+  document.body.setAttribute('data-mood', lib.bucket);
+  renderMascot(lib.bucket);
+  document.getElementById('moodPunchline').textContent = pickOne(lib.punch);
+  document.getElementById('moodLine2').textContent = pickOne(lib.line2);
+  document.getElementById('weatherAdvice').textContent = pickOne(lib.advice);
+}
+
+// ═════════════════════════════════════════════════════════════════
+//  WEATHER FETCH
+// ═════════════════════════════════════════════════════════════════
+// Short evocative word for each WMO code, used in the ribbon cells.
+const WMO_WORD = {
+  0:'clear', 1:'softly clear', 2:'patchy', 3:'gray',
+  45:'fog', 48:'fog',
+  51:'damp', 53:'damp', 55:'damp',
+  61:'drizzle', 63:'rain', 65:'downpour',
+  71:'snow', 73:'snow', 75:'heavy snow', 77:'grains',
+  80:'shower', 81:'shower', 82:'deluge',
+  85:'snow', 86:'snow',
+  95:'thunder', 96:'thunder', 99:'hail'
 };
 
 async function refreshWeather() {
@@ -130,108 +643,149 @@ async function refreshWeather() {
     const j = await r.json();
     if (!j.ok) throw new Error(j.error);
     const d = j.data, cur = d.current;
-    const code = WMO[cur.weather_code] || {i:'help', d:'Unknown'};
-    document.getElementById('weatherIcon').textContent =
-      cur.is_day ? code.i : (code.i === 'wb_sunny' ? 'bedtime' : code.i);
-    document.getElementById('tempNow').textContent = Math.round(cur.temperature_2m) + '°';
-    document.getElementById('weatherDesc').textContent = code.d;
-    document.getElementById('feelsLike').textContent =
-      'Feels ' + Math.round(cur.apparent_temperature) + '° · Wind ' +
-      Math.round(cur.wind_speed_10m) + ' mph';
 
+    // Set descriptor + temp
+    document.getElementById('tempNow').textContent = Math.round(cur.temperature_2m);
+    document.getElementById('weatherDesc').textContent =
+      (WMO_WORD[cur.weather_code] || 'weather') + ', wind ' + Math.round(cur.wind_speed_10m) + ' mph';
+    document.getElementById('feelsLike').textContent =
+      feelsPhrase(cur.temperature_2m, cur.apparent_temperature, cur.wind_speed_10m);
+
+    // Mood + mascot
+    const moodKey = wmoToMoodKey(cur.weather_code, cur.is_day);
+    applyMood(moodKey);
+
+    // Expose a legacy-compatible string too
+    document.getElementById('weatherIcon').textContent = 'mood:' + moodKey;
+
+    // Forecast ribbon: 6 hour slots
     const strip = document.getElementById('forecastStrip');
     strip.textContent = '';
-    const nowTime = Date.now();
-    // Pick next 6 hourly slots
+    const nowMs = Date.now();
     const picks = d.hourly.time
-      .map((t,idx)=>({t: new Date(t).getTime(), idx}))
-      .filter(x => x.t > nowTime)
+      .map((t,idx)=>({ms: new Date(t).getTime(), idx}))
+      .filter(x => x.ms > nowMs)
       .slice(0, 6);
     picks.forEach(p => {
-      const t = Math.round(d.hourly.temperature_2m[p.idx]);
-      const c = d.hourly.weather_code[p.idx];
-      const ic = (WMO[c] || {i:'help'}).i;
       const hr = new Date(d.hourly.time[p.idx]);
       const h = hr.getHours();
       const label = h===0 ? '12a' : h===12 ? '12p' : h>12 ? (h-12)+'p' : h+'a';
-      const cell = el('div', 'flex flex-col items-center text-center flex-1');
-      cell.appendChild(el('span', 'text-[10px] tracking-wider uppercase text-zinc-600', label));
-      cell.appendChild(icon(ic, '!text-[1.4rem] text-zinc-400 mt-1'));
-      cell.appendChild(el('span', 'text-sm text-zinc-300 mt-1', t+'°'));
+      const cell = el('div', 'ribbon-cell');
+      cell.appendChild(el('span', 'hr', label));
+      cell.appendChild(el('span', 'tmp', Math.round(d.hourly.temperature_2m[p.idx]) + '°'));
+      cell.appendChild(el('span', 'word', WMO_WORD[d.hourly.weather_code[p.idx]] || ''));
       strip.appendChild(cell);
     });
+
   } catch (e) {
-    console.error('weather', e);
+    console.warn('weather', e);
+    document.getElementById('weatherDesc').textContent = 'weather is being shy';
   }
 }
 
-// ----- MTA Trains -----
-function buildTile(s) {
-  const tile = el('div', 'flex flex-col justify-between p-5 rounded-2xl bg-white/[0.03] border border-white/5');
+// ═════════════════════════════════════════════════════════════════
+//  MTA TRAINS — "RUN" vs "you've got time" vs "next one's fine"
+// ═════════════════════════════════════════════════════════════════
+function trainVerdict(mins) {
+  if (mins == null) return { word: '…', tone: 'muted' };
+  if (mins <= 0) return { word: 'arriving', tone: 'lead' };
+  if (mins <= 2) return { word: 'RUN.', tone: 'lead' };
+  if (mins <= 5) return { word: 'walk briskly.', tone: 'lead' };
+  if (mins <= 10) return { word: 'finish the coffee.', tone: 'ink' };
+  if (mins <= 16) return { word: 'no rush.', tone: 'muted' };
+  return { word: 'take your time.', tone: 'muted' };
+}
 
-  const head = el('div', 'flex items-baseline justify-between');
-  head.appendChild(el('span', 'headline text-lg font-medium text-white', s.name));
-  head.appendChild(el('span', 'w-7 h-7 rounded-full bg-zinc-500 text-white flex items-center justify-center text-sm font-bold', 'L'));
-  tile.appendChild(head);
+function buildStop(s) {
+  const wrap = el('div', 'stop');
+  wrap.appendChild(el('div', 'stop-name', s.name));
+  wrap.appendChild(el('div', 'stop-sub', '→ manhattan'));
 
-  const sections = [
-    { label: 'Manhattan-bound', nums: s.manhattan_bound, size: 'text-4xl text-white',  labelCls: 'text-zinc-600', dotCls: 'text-zinc-600', emptyCls: 'text-zinc-600' },
-    { label: 'Canarsie-bound',  nums: s.canarsie_bound,  size: 'text-2xl text-zinc-400', labelCls: 'text-zinc-700', dotCls: 'text-zinc-700', emptyCls: 'text-zinc-700' },
-  ];
-  for (const sec of sections) {
-    const block = el('div', 'mt-3');
-    block.appendChild(el('p', 'text-[10px] tracking-[0.2em] uppercase ' + sec.labelCls, sec.label));
-    const row = el('div', 'flex items-baseline gap-1 mt-1');
-    if (sec.nums.length) {
-      sec.nums.forEach((m, idx) => {
-        row.appendChild(el('span', 'headline font-light ' + sec.size, m));
-        if (idx < sec.nums.length - 1) row.appendChild(el('span', sec.dotCls + ' mx-2', '·'));
-      });
-      row.appendChild(el('span', sec.emptyCls + ' text-xs ml-2', 'min'));
+  // Manhattan-bound: verdict + numbers
+  const m = s.manhattan_bound;
+  const lead = (m && m.length) ? m[0] : null;
+  const verdict = trainVerdict(lead);
+  const vRow = el('div', 'verdict');
+  vRow.appendChild(el('span', 'word', verdict.word));
+
+  const numsSpan = el('span', 'nums');
+  if (m && m.length) {
+    const leadSpan = el('span', 'lead', m[0]);
+    numsSpan.appendChild(leadSpan);
+    numsSpan.appendChild(document.createTextNode(' '));
+    if (m.length > 1) {
+      const rest = el('span', 'rest', '· ' + m.slice(1).join(' · ') + ' min');
+      numsSpan.appendChild(rest);
     } else {
-      row.appendChild(el('span', sec.emptyCls + ' text-xs', 'no trains scheduled'));
+      numsSpan.appendChild(el('span', 'rest', 'min'));
     }
-    block.appendChild(row);
-    tile.appendChild(block);
+  } else {
+    numsSpan.appendChild(el('span', 'rest', 'no trains scheduled'));
   }
-  return tile;
-}
+  vRow.appendChild(numsSpan);
+  wrap.appendChild(vRow);
 
-function renderTrains(stations) {
-  const host = document.getElementById('trainTiles');
-  host.textContent = '';
-  stations.forEach(s => host.appendChild(buildTile(s)));
+  // Canarsie-bound (smaller line)
+  const c = s.canarsie_bound;
+  const cRow = el('div', 'direction-sub');
+  cRow.appendChild(el('span', 'word', '→ canarsie'));
+  if (c && c.length) {
+    cRow.appendChild(el('span', 'nums', c.slice(0, 3).join(' · ') + ' min'));
+  } else {
+    cRow.appendChild(el('span', 'nums', '—'));
+  }
+  wrap.appendChild(cRow);
+  return wrap;
 }
 
 async function refreshTrains() {
-  const host = document.getElementById('trainTiles');
   try {
     const r = await fetch('/api/trains');
     const j = await r.json();
     if (!j.ok) throw new Error(j.error);
-    if (j.data.error) {
-      host.textContent = '';
-      const box = el('div', 'col-span-3 p-6 rounded-2xl bg-white/[0.03] border border-white/5 text-center text-zinc-400', j.data.error);
-      host.appendChild(box);
+    const host = document.getElementById('trainTiles');
+    host.textContent = '';
+    const stations = (j.data && j.data.stations) || [];
+    if (!stations.length) {
+      host.appendChild(el('div', 'stop', 'no train data'));
       return;
     }
-    renderTrains(j.data.stations);
+    stations.forEach(s => host.appendChild(buildStop(s)));
     const t = new Date();
-    document.getElementById('trainsUpdated').textContent =
-      'Updated ' + String(t.getHours()).padStart(2,'0') + ':' +
-                    String(t.getMinutes()).padStart(2,'0') + ':' +
-                    String(t.getSeconds()).padStart(2,'0');
+    document.getElementById('trainsUpdated').textContent = 'updated ' +
+      String(t.getHours()).padStart(2,'0') + ':' +
+      String(t.getMinutes()).padStart(2,'0') + ':' +
+      String(t.getSeconds()).padStart(2,'0');
   } catch (e) {
-    console.error('trains', e);
+    console.warn('trains', e);
+    const host = document.getElementById('trainTiles');
     host.textContent = '';
-    const box = el('div', 'col-span-3 p-6 rounded-2xl bg-red-950/30 border border-red-900/40 text-center text-red-200',
-      'Train feed offline — retrying automatically');
+    const box = el('div', 'stop');
+    box.appendChild(el('div', 'stop-name', 'the MTA is being shy'));
+    box.appendChild(el('div', 'stop-sub', 'trying again in a moment'));
     host.appendChild(box);
   }
 }
 
+// ═════════════════════════════════════════════════════════════════
+//  KICKOFF
+// ═════════════════════════════════════════════════════════════════
 refreshWeather(); setInterval(refreshWeather, 10 * 60 * 1000);
 refreshTrains();  setInterval(refreshTrains, 20 * 1000);
+
+// Re-roll phrases on a slow cycle so the screen feels alive without
+// being twitchy. Every 3 minutes we pick new mood phrases.
+setInterval(() => {
+  const mood = document.body.getAttribute('data-mood');
+  const moodKeyMap = { clear: 'clearDay', overcast: 'overcast', rain: 'rain', storm: 'storm', snow: 'snow', night: 'night' };
+  const key = moodKeyMap[mood] || 'clearDay';
+  const lib = MOOD_LIBRARY[key];
+  if (lib) {
+    document.getElementById('moodPunchline').textContent = pickOne(lib.punch);
+    document.getElementById('moodLine2').textContent = pickOne(lib.line2);
+    document.getElementById('weatherAdvice').textContent = pickOne(lib.advice);
+  }
+}, 3 * 60 * 1000);
 </script>
 </body>
 </html>
