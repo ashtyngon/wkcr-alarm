@@ -95,11 +95,12 @@
 
 <!-- TOP BAR -->
 <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 pt-4 pb-3 bg-transparent">
-  <div class="w-10 flex items-center">
-    <span class="material-symbols-outlined text-primary-dim text-xl" style="font-variation-settings:'FILL' 1" id="liveIndicator" style="display:none;">graphic_eq</span>
-  </div>
+  <button id="castBtn" class="w-10 h-10 flex items-center justify-start text-on-surface-variant hover:text-primary-dim transition-colors" onclick="castClicked()" title="Cast to a speaker" style="display:none;" aria-label="Cast">
+    <span class="material-symbols-outlined text-xl" id="castIcon">cast</span>
+  </button>
+  <div id="castBtnSpacer" class="w-10 flex items-center"></div>
   <h1 class="font-headline font-bold text-xl tracking-tight text-on-surface">Sensory Radio</h1>
-  <button class="w-10 flex items-center justify-end text-on-surface-variant hover:text-primary-dim transition-colors" onclick="toggleSleepTimer()" title="Sleep timer">
+  <button class="w-10 h-10 flex items-center justify-end text-on-surface-variant hover:text-primary-dim transition-colors" onclick="toggleSleepTimer()" title="Sleep timer" aria-label="Sleep timer">
     <span class="material-symbols-outlined text-xl" id="timerIcon">bedtime</span>
   </button>
 </header>
@@ -198,8 +199,11 @@
 
 <div id="toast" class="toast"></div>
 
-<!-- Hidden audio element -->
-<audio id="player" crossorigin="anonymous" preload="none"></audio>
+<!-- Hidden audio element. x-webkit-airplay enables AirPlay casting on Safari/iOS. -->
+<audio id="player" crossorigin="anonymous" preload="none" x-webkit-airplay="allow"></audio>
+
+<!-- Google Cast SDK (Chrome only) -->
+<script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
 
 <script>
 // ================================================================
@@ -450,6 +454,18 @@ function togglePlay() {
 function play() {
   const s = stations.find(x => x.id === selectedId);
   if (!s) return;
+
+  // If we have an active Cast session, route playback there instead of
+  // playing locally on the device. The Chromecast fetches the stream itself.
+  if (castSession) {
+    isPlaying = true;
+    updatePlayButton();
+    updateHero(s);
+    renderStations();
+    castLoadMedia();
+    return;
+  }
+
   const player = $('player');
   player.src = s.url;
   // Optimistic UI
@@ -468,6 +484,13 @@ function play() {
 }
 
 function stop() {
+  // Stop whichever path is currently active
+  if (castSession) {
+    const media = castSession.getMediaSession();
+    if (media) {
+      media.stop(new chrome.cast.media.StopRequest(), () => {}, (err) => console.warn('cast stop error', err));
+    }
+  }
   const player = $('player');
   player.pause();
   player.src = '';
@@ -570,6 +593,100 @@ function clearSearch() {
 }
 $('stationSearch').addEventListener('input', onSearch);
 $('searchClear').addEventListener('click', clearSearch);
+
+// --- Google Cast (Chrome only) ---
+// The Cast SDK fires this global when ready. If the user is in Chrome with
+// Cast support, we show a cast button and wire it up. Other browsers never
+// see the button.
+let castAvailable = false;
+let castSession = null;
+
+window['__onGCastApiAvailable'] = function(isAvailable) {
+  if (!isAvailable) return;
+  try {
+    const ctx = cast.framework.CastContext.getInstance();
+    ctx.setOptions({
+      receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+      autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+    });
+    castAvailable = true;
+    $('castBtn').style.display = 'flex';
+    $('castBtnSpacer').style.display = 'none';
+    // Listen for session state changes so our UI can reflect active casting.
+    ctx.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, (e) => {
+      const state = e.sessionState;
+      if (state === 'SESSION_STARTED' || state === 'SESSION_RESUMED') {
+        castSession = ctx.getCurrentSession();
+        updateCastIcon(true);
+        // If local audio was playing, stop it and resume on the speaker.
+        if (isPlaying) {
+          $('player').pause();
+          castLoadMedia();
+        }
+        toast('Casting to ' + (castSession.getCastDevice().friendlyName || 'speaker'));
+      } else if (state === 'SESSION_ENDED') {
+        castSession = null;
+        updateCastIcon(false);
+      }
+    });
+  } catch (e) {
+    console.error('Cast init error:', e);
+  }
+};
+
+function updateCastIcon(active) {
+  const icon = $('castIcon');
+  if (!icon) return;
+  icon.textContent = active ? 'cast_connected' : 'cast';
+  icon.style.fontVariationSettings = active ? "'FILL' 1" : "'FILL' 0";
+  $('castBtn').classList.toggle('text-primary-dim', active);
+}
+
+function castClicked() {
+  if (!castAvailable) return;
+  const ctx = cast.framework.CastContext.getInstance();
+  if (castSession) {
+    // Already casting — prompt to stop casting
+    castSession.endSession(true);
+  } else {
+    ctx.requestSession().catch(err => {
+      if (err && err !== 'cancel') {
+        console.error('Cast session request failed:', err);
+        toast('No cast devices found');
+      }
+    });
+  }
+}
+
+function guessMime(url) {
+  const u = url.toLowerCase();
+  if (u.endsWith('.aac') || u.includes('/aac')) return 'audio/aac';
+  if (u.endsWith('.ogg') || u.includes('/ogg')) return 'audio/ogg';
+  if (u.endsWith('.flac') || u.includes('/flac')) return 'audio/flac';
+  if (u.endsWith('.m3u8')) return 'application/x-mpegURL';
+  return 'audio/mpeg';
+}
+
+function castLoadMedia() {
+  if (!castSession || !selectedId) return;
+  const s = stations.find(x => x.id === selectedId);
+  if (!s) return;
+  const info = new chrome.cast.media.MediaInfo(s.url, guessMime(s.url));
+  info.streamType = chrome.cast.media.StreamType.LIVE;
+  info.metadata = new chrome.cast.media.GenericMediaMetadata();
+  info.metadata.title = s.name;
+  info.metadata.subtitle = s.genre || '';
+  const req = new chrome.cast.media.LoadRequest(info);
+  castSession.loadMedia(req).then(() => {
+    isPlaying = true;
+    updatePlayButton();
+    updateHero(s);
+    renderStations();
+  }).catch(err => {
+    console.error('castLoadMedia failed:', err);
+    toast('Stream not compatible with this speaker');
+  });
+}
 
 // --- Init ---
 async function load() {
