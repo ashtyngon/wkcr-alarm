@@ -1360,5 +1360,311 @@
     "name": "Concertzender Jazz",
     "genre": "World of Jazz",
     "url": "https://streams.greenhost.nl:8006/jazz"
+  },
+  {
+    "id": "citifm",
+    "name": "Citi FM 97.3",
+    "genre": "English news/talk — Accra, Ghana",
+    "url": "https://citi973fm.radioca.st/;stream.mp3"
+  },
+  {
+    "id": "brilafm",
+    "name": "Brila FM",
+    "genre": "Sports talk — Lagos",
+    "url": "https://atunwadigital.streamguys1.com/brilafm"
+  },
+  {
+    "id": "zikfm",
+    "name": "Zik FM 89.7",
+    "genre": "Pop/R&B/rap — Dakar, Senegal",
+    "url": "https://stream.zenolive.com/2a5a6ry9sxquv"
+  },
+  {
+    "id": "rfmsn",
+    "name": "RFM 94.0",
+    "genre": "Wolof/French — Dakar",
+    "url": "https://stream.zeno.fm/kuk0syz5puquv"
+  },
+  {
+    "id": "crtv",
+    "name": "CRTV Radio",
+    "genre": "Cameroonian national — Yaoundé",
+    "url": "https://listen.radioking.com/radio/39218/stream/75659"
+  },
+  {
+    "id": "tbctaifa",
+    "name": "TBC Taifa",
+    "genre": "Swahili public radio — Dar es Salaam",
+    "url": "https://a7.asurahosting.com:7890/"
+  },
+  {
+    "id": "rsg",
+    "name": "RSG (Radio Sonder Grense)",
+    "genre": "Afrikaans — South Africa",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/RSGAAC_SC"
+  },
+  {
+    "id": "safm",
+    "name": "SAfm",
+    "genre": "English news/talk — South Africa",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/SAFMAAC_SC"
+  },
+  {
+    "id": "lmmoz",
+    "name": "LM Radio Mozambique",
+    "genre": "English oldies — Maputo",
+    "url": "https://edge.iono.fm/xice/392_medium.mp3"
+  },
+  {
+    "id": "aircuttack",
+    "name": "AIR Cuttack",
+    "genre": "Odia folk/classical",
+    "url": "https://air.pc.cdn.bitgravity.com/air/live/pbaudio137/playlist.m3u8"
+  },
+  {
+    "id": "rthk1",
+    "name": "RTHK Radio 1",
+    "genre": "Cantonese talk/news — Hong Kong",
+    "url": "https://rthkradio1-live.akamaized.net/hls/live/2035313/radio1/master.m3u8"
+  },
+  {
+    "id": "rthk2",
+    "name": "RTHK Radio 2",
+    "genre": "Cantopop & youth — Hong Kong",
+    "url": "https://rthkradio2-live.akamaized.net/hls/live/2040078/radio2/index_64_a.m3u8"
+  },
+  {
+    "id": "rthk3",
+    "name": "RTHK Radio 3",
+    "genre": "English service — Hong Kong",
+    "url": "https://rthkradio3-live.akamaized.net/hls/live/2040079/radio3/master.m3u8"
+  },
+  {
+    "id": "cnr1",
+    "name": "CNR-1 National",
+    "genre": "China national news/culture",
+    "url": "https://satellitepull.cnr.cn/live/wxzgzs/playlist.m3u8"
+  },
+  {
+    "id": "jia883",
+    "name": "Jia 88.3",
+    "genre": "Hokkien/Cantonese/Teochew — Singapore",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/883JIAAAC.aac"
+  },
+  {
+    "id": "nasional",
+    "name": "Nasional FM",
+    "genre": "Malay news/talk — Kuala Lumpur",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/NASIONAL_FM.mp3"
+  },
+  {
+    "id": "minnal",
+    "name": "Minnal FM",
+    "genre": "Tamil — Malaysia",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/MINNAL_FMAAC.aac"
+  },
+  {
+    "id": "mcotchiangmai",
+    "name": "MCOT Chiang Mai",
+    "genre": "Northern Thai — Chiang Mai",
+    "url": "https://live-org-01-cdn.mcot.net/RegionRadio/ChiangMai.stream_aac/playlist.m3u8"
+  },
+  {
+    "id": "bkkfm",
+    "name": "BKK.FM",
+    "genre": "Bangkok indie/Thai",
+    "url": "https://rsas.bkk.fm/radio"
+  },
+  {
+    "id": "voh610",
+    "name": "VOH AM 610",
+    "genre": "HCMC traditional",
+    "url": "https://strm.voh.com.vn/radio/channel2/chunklist_w884773542.m3u8"
+  },
+  {
+    "id": "voh999",
+    "name": "VOH FM 99.9",
+    "genre": "HCMC",
+    "url": "https://strm.voh.com.vn/radio/channel3/chunklist_w1005696319.m3u8"
+  },
+  {
+    "id": "voh877",
+    "name": "VOH FM 87.7",
+    "genre": "HCMC traffic/news",
+    "url": "https://strm.voh.com.vn/radio/channel5/chunklist_w2071193605.m3u8"
+  },
+  {
+    "id": "vovgthn",
+    "name": "VOV Giao thông Hà Nội",
+    "genre": "Hanoi traffic",
+    "url": "https://play.vovgiaothong.vn/live/gthn/playlist.m3u8"
+  },
+  {
+    "id": "vovgthcm",
+    "name": "VOV Giao thông HCM",
+    "genre": "HCMC traffic",
+    "url": "https://play.vovgiaothong.vn/live/gthcm/playlist.m3u8"
+  },
+  {
+    "id": "pbislamabad",
+    "name": "Radio Pakistan Islamabad",
+    "genre": "PBC national",
+    "url": "https://whmsonic.radio.gov.pk:7003/stream"
+  },
+  {
+    "id": "needs",
+    "name": "Needs Radio",
+    "genre": "Mandarin culture — Taipei",
+    "url": "https://cdn280.ccdntech.com/live-http/_definst_/vod280_Live/needs/chunklist.m3u8"
+  },
+  {
+    "id": "bbradio",
+    "name": "B&B Radio",
+    "genre": "Mandarin/Hokkien — Taiwan",
+    "url": "https://cdn280.ccdntech.com/live-http/_definst_/vod280_Live/bb/playlist.m3u8"
+  },
+  {
+    "id": "csbc",
+    "name": "CSBC",
+    "genre": "Mandarin/Taiwanese — Taiwan",
+    "url": "https://flv.ccdntech.com/live/_definst_/mp4:vod117_Live/live1/playlist.m3u8"
+  },
+  {
+    "id": "asiafm",
+    "name": "AsiaFM",
+    "genre": "Mandarin pop — Taiwan",
+    "url": "https://n13.rcs.revma.com/kydend74hv8uv"
+  },
+  {
+    "id": "rrijakarta1",
+    "name": "RRI Pro 1 Jakarta",
+    "genre": "National Indonesian",
+    "url": "https://stream-node1.rri.co.id/streaming/25/9025/rrijakartapro1.mp3"
+  },
+  {
+    "id": "rriambon",
+    "name": "RRI Pro 4 Ambon Budaya",
+    "genre": "Ambon regional culture",
+    "url": "https://stream-node2.rri.co.id/streaming/15/9315/rriambonpro4.mp3"
+  },
+  {
+    "id": "rribandung",
+    "name": "RRI Pro 4 Bandung Budaya",
+    "genre": "Sundanese culture",
+    "url": "https://stream-node0.rri.co.id/streaming/15/9015/rribandungpro4.mp3"
+  },
+  {
+    "id": "rrikbrn",
+    "name": "RRI Pro 3 KBRN",
+    "genre": "Indonesia national news",
+    "url": "https://stream-node0.rri.co.id/streaming/14/9014/kbrn.mp3"
+  },
+  {
+    "id": "sawtleb",
+    "name": "Sawt Lebanon",
+    "genre": "Voice of Lebanon — talk/news",
+    "url": "https://l3.itworkscdn.net/itwaudio/9054/stream"
+  },
+  {
+    "id": "radiomars",
+    "name": "Radio Mars",
+    "genre": "Sports & culture — Casablanca",
+    "url": "https://radiomars.ice.infomaniak.ch/radiomars-128.mp3"
+  },
+  {
+    "id": "zitouna",
+    "name": "Radio Zitouna FM",
+    "genre": "Quranic/Islamic — Tunis",
+    "url": "https://radio.radiotunisienne.tn/radiozaitouna"
+  },
+  {
+    "id": "alifalif",
+    "name": "Alif Alif FM",
+    "genre": "Arabic music — Riyadh",
+    "url": "https://alifalifjobs.com/radio/8000/AlifAlifLive.mp3"
+  },
+  {
+    "id": "alaraby",
+    "name": "Al Araby Radio",
+    "genre": "Pan-Arab news — Doha/London",
+    "url": "https://l3.itworkscdn.net/alarabyradiolive/alarabyradio_audio/icecast.audio"
+  },
+  {
+    "id": "trthaber",
+    "name": "TRT Radyo Haber",
+    "genre": "Turkish news",
+    "url": "https://rd-trtradyohaber.medya.trt.com.tr/master.m3u8"
+  },
+  {
+    "id": "dinamodeep",
+    "name": "Dinamo Deep",
+    "genre": "Deep house/electronic — Istanbul",
+    "url": "https://channels.dinamo.fm/deep-mp3"
+  },
+  {
+    "id": "dinamofluent",
+    "name": "Dinamo Fluent",
+    "genre": "Downtempo lounge — Istanbul",
+    "url": "https://channels.dinamo.fm/fluent-mp3"
+  },
+  {
+    "id": "dinamolocodyno",
+    "name": "Dinamo Locodyno",
+    "genre": "Latin/world — Istanbul",
+    "url": "https://channels.dinamo.fm/locodyno-mp3"
+  },
+  {
+    "id": "dinamommradyo",
+    "name": "Dinamo MinimuzikHol",
+    "genre": "Live club radio — Istanbul",
+    "url": "https://channels.dinamo.fm/mmradyo-mp3"
+  },
+  {
+    "id": "iraniintl",
+    "name": "Iran International Radio",
+    "genre": "Persian diaspora news — London",
+    "url": "https://stream.radiojar.com/iintl_c"
+  },
+  {
+    "id": "kanbet",
+    "name": "Kan Bet (Reshet Bet)",
+    "genre": "Israeli news/talk",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_BET.mp3"
+  },
+  {
+    "id": "tlv103",
+    "name": "103FM",
+    "genre": "News/talk — Tel Aviv",
+    "url": "https://cdn.cybercdn.live/103FM/Live/icecast.audio"
+  },
+  {
+    "id": "radiounam860",
+    "name": "Radio UNAM 860 AM",
+    "genre": "Cultural university — CDMX",
+    "url": "https://tv.radiohosting.online:9486/stream"
+  },
+  {
+    "id": "radiogaucha",
+    "name": "Rádio Gaúcha",
+    "genre": "News/talk — Porto Alegre",
+    "url": "https://1132747t.ha.azioncdn.net/primary/gaucha_rbs.sdp/playlist.m3u8"
+  },
+  {
+    "id": "abckids",
+    "name": "ABC Kids Listen",
+    "genre": "Kids stories & songs — Australia",
+    "url": "https://mediaserviceslive.akamaized.net/hls/live/2038316/kids/index.m3u8"
+  },
+  {
+    "id": "cbconevan",
+    "name": "CBC Radio One Vancouver",
+    "genre": "Canadian news/talk",
+    "url": "https://cbcradiolive.akamaized.net/hls/live/2041050/ES_R1PVC/master.m3u8"
+  },
+  {
+    "id": "errklara",
+    "name": "ERR Klara Klassika",
+    "genre": "Estonian classical thematic",
+    "url": "https://icecast.err.ee/klaraklassika.mp3"
   }
 ]
