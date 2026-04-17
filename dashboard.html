@@ -59,6 +59,15 @@ body {
   gap: 12px;
   position: relative;
 }
+/* Pin each section to its grid row explicitly. Without this, when
+   the alert ribbon is display:none the subsequent rows shift up,
+   handing the 1fr slot to the tabs instead of the carousel. */
+.top           { grid-row: 1; }
+.alert-ribbon  { grid-row: 2; }
+.slogan-bar    { grid-row: 3; }
+.carousel      { grid-row: 4; }
+.carousel-tabs { grid-row: 5; }
+.footer        { grid-row: 6; }
 
 /* ══════════════════════════════════════════════════════════════
    TOP STRIP — time, current weather, UV NOW (always visible)
