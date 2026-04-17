@@ -53,7 +53,7 @@ body {
 
 .frame {
   display: grid;
-  grid-template-rows: auto auto auto 1fr auto;
+  grid-template-rows: auto auto auto auto 1fr auto;
   height: 100vh;
   padding: 20px 32px;
   gap: 12px;
@@ -208,6 +208,103 @@ body {
   line-height: 1.15;
   margin-top: 2px;
   max-width: 120px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   7-DAY FORECAST STRIP — permanent, all 7 days side-by-side.
+   NOT a rotation. Today's weather is in the top strip; this is
+   the outlook for the days ahead.
+   ══════════════════════════════════════════════════════════════ */
+.forecast-week {
+  display: grid;
+  grid-template-columns: auto repeat(7, 1fr);
+  border: 4px solid var(--ink);
+  background: var(--ink);
+}
+.forecast-week .fw-label {
+  background: var(--red);
+  color: var(--paper);
+  padding: 10px 18px;
+  display: flex; flex-direction: column; justify-content: center;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  gap: 2px;
+  min-width: 110px;
+  letter-spacing: 0.1em;
+}
+.forecast-week .fw-label .big {
+  font-size: clamp(15px, 1.4vw, 20px);
+  letter-spacing: 0.14em;
+  line-height: 1;
+}
+.forecast-week .fw-label .small {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  font-weight: 500;
+  opacity: 0.85;
+}
+.forecast-week .fw-cell {
+  padding: 10px 12px;
+  background: var(--paper);
+  color: var(--ink);
+  border-left: 2px solid var(--ink);
+  display: flex; flex-direction: column; gap: 3px;
+  min-width: 0;
+}
+.forecast-week .fw-cell:nth-child(3),
+.forecast-week .fw-cell:nth-child(5),
+.forecast-week .fw-cell:nth-child(7) {
+  background: var(--ink); color: var(--paper);
+}
+.forecast-week .fw-cell .day {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(13px, 1.2vw, 16px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.forecast-week .fw-cell .date {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  opacity: 0.6;
+  font-weight: 500;
+}
+.forecast-week .fw-cell .temps {
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(20px, 2vw, 28px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.forecast-week .fw-cell .temps .lo {
+  opacity: 0.5;
+  font-size: 0.72em;
+  margin-left: 6px;
+}
+.forecast-week .fw-cell .cond {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  min-height: 1.15em;
+}
+.forecast-week .fw-cell .precip {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: 0.05em;
+}
+.forecast-week .fw-cell:nth-child(3) .precip,
+.forecast-week .fw-cell:nth-child(5) .precip,
+.forecast-week .fw-cell:nth-child(7) .precip {
+  color: var(--ochre);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -595,6 +692,15 @@ body {
     </div>
   </div>
 
+  <!-- ═════ 7-DAY FORECAST STRIP (permanent) ═════ -->
+  <div class="forecast-week" id="forecastWeek">
+    <div class="fw-label">
+      <span class="big">НЕДЕЛЯ</span>
+      <span class="small">7-DAY OUTLOOK</span>
+    </div>
+    <!-- 7 cells appended by JS -->
+  </div>
+
   <!-- ═════ ALERT RIBBON ═════ -->
   <div class="alert-ribbon" id="alertRibbon">
     <span class="siren"></span>
@@ -695,8 +801,7 @@ const WALK_MIN = {
   'Bedford Av': 20,
 };
 const STATION_ORDER = ['Nassau Av', 'Graham Av', 'Bedford Av'];
-const STATION_ROTATE_MS = 30_000;   // 30 seconds per station
-const WEATHER_ROTATE_MS = 8_000;    // 8 seconds per weather day
+const STATION_ROTATE_MS = 10_000;   // 10 seconds per station (user request)
 const SLOGAN_ROTATE_MS  = 12_000;   // 12 seconds per slogan
 const ALERT_ROTATE_MS   = 12_000;   // 12 seconds between alerts
 
@@ -788,121 +893,115 @@ function hoursMinutesBetween(a, b) {
 }
 
 // ═════════════════════════════════════════════════════════════════
-// WEATHER STATE + ROTATION (now + 7 future days)
-// Each tick updates the big .wx-box with a different day's data.
+// WEATHER STATE
+// Top strip always shows CURRENT weather. 7-day strip below it shows
+// the week's outlook. No rotation in the top strip — today's weather
+// is always visible, as requested.
 // ═════════════════════════════════════════════════════════════════
 let weatherData = null;
-let weatherDayIdx = 0;  // 0 = NOW, 1-7 = daily[0..6]
 
-// UV can be displayed as "NOW" (current index) or "PEAK" (daily max).
-// These mean different things — a "Low" now at 4pm doesn't mean the
-// whole day was safe if the noon peak hit 7. Always label which one.
-function setUV(value, mode, peakTime) {
+// UV always shows the PRESENT value. The warning line mentions the
+// daily peak if it's meaningfully higher — informational, not a label swap.
+function setUVNow(value, peakHint) {
   const uv = uvLevel(value);
   const box = document.getElementById('uvBox');
   box.classList.remove('low','mod','high','vhigh','extrm');
   box.classList.add(uv.key);
 
   const kNode = document.querySelector('#uvBox .k');
-  if (kNode) kNode.textContent = (mode === 'peak') ? 'UV Peak Today' : 'UV Now';
+  if (kNode) kNode.textContent = 'UV Now';
 
   document.getElementById('uvValue').textContent = (value == null ? '—' : Math.round(value));
   document.getElementById('uvLabel').textContent = uv.label;
 
-  // Warning message adapts to mode + peak-time hint
-  let warn = uv.warn;
-  if (mode === 'now' && peakTime) {
-    warn = uv.warn + ' · Peaks ' + peakTime;
-  } else if (mode === 'peak') {
-    warn = 'Peak at midday — ' + uv.warn;
-  }
-  document.getElementById('uvWarn').textContent = warn;
+  document.getElementById('uvWarn').textContent =
+    peakHint ? uv.warn + ' · ' + peakHint : uv.warn;
 }
 
-function renderWeatherSlot() {
+// Renders CURRENT weather into the top strip.
+function renderCurrentWeather() {
   if (!weatherData) return;
   const d = weatherData;
-  const box = document.getElementById('wxBox');
-  box.classList.add('fade');
-  setTimeout(() => {
-    if (weatherDayIdx === 0) {
-      // CURRENT
-      const cur = d.current;
-      const code = cur.weather_code;
-      const tempF = cur.temperature_2m;
-      document.getElementById('wxDayLabel').textContent = 'NOW · LIVE';
-      document.getElementById('tempNow').textContent = Math.round(tempF);
-      document.getElementById('tempC').textContent = Math.round(fahrToCelsius(tempF)) + '°C';
-      document.getElementById('weatherDesc').textContent = WMO_LABEL[code] || 'WEATHER';
+  const cur = d.current;
+  const code = cur.weather_code;
+  const tempF = cur.temperature_2m;
 
-      const parts = ['Feels ' + Math.round(cur.apparent_temperature) + '°F'];
-      parts.push('/ ' + Math.round(fahrToCelsius(cur.apparent_temperature)) + '°C');
-      if (cur.wind_speed_10m != null) parts.push(Math.round(cur.wind_speed_10m) + ' mph wind');
-      if (cur.relative_humidity_2m != null) parts.push(cur.relative_humidity_2m + '% humidity');
-      document.getElementById('feelsLike').textContent = parts.join(' · ');
+  const now = new Date();
+  const weekday = now.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+  const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+  document.getElementById('wxDayLabel').textContent = 'NOW · ' + weekday + ' · ' + md;
+  document.getElementById('tempNow').textContent = Math.round(tempF);
+  document.getElementById('tempC').textContent = Math.round(fahrToCelsius(tempF)) + '°C';
+  document.getElementById('weatherDesc').textContent = WMO_LABEL[code] || 'WEATHER';
 
-      // UV: show NOW value, but hint at today's peak if it's meaningfully
-      // higher (e.g., "UV now: 1 (Low) · Peaks at 7 today").
-      const nowUV = cur.uv_index;
-      const peakUV = d.daily?.uv_index_max?.[0];
-      // Find hour of daily peak UV from hourly.uv_index
-      let peakTimeStr = null;
-      if (d.hourly && d.hourly.uv_index && d.hourly.time && peakUV > 2) {
-        let peakHour = null, peakVal = -1;
-        for (let i = 0; i < d.hourly.time.length && i < 24; i++) {
-          const v = d.hourly.uv_index[i];
-          if (v > peakVal) { peakVal = v; peakHour = d.hourly.time[i]; }
-        }
-        if (peakHour) {
-          const pd = new Date(peakHour);
-          let ph = pd.getHours();
-          const pap = ph >= 12 ? 'pm' : 'am';
-          ph = ph % 12 || 12;
-          peakTimeStr = ph + pap + ' at UV ' + Math.round(peakVal);
-        }
-      }
-      setUV(nowUV, 'now', peakTimeStr);
-      document.getElementById('weatherAdvice').textContent = weatherSummary(code, tempF);
-    } else {
-      // FORECAST day k = weatherDayIdx-1 (0-based into daily)
-      const k = weatherDayIdx - 1;
-      const daily = d.daily;
-      if (!daily || !daily.time || !daily.time[k]) return;
-      const date = new Date(daily.time[k] + 'T12:00:00');
-      const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
-      const md = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      const hi = Math.round(daily.temperature_2m_max[k]);
-      const lo = Math.round(daily.temperature_2m_min[k]);
-      const code = daily.weather_code[k];
-      const precip = daily.precipitation_probability_max?.[k] ?? 0;
+  const parts = ['Feels ' + Math.round(cur.apparent_temperature) + '°F / ' +
+                 Math.round(fahrToCelsius(cur.apparent_temperature)) + '°C'];
+  if (cur.wind_speed_10m != null) parts.push(Math.round(cur.wind_speed_10m) + ' mph wind');
+  if (cur.relative_humidity_2m != null) parts.push(cur.relative_humidity_2m + '% humidity');
+  document.getElementById('feelsLike').textContent = parts.join(' · ');
+  document.getElementById('weatherAdvice').textContent = weatherSummary(code, tempF);
 
-      document.getElementById('wxDayLabel').textContent = (k === 0 ? 'TODAY · ' : '') + dayOfWeek.toUpperCase() + ' · ' + md.toUpperCase();
-      document.getElementById('tempNow').textContent = hi;
-      document.getElementById('tempC').textContent = 'HI ' + Math.round(fahrToCelsius(hi)) + '°C · LO ' + Math.round(fahrToCelsius(lo)) + '°C';
-      document.getElementById('weatherDesc').textContent = WMO_LABEL[code] || 'WEATHER';
-
-      const parts = ['Hi ' + hi + '°F · Lo ' + lo + '°F'];
-      if (precip > 5) parts.push(precip + '% rain');
-      if (daily.wind_speed_10m_max?.[k] != null) parts.push('Wind to ' + Math.round(daily.wind_speed_10m_max[k]) + ' mph');
-      document.getElementById('feelsLike').textContent = parts.join(' · ');
-
-      // Forecast days: always show the PEAK UV for that day (there is no
-      // "current" UV for a future day). Labeled explicitly as "UV PEAK TODAY".
-      setUV(daily.uv_index_max?.[k], 'peak');
-
-      let advice = weatherSummary(code, (hi + lo) / 2);
-      if (precip > 40) advice = 'Rain likely (' + precip + '%). Plan for an umbrella.';
-      document.getElementById('weatherAdvice').textContent = advice;
+  // UV: present-moment only. If today's peak is meaningfully higher
+  // than right now (and still in the future today), include a small
+  // informational hint — but the label always stays "UV Now".
+  const nowUV = cur.uv_index;
+  let peakHint = null;
+  if (d.hourly && d.hourly.uv_index && d.hourly.time) {
+    const nowMs = Date.now();
+    let futurePeakVal = -1, futurePeakHour = null;
+    for (let i = 0; i < d.hourly.time.length && i < 24; i++) {
+      const ts = new Date(d.hourly.time[i]).getTime();
+      if (ts <= nowMs) continue;  // only future hours
+      const v = d.hourly.uv_index[i];
+      if (v > futurePeakVal) { futurePeakVal = v; futurePeakHour = d.hourly.time[i]; }
     }
-    box.classList.remove('fade');
-  }, 300);
+    if (futurePeakHour && futurePeakVal >= (nowUV || 0) + 2) {
+      const pd = new Date(futurePeakHour);
+      let ph = pd.getHours();
+      const pap = ph >= 12 ? 'pm' : 'am';
+      ph = ph % 12 || 12;
+      peakHint = 'Peaks at UV ' + Math.round(futurePeakVal) + ' ~' + ph + pap;
+    }
+  }
+  setUVNow(nowUV, peakHint);
 }
 
-function rotateWeather() {
+// Renders the static 7-day forecast strip.
+function renderForecastWeek() {
   if (!weatherData) return;
-  const maxDays = Math.min(weatherData.daily?.time?.length || 0, 7);
-  weatherDayIdx = (weatherDayIdx + 1) % (maxDays + 1);  // +1 for "NOW" slot
-  renderWeatherSlot();
+  const daily = weatherData.daily;
+  if (!daily || !daily.time) return;
+  const host = document.getElementById('forecastWeek');
+  // Remove any existing day cells (keep .fw-label header)
+  [...host.querySelectorAll('.fw-cell')].forEach(n => n.remove());
+
+  const count = Math.min(daily.time.length, 7);
+  for (let k = 0; k < count; k++) {
+    const date = new Date(daily.time[k] + 'T12:00:00');
+    const day = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+    const md  = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+    const hi = Math.round(daily.temperature_2m_max[k]);
+    const lo = Math.round(daily.temperature_2m_min[k]);
+    const code = daily.weather_code[k];
+    const precip = daily.precipitation_probability_max?.[k] ?? 0;
+
+    const cell = el('div', 'fw-cell');
+    cell.appendChild(el('div', 'day', (k === 0 ? 'TODAY' : day)));
+    cell.appendChild(el('div', 'date', md));
+    const temps = el('div', 'temps');
+    const hiEl = el('span', 'hi', hi + '°');
+    const loEl = el('span', 'lo', lo + '°');
+    temps.appendChild(hiEl);
+    temps.appendChild(loEl);
+    cell.appendChild(temps);
+    cell.appendChild(el('div', 'cond', (WMO_LABEL[code] || 'Weather').split(' ')[0]));
+    if (precip > 10) {
+      cell.appendChild(el('div', 'precip', precip + '%'));
+    } else {
+      cell.appendChild(el('div', 'precip', ''));
+    }
+    host.appendChild(cell);
+  }
 }
 
 async function refreshWeather() {
@@ -933,16 +1032,19 @@ async function refreshWeather() {
       }
     }
 
-    // Keep current idx if rotation already started; render with fresh data
-    renderWeatherSlot();
+    renderCurrentWeather();
+    renderForecastWeek();
   } catch (e) {
     console.warn('weather', e);
     document.getElementById('weatherDesc').textContent = 'OFFLINE';
   }
 }
 refreshWeather();
+// Current weather refreshes every 10 minutes (Open-Meteo caches anyway)
 setInterval(refreshWeather, 10 * 60 * 1000);
-setInterval(rotateWeather, WEATHER_ROTATE_MS);
+// Re-render current weather every minute to keep "feels like" and
+// the UV peak-hint current as the hour rolls over.
+setInterval(() => { if (weatherData) renderCurrentWeather(); }, 60 * 1000);
 
 // ═════════════════════════════════════════════════════════════════
 // TRAIN DATA + ROTATING STATION VIEW
