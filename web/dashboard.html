@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>ГРИНПОЙНТ · GREENPOINT</title>
+<title>ГРИНПОЙНТ</title>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-title" content="Greenpoint"/>
+<meta name="apple-mobile-web-app-title" content="Dashboard"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="theme-color" content="#0a0a0a"/>
@@ -14,23 +14,31 @@
 <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
 <style>
 /* ──────────────────────────────────────────────────────────────────
-   Soviet avant-garde dashboard, v2.
-   Train verdicts are the main event — they fill the center of the
-   screen. Time + weather live in a compact top strip; date, sunrise
-   & sunset in a thin footer.
+   Soviet avant-garde wall dashboard, v3.
+   - One station shown at a time, rotating every 30s, BOTH directions.
+   - Weather rotates through current + next 7 days.
+   - UV warning badge, dual F/C temperature display.
+   - MTA service-alert ribbon when L-line delays are active.
+   - Expanded 60-quote ticker from real revolutionary sources.
    ────────────────────────────────────────────────────────────────── */
 :root {
   --paper:   #f2e7cc;
   --paper-2: #e5d8b8;
   --ink:     #0a0a0a;
   --red:     #c4201e;
+  --red-2:   #8a1513;
   --ochre:   #d4a017;
+
+  /* UV severity scale */
+  --uv-low:    #2e7d32;  /* 0-2 */
+  --uv-mod:    #d4a017;  /* 3-5 */
+  --uv-high:   #e65100;  /* 6-7 */
+  --uv-vhigh:  #c4201e;  /* 8-10 */
+  --uv-extrm:  #6a1b9a;  /* 11+ */
 }
 
 * { box-sizing: border-box; }
-html, body {
-  margin: 0; padding: 0; height: 100%; overflow: hidden;
-}
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
 body {
   background: var(--paper);
   color: var(--ink);
@@ -45,286 +53,343 @@ body {
 
 .frame {
   display: grid;
-  grid-template-rows: auto auto 1fr auto;
+  grid-template-rows: auto auto auto 1fr auto;
   height: 100vh;
-  padding: 24px 36px;
-  gap: 16px;
+  padding: 20px 32px;
+  gap: 12px;
   position: relative;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   SLOGAN BAR — rotating communist joke ticker with Lenin icon.
-   Kept deliberately thin so it doesn't crowd the trains.
+   TOP STRIP — clock, rotating weather, UV badge
+   ══════════════════════════════════════════════════════════════ */
+.top {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: stretch;
+  border: 4px solid var(--ink);
+}
+
+.time-box {
+  background: var(--red);
+  color: var(--paper);
+  padding: 10px 26px 12px;
+  display: flex; align-items: baseline; gap: 16px;
+}
+.time-box .nums {
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(72px, 7.8vw, 130px);
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.time-box .ampm {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(20px, 1.8vw, 30px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.wx-box {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 10px 24px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 22px;
+  align-items: center;
+  min-width: 0;
+  transition: opacity 0.3s ease;
+}
+.wx-box.fade { opacity: 0; }
+.wx-box .temp-col { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.wx-box .temp {
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(56px, 6.5vw, 100px);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  display: flex; align-items: flex-start; line-height: 1;
+}
+.wx-box .temp .deg { color: var(--red); font-size: 0.8em; }
+.wx-box .temp-c {
+  font-family: 'Roboto Mono', monospace;
+  font-size: clamp(13px, 1.1vw, 16px);
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+  font-weight: 500;
+  margin-top: -4px;
+}
+.wx-box .caption { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.wx-box .caption .day-label {
+  font-family: 'Roboto Mono', monospace;
+  font-size: clamp(11px, 1vw, 14px);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ochre);
+  font-weight: 700;
+  line-height: 1;
+}
+.wx-box .caption .label {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(22px, 2.4vw, 38px);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.02;
+}
+.wx-box .caption .sub {
+  font-family: 'Roboto Mono', monospace;
+  font-size: clamp(12px, 1vw, 14px);
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  opacity: 0.75;
+  text-transform: uppercase;
+}
+.wx-box .caption .advice {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: clamp(14px, 1.25vw, 18px);
+  line-height: 1.2;
+  opacity: 0.9;
+  max-width: 52ch;
+}
+
+/* UV box (top-right) */
+.uv-box {
+  padding: 8px 18px;
+  min-width: 120px;
+  background: var(--paper);
+  border-left: 4px solid var(--ink);
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 3px;
+  color: var(--ink);
+}
+.uv-box .k {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0.7;
+}
+.uv-box .v {
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(34px, 3vw, 46px);
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+}
+.uv-box .l {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  color: var(--paper);
+  align-self: flex-start;
+}
+.uv-box.low   .l { background: var(--uv-low); }
+.uv-box.mod   .l { background: var(--uv-mod); color: var(--ink); }
+.uv-box.high  .l { background: var(--uv-high); }
+.uv-box.vhigh .l { background: var(--uv-vhigh); }
+.uv-box.extrm .l { background: var(--uv-extrm); }
+.uv-box.high, .uv-box.vhigh, .uv-box.extrm {
+  background: var(--paper-2);
+}
+.uv-box .warn {
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  opacity: 0.7;
+  line-height: 1.15;
+  margin-top: 2px;
+  max-width: 120px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ALERT RIBBON — MTA service delays / suspensions.
+   Hidden when there are no active L-line alerts.
+   ══════════════════════════════════════════════════════════════ */
+.alert-ribbon {
+  display: none;  /* JS sets .visible when alerts exist */
+  align-items: center;
+  gap: 14px;
+  padding: 8px 18px;
+  background: var(--red);
+  color: var(--paper);
+  border: 3px solid var(--red-2);
+}
+.alert-ribbon.visible { display: flex; }
+.alert-ribbon .siren {
+  width: 22px; height: 22px;
+  flex: 0 0 auto;
+  background: var(--paper);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2 C6 2 5 8 5 14 H3 V16 H21 V14 H19 C19 8 18 2 12 2 Z M11 18 H13 V22 H11 V18 Z' fill='black'/></svg>") center / contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2 C6 2 5 8 5 14 H3 V16 H21 V14 H19 C19 8 18 2 12 2 Z M11 18 H13 V22 H11 V18 Z' fill='black'/></svg>") center / contain no-repeat;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
+.alert-ribbon .label {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  flex: 0 0 auto;
+  padding-right: 14px;
+  border-right: 2px solid rgba(255,255,255,0.4);
+  white-space: nowrap;
+}
+.alert-ribbon .body {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: clamp(13px, 1.1vw, 16px);
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SLOGAN BAR — Lenin + rotating communist quotes
    ══════════════════════════════════════════════════════════════ */
 .slogan-bar {
   display: flex; align-items: center; gap: 18px;
-  padding: 8px 18px;
+  padding: 8px 20px;
   background: var(--ink);
   color: var(--paper);
   border: 3px solid var(--ink);
-  overflow: hidden;
-  min-height: 54px;
+  min-height: 58px;
 }
 .slogan-bar .lenin {
   flex: 0 0 auto;
-  width: 48px;
-  height: 56px;
+  width: 46px; height: 54px;
   background-color: var(--red);
   -webkit-mask: url('/assets/lenin.svg') no-repeat center / contain;
           mask: url('/assets/lenin.svg') no-repeat center / contain;
 }
 .slogan-bar .star {
   flex: 0 0 auto;
-  width: 30px; height: 30px;
+  width: 28px; height: 28px;
   color: var(--red);
 }
 .slogan-bar .slogan-text {
   font-family: 'Oswald', sans-serif;
   font-weight: 700;
-  font-size: clamp(15px, 1.5vw, 22px);
-  letter-spacing: 0.14em;
+  font-size: clamp(14px, 1.4vw, 20px);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  line-height: 1.1;
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.2;
+  flex: 1; min-width: 0;
   transition: opacity 0.4s ease;
 }
+.slogan-bar .slogan-text.fade { opacity: 0; }
+.slogan-bar .slogan-text .quote-body {
+  display: inline;
+}
 .slogan-bar .slogan-text .attr {
+  display: inline-block;
   color: var(--red);
   font-weight: 500;
   margin-left: 14px;
-  letter-spacing: 0.1em;
-}
-.slogan-bar .slogan-text.fade { opacity: 0; }
-
-/* ══════════════════════════════════════════════════════════════
-   TOP STRIP — time + weather in a single horizontal band.
-   Compact but still prominent, leaves center for trains.
-   ══════════════════════════════════════════════════════════════ */
-.top {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: stretch;
-  gap: 0;
-  border: 4px solid var(--ink);
-}
-
-.top .time {
-  background: var(--red);
-  color: var(--paper);
-  padding: 8px 24px 10px;
-  display: flex; align-items: baseline; gap: 14px;
-  min-width: 0;
-}
-.top .time .nums {
-  font-family: 'Alfa Slab One', serif;
-  font-size: clamp(64px, 7vw, 110px);
-  line-height: 0.92;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-}
-.top .time .ampm {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: clamp(18px, 1.6vw, 26px);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  opacity: 0.9;
-}
-
-.top .wx {
-  background: var(--ink);
-  color: var(--paper);
-  padding: 10px 24px;
-  display: flex; align-items: center; gap: 20px;
-  min-width: 0;
-}
-.top .wx .temp {
-  font-family: 'Alfa Slab One', serif;
-  font-size: clamp(56px, 6vw, 96px);
-  line-height: 0.92;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-  display: flex; align-items: flex-start;
-}
-.top .wx .temp .deg { color: var(--red); }
-.top .wx .caption {
-  display: flex; flex-direction: column; gap: 4px;
-  min-width: 0; flex: 1;
-}
-.top .wx .caption .label {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: clamp(22px, 2.2vw, 34px);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  line-height: 1;
-}
-.top .wx .caption .sub {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 13px;
   letter-spacing: 0.08em;
-  font-weight: 500;
-  opacity: 0.8;
-  text-transform: uppercase;
-}
-.top .wx .caption .advice {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 500;
-  font-size: clamp(16px, 1.35vw, 20px);
-  line-height: 1.2;
-  opacity: 0.95;
-  max-width: 40ch;
-}
-
-.top .place {
-  background: var(--paper);
-  color: var(--ink);
-  padding: 8px 18px;
-  border-left: 4px solid var(--ink);
-  display: flex; flex-direction: column; justify-content: center;
-  gap: 4px;
-}
-.top .place .cy {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: clamp(16px, 1.5vw, 22px);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  line-height: 1;
-}
-.top .place .en {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: clamp(16px, 1.5vw, 22px);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  line-height: 1;
-  color: var(--red);
-}
-.top .place .zip {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 12px;
-  letter-spacing: 0.2em;
-  font-weight: 500;
-  opacity: 0.7;
-  margin-top: 2px;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   TRAIN FRAME — the main event
-   ══════════════════════════════════════════════════════════════ */
-.train-frame {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  gap: 14px;
-  min-height: 0;
-}
-.train-header {
-  display: flex; align-items: stretch;
-  border: 4px solid var(--ink);
-  background: var(--ink);
-}
-.train-header .L-badge {
-  background: var(--ink);
-  color: var(--paper);
-  width: 70px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Alfa Slab One', serif;
-  font-size: clamp(42px, 4vw, 64px);
-  line-height: 1;
-  border-right: 4px solid var(--red);
-}
-.train-header .title {
-  flex: 1;
-  background: var(--red);
-  color: var(--paper);
-  padding: 10px 22px;
-  display: flex; align-items: center; justify-content: space-between;
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  gap: 16px;
-}
-.train-header .title .big {
-  font-size: clamp(22px, 2.4vw, 36px);
-  line-height: 1;
-}
-.train-header .title .stat {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 13px;
-  letter-spacing: 0.18em;
-  font-weight: 500;
-  opacity: 0.9;
   white-space: nowrap;
 }
 
-.stations {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  min-height: 0;
-}
-.stop {
+/* ══════════════════════════════════════════════════════════════
+   STATION VIEW — one station, both directions side-by-side
+   ══════════════════════════════════════════════════════════════ */
+.station-view {
   position: relative;
   display: flex; flex-direction: column;
-  padding: 22px 26px 20px;
   border: 4px solid var(--ink);
   background: var(--paper);
-  color: var(--ink);
-  gap: 6px;
   min-height: 0;
-  min-width: 0;
+  overflow: hidden;
 }
-.stop.theme-red   { background: var(--red);   color: var(--paper); }
-.stop.theme-black { background: var(--ink);   color: var(--paper); }
-.stop.theme-cream { background: var(--paper); color: var(--ink); }
+.station-view.fade { opacity: 0.3; }
+.station-view, .station-view.fade { transition: opacity 0.25s ease; }
 
-.stop-header {
-  display: flex; justify-content: space-between; align-items: baseline;
-  gap: 14px;
-  padding-bottom: 10px;
-  border-bottom: 3px solid currentColor;
-  margin-bottom: 10px;
+.station-header {
+  display: flex; justify-content: space-between; align-items: stretch;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0;
+  border-bottom: 4px solid var(--ink);
 }
-.stop-name {
+.station-header .name {
+  padding: 14px 22px;
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(36px, 4vw, 60px);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  flex: 1;
+  text-transform: uppercase;
+}
+.station-header .walk {
+  padding: 14px 22px;
+  background: var(--red);
+  color: var(--paper);
+  display: flex; flex-direction: column; justify-content: center; align-items: flex-end;
+  gap: 2px;
+  min-width: 140px;
+}
+.station-header .walk .k {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+  font-weight: 500; opacity: 0.85;
+}
+.station-header .walk .v {
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(26px, 2.4vw, 38px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.dirs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex: 1;
+  min-height: 0;
+}
+.dir {
+  display: flex; flex-direction: column;
+  padding: 16px 22px 14px;
+  min-height: 0;
+  gap: 8px;
+}
+.dir + .dir { border-left: 3px solid var(--ink); }
+.dir .dir-label {
   font-family: 'Oswald', sans-serif;
   font-weight: 700;
-  font-size: clamp(24px, 2.3vw, 38px);
-  letter-spacing: 0.02em;
+  font-size: clamp(14px, 1.3vw, 20px);
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  line-height: 0.95;
+  color: var(--red);
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--ink);
+  line-height: 1;
 }
-.stop-walk {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 12px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  font-weight: 500;
-  opacity: 0.75;
-  text-align: right;
-  white-space: nowrap;
-}
-
-/* ── 5-train departure list ─────────────────────────────────── */
-.train-list {
-  display: flex; flex-direction: column; gap: 3px;
-  flex: 1; min-height: 0;
+.dir .train-list {
+  display: flex; flex-direction: column; gap: 2px;
+  flex: 1;
 }
 .train-row {
   display: grid;
   grid-template-columns: auto auto 1fr;
   align-items: baseline;
-  gap: 12px;
-  padding: 6px 10px;
+  gap: 10px;
+  padding: 5px 10px;
 }
 .train-row .clock {
   font-family: 'Alfa Slab One', serif;
-  font-size: clamp(18px, 1.8vw, 26px);
+  font-size: clamp(18px, 1.9vw, 28px);
   line-height: 1;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
@@ -340,78 +405,60 @@ body {
 .train-row .tag {
   font-family: 'Oswald', sans-serif;
   font-weight: 600;
-  font-size: clamp(13px, 1.2vw, 17px);
-  letter-spacing: 0.08em;
+  font-size: clamp(12px, 1.15vw, 17px);
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   text-align: right;
-  opacity: 0.75;
+  opacity: 0.7;
   white-space: nowrap;
 }
-.train-row.missed {
-  opacity: 0.38;
-}
-.train-row.missed .tag {
-  color: var(--red);
-  font-weight: 700;
-  opacity: 1;
-}
-.stop.theme-red .train-row.missed .tag,
-.stop.theme-black .train-row.missed .tag { color: var(--paper); opacity: 0.6; }
-
-/* The one catchable train — blown up with inverse color block */
+.train-row.missed { opacity: 0.35; }
+.train-row.missed .tag { color: var(--red); font-weight: 700; opacity: 1; }
 .train-row.catch {
   background: var(--red);
   color: var(--paper);
-  padding: 14px 14px;
-  gap: 16px;
-  margin: 6px 0;
+  padding: 10px 12px;
+  gap: 14px;
+  margin: 4px 0;
 }
 .train-row.catch .clock {
-  font-size: clamp(28px, 3vw, 48px);
-  letter-spacing: -0.02em;
+  font-size: clamp(26px, 2.8vw, 40px);
 }
-.train-row.catch .mins {
-  color: var(--paper); opacity: 0.8;
-  font-size: 13px;
-}
+.train-row.catch .mins { color: var(--paper); opacity: 0.82; font-size: 12px; }
 .train-row.catch .tag {
-  font-size: clamp(18px, 2vw, 28px);
-  letter-spacing: 0.08em;
+  font-size: clamp(15px, 1.5vw, 22px);
   font-weight: 700;
   opacity: 1;
-  line-height: 1.05;
-}
-.stop.theme-red .train-row.catch {
-  background: var(--ink);
-  color: var(--paper);
-}
-.stop.theme-black .train-row.catch {
-  background: var(--red);
-  color: var(--paper);
 }
 
-/* Footer row with return trains */
-.stop-return {
-  padding-top: 10px;
-  border-top: 2px solid currentColor;
-  display: flex; justify-content: space-between; align-items: baseline;
-  gap: 10px;
+/* Station pagination dots */
+.station-dots {
+  display: flex; justify-content: center; align-items: center;
+  gap: 14px;
+  padding: 8px 0 2px;
   font-family: 'Roboto Mono', monospace;
-  font-size: 12px;
-  letter-spacing: 0.14em;
+  font-size: 11px;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
+  color: var(--ink);
   opacity: 0.75;
 }
-.stop-return .k { font-weight: 500; opacity: 0.7; }
-.stop-return .v {
-  font-family: 'Alfa Slab One', serif;
-  font-size: 15px;
-  letter-spacing: 0;
-  opacity: 1;
+.station-dots .dot {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-weight: 500;
 }
+.station-dots .dot::before {
+  content: "";
+  width: 8px; height: 8px;
+  background: var(--ink);
+  opacity: 0.2;
+  display: inline-block;
+}
+.station-dots .dot.active { color: var(--red); font-weight: 700; }
+.station-dots .dot.active::before { background: var(--red); opacity: 1; }
 
 /* ══════════════════════════════════════════════════════════════
-   FOOTER — date + sunrise/sunset + live status
+   FOOTER — date + sun info + live status
    ══════════════════════════════════════════════════════════════ */
 .footer {
   display: flex; align-items: stretch;
@@ -419,9 +466,8 @@ body {
 }
 .footer .cell {
   flex: 1;
-  padding: 10px 18px;
-  display: flex; align-items: center;
-  gap: 14px;
+  padding: 8px 14px;
+  display: flex; align-items: center; gap: 12px;
   border-right: 3px solid var(--ink);
   min-width: 0;
 }
@@ -430,17 +476,17 @@ body {
 .footer .cell.red { background: var(--red); color: var(--paper); }
 .footer .cell .k {
   font-family: 'Roboto Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.2em;
+  font-size: 10px;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  opacity: 0.65;
+  opacity: 0.6;
   font-weight: 500;
   white-space: nowrap;
 }
 .footer .cell .v {
   font-family: 'Oswald', sans-serif;
   font-weight: 700;
-  font-size: clamp(16px, 1.6vw, 24px);
+  font-size: clamp(14px, 1.4vw, 20px);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   line-height: 1;
@@ -456,7 +502,7 @@ body {
 }
 @keyframes blink { 0%, 50% { opacity: 1 } 51%, 100% { opacity: 0.25 } }
 
-/* legacy compat — hidden */
+/* legacy compat */
 .legacy { display: none; }
 </style>
 </head>
@@ -466,29 +512,39 @@ body {
 
   <!-- ═════ TOP STRIP ═════ -->
   <div class="top">
-    <div class="time">
+    <div class="time-box">
       <span class="nums"><span id="bigClock">—</span></span>
       <span class="ampm" id="ampm">—</span>
     </div>
-    <div class="wx">
-      <div class="temp"><span id="tempNow">—</span><span class="deg">°</span></div>
+    <div class="wx-box" id="wxBox">
+      <div class="temp-col">
+        <div class="temp"><span id="tempNow">—</span><span class="deg">°</span></div>
+        <div class="temp-c" id="tempC">—</div>
+      </div>
       <div class="caption">
+        <div class="day-label" id="wxDayLabel">NOW</div>
         <div class="label" id="weatherDesc">LOADING…</div>
         <div class="sub" id="feelsLike">—</div>
         <div class="advice" id="weatherAdvice">—</div>
       </div>
     </div>
-    <div class="place">
-      <div class="cy">ГРИНПОЙНТ</div>
-      <div class="en">GREENPOINT</div>
-      <div class="zip">11222 · BK</div>
+    <div class="uv-box low" id="uvBox">
+      <span class="k">UV Index</span>
+      <span class="v" id="uvValue">—</span>
+      <span class="l" id="uvLabel">Low</span>
+      <span class="warn" id="uvWarn">—</span>
     </div>
   </div>
 
-  <!-- ═════ SLOGAN BAR — Lenin silhouette + rotating quote ═════ -->
+  <!-- ═════ ALERT RIBBON ═════ -->
+  <div class="alert-ribbon" id="alertRibbon">
+    <span class="siren"></span>
+    <span class="label">L-Line Alert</span>
+    <span class="body" id="alertBody">—</span>
+  </div>
+
+  <!-- ═════ SLOGAN TICKER ═════ -->
   <div class="slogan-bar">
-    <!-- Lenin silhouette — openclipart.org #1075 (public domain),
-         rendered via CSS mask so we can recolor it with --red. -->
     <div class="lenin" role="img" aria-label="Lenin silhouette"></div>
     <svg class="star" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <polygon fill="currentColor" points="50,5 61,39 97,39 68,60 79,94 50,73 21,94 32,60 3,39 39,39"/>
@@ -496,17 +552,28 @@ body {
     <div class="slogan-text" id="sloganText">WORKERS OF THE L-LINE, UNITE!<span class="attr">— K. MARX</span></div>
   </div>
 
-  <!-- ═════ TRAINS — MAIN EVENT ═════ -->
-  <section class="train-frame">
-    <div class="train-header">
-      <div class="L-badge">L</div>
-      <div class="title">
-        <span class="big">MANHATTAN-BOUND · МЕТРО</span>
-        <span class="stat" id="trainsUpdated">—</span>
+  <!-- ═════ STATION VIEW — single station, both directions ═════ -->
+  <section class="station-view" id="stationView">
+    <div class="station-header">
+      <div class="name" id="stationName">—</div>
+      <div class="walk">
+        <span class="k">Walk</span>
+        <span class="v"><span id="stationWalk">—</span> MIN</span>
       </div>
     </div>
-    <div class="stations" id="trainTiles"></div>
+    <div class="dirs">
+      <div class="dir">
+        <div class="dir-label" id="dirN">MANHATTAN-BOUND</div>
+        <div class="train-list" id="trainsN"></div>
+      </div>
+      <div class="dir">
+        <div class="dir-label" id="dirS">CANARSIE-BOUND</div>
+        <div class="train-list" id="trainsS"></div>
+      </div>
+    </div>
   </section>
+
+  <div class="station-dots" id="stationDots"></div>
 
   <!-- ═════ FOOTER ═════ -->
   <div class="footer">
@@ -534,28 +601,31 @@ body {
 
 </div>
 
-<!-- Legacy placeholders kept for backend API compat -->
+<!-- legacy DOM ids the old Pi backend expected -->
 <span id="seconds" class="legacy"></span>
 <span id="weatherIcon" class="legacy"></span>
 <span id="dateSub" class="legacy"></span>
-<span id="location" class="legacy">Greenpoint · 11222</span>
 <span id="hiTemp" class="legacy"></span>
 <span id="loTemp" class="legacy"></span>
+<span id="location" class="legacy"></span>
+<span id="trainsUpdated" class="legacy"></span>
 <span id="forecastStrip" class="legacy"></span>
+<span id="trainTiles" class="legacy"></span>
 
 <script>
 // ═════════════════════════════════════════════════════════════════
-// CONFIG
+// CONFIG — walk times from 617 Humboldt St
 // ═════════════════════════════════════════════════════════════════
-// Walking time from 617 Humboldt St to each L station.
-// Calibrated from Google Maps walking estimates; tune if you drift.
 const WALK_MIN = {
-  'Nassau Av':  9,    // ~0.5 mi NW, along Nassau Ave
-  'Graham Av':  12,   // ~0.5 mi SW, Humboldt → Metropolitan → Graham
-  'Bedford Av': 20,   // ~1.0 mi SW across Williamsburg grid
+  'Nassau Av':  9,
+  'Graham Av':  12,
+  'Bedford Av': 20,
 };
-// Rotate card themes — classic constructivist poster palette cycle.
-const STATION_THEME = ['theme-red', 'theme-cream', 'theme-black'];
+const STATION_ORDER = ['Nassau Av', 'Graham Av', 'Bedford Av'];
+const STATION_ROTATE_MS = 30_000;   // 30 seconds per station
+const WEATHER_ROTATE_MS = 8_000;    // 8 seconds per weather day
+const SLOGAN_ROTATE_MS  = 12_000;   // 12 seconds per slogan
+const ALERT_ROTATE_MS   = 12_000;   // 12 seconds between alerts
 
 // ═════════════════════════════════════════════════════════════════
 // SAFE DOM
@@ -566,17 +636,11 @@ function el(tag, cls, text) {
   if (text != null) e.textContent = String(text);
   return e;
 }
+function fahrToCelsius(f) { return (f - 32) * 5/9; }
 
 // ═════════════════════════════════════════════════════════════════
-// CLOCK
+// CLOCK + date
 // ═════════════════════════════════════════════════════════════════
-function fmtClock(date) {
-  let h = date.getHours();
-  const m = String(date.getMinutes()).padStart(2, '0');
-  const ap = h >= 12 ? 'PM' : 'AM';
-  h = h % 12 || 12;
-  return h + ':' + m + ' ' + ap;
-}
 function fmtClockShort(date) {
   let h = date.getHours();
   const m = String(date.getMinutes()).padStart(2, '0');
@@ -584,7 +648,6 @@ function fmtClockShort(date) {
   h = h % 12 || 12;
   return h + ':' + m + ap.toLowerCase();
 }
-
 function tickClock() {
   const now = new Date();
   let h = now.getHours();
@@ -596,7 +659,7 @@ function tickClock() {
   document.getElementById('ampm').textContent = ampm;
   document.getElementById('seconds').textContent = String(now.getSeconds()).padStart(2,'0');
 
-  const weekday = now.toLocaleDateString('en-US', { weekday: 'short' }); // THU
+  const weekday = now.toLocaleDateString('en-US', { weekday: 'short' });
   const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   document.getElementById('dateLabel').textContent = weekday + ' · ' + md;
 }
@@ -604,34 +667,42 @@ tickClock();
 setInterval(tickClock, 1000);
 
 // ═════════════════════════════════════════════════════════════════
-// WEATHER
+// WEATHER labels + advice
 // ═════════════════════════════════════════════════════════════════
 const WMO_LABEL = {
-  0:  'CLEAR', 1: 'MOSTLY CLEAR', 2: 'PARTLY CLOUDY', 3: 'OVERCAST',
-  45: 'FOG', 48: 'FREEZING FOG',
-  51: 'LIGHT DRIZZLE', 53: 'DRIZZLE', 55: 'HEAVY DRIZZLE',
-  61: 'LIGHT RAIN', 63: 'RAIN', 65: 'HEAVY RAIN',
-  71: 'LIGHT SNOW', 73: 'SNOW', 75: 'HEAVY SNOW', 77: 'SNOW GRAINS',
-  80: 'RAIN SHOWERS', 81: 'HEAVY SHOWERS', 82: 'VIOLENT SHOWERS',
-  85: 'SNOW SHOWERS', 86: 'HEAVY SNOW SHOWERS',
-  95: 'THUNDERSTORM', 96: 'THUNDERSTORM + HAIL', 99: 'SEVERE STORM',
+  0:'CLEAR', 1:'MOSTLY CLEAR', 2:'PARTLY CLOUDY', 3:'OVERCAST',
+  45:'FOG', 48:'FREEZING FOG',
+  51:'LIGHT DRIZZLE', 53:'DRIZZLE', 55:'HEAVY DRIZZLE',
+  61:'LIGHT RAIN', 63:'RAIN', 65:'HEAVY RAIN',
+  71:'LIGHT SNOW', 73:'SNOW', 75:'HEAVY SNOW', 77:'SNOW GRAINS',
+  80:'RAIN SHOWERS', 81:'HEAVY SHOWERS', 82:'VIOLENT SHOWERS',
+  85:'SNOW SHOWERS', 86:'HEAVY SNOW SHOWERS',
+  95:'THUNDERSTORM', 96:'THUNDERSTORM + HAIL', 99:'SEVERE STORM',
 };
-
 function weatherSummary(code, tempF) {
-  if ([95,96,99].includes(code)) return 'Thunderstorms expected. Stay inside if you can.';
+  if ([95,96,99].includes(code)) return 'Thunderstorms possible. Stay inside if you can.';
   if ([65,82].includes(code))    return 'Heavy rain — full umbrella and jacket.';
   if ([61,63,80,81].includes(code)) return 'Rain on and off. Grab an umbrella.';
   if ([51,53,55].includes(code)) return 'Light drizzle. A hood should handle it.';
-  if ([71,73,75,77,85,86].includes(code)) return 'Snow is falling. Boots and extra time.';
+  if ([71,73,75,77,85,86].includes(code)) return 'Snow. Boots and extra time.';
   if ([45,48].includes(code))    return 'Foggy. Walk carefully.';
   if (code === 3)                return 'Overcast but dry. A sweater is enough.';
-  if (code === 2)                return 'Partly cloudy. Pleasant mix of sun and shade.';
+  if (code === 2)                return 'Partly cloudy. Mix of sun and shade.';
   if (code === 1)                return 'Mostly sunny. Easy day to be outside.';
   if (tempF >= 85) return 'Clear and hot. Sunscreen, hat, carry water.';
   if (tempF >= 70) return 'Clear and comfortable. Great day to be outside.';
   if (tempF >= 55) return 'Clear and mild. A light layer is plenty.';
   if (tempF >= 40) return 'Clear but cool. A jacket is a good idea.';
   return 'Clear and cold. Heavy coat and gloves.';
+}
+
+function uvLevel(v) {
+  if (v == null) return { key: 'low', label: 'N/A', warn: '' };
+  if (v < 3)  return { key: 'low',   label: 'Low',       warn: 'No protection needed' };
+  if (v < 6)  return { key: 'mod',   label: 'Moderate',  warn: 'Sunscreen if outside >1 hr' };
+  if (v < 8)  return { key: 'high',  label: 'High',      warn: 'Cover up · sunscreen + hat' };
+  if (v < 11) return { key: 'vhigh', label: 'Very High', warn: 'Avoid sun 10a-4p · SPF 30+' };
+  return        { key: 'extrm', label: 'Extreme',   warn: 'Stay inside if possible' };
 }
 
 function hoursMinutesBetween(a, b) {
@@ -643,31 +714,97 @@ function hoursMinutesBetween(a, b) {
   return h + 'H ' + m + 'M';
 }
 
+// ═════════════════════════════════════════════════════════════════
+// WEATHER STATE + ROTATION (now + 7 future days)
+// Each tick updates the big .wx-box with a different day's data.
+// ═════════════════════════════════════════════════════════════════
+let weatherData = null;
+let weatherDayIdx = 0;  // 0 = NOW, 1-7 = daily[0..6]
+
+function setUV(v) {
+  const uv = uvLevel(v);
+  const box = document.getElementById('uvBox');
+  box.classList.remove('low','mod','high','vhigh','extrm');
+  box.classList.add(uv.key);
+  document.getElementById('uvValue').textContent = (v == null ? '—' : Math.round(v));
+  document.getElementById('uvLabel').textContent = uv.label;
+  document.getElementById('uvWarn').textContent  = uv.warn;
+}
+
+function renderWeatherSlot() {
+  if (!weatherData) return;
+  const d = weatherData;
+  const box = document.getElementById('wxBox');
+  box.classList.add('fade');
+  setTimeout(() => {
+    if (weatherDayIdx === 0) {
+      // CURRENT
+      const cur = d.current;
+      const code = cur.weather_code;
+      const tempF = cur.temperature_2m;
+      document.getElementById('wxDayLabel').textContent = 'NOW · LIVE';
+      document.getElementById('tempNow').textContent = Math.round(tempF);
+      document.getElementById('tempC').textContent = Math.round(fahrToCelsius(tempF)) + '°C';
+      document.getElementById('weatherDesc').textContent = WMO_LABEL[code] || 'WEATHER';
+
+      const parts = ['Feels ' + Math.round(cur.apparent_temperature) + '°F'];
+      parts.push('/ ' + Math.round(fahrToCelsius(cur.apparent_temperature)) + '°C');
+      if (cur.wind_speed_10m != null) parts.push(Math.round(cur.wind_speed_10m) + ' mph wind');
+      if (cur.relative_humidity_2m != null) parts.push(cur.relative_humidity_2m + '% humidity');
+      document.getElementById('feelsLike').textContent = parts.join(' · ');
+
+      // UV from current (Open-Meteo supports current.uv_index)
+      setUV(cur.uv_index != null ? cur.uv_index : (d.daily?.uv_index_max?.[0]));
+      document.getElementById('weatherAdvice').textContent = weatherSummary(code, tempF);
+    } else {
+      // FORECAST day k = weatherDayIdx-1 (0-based into daily)
+      const k = weatherDayIdx - 1;
+      const daily = d.daily;
+      if (!daily || !daily.time || !daily.time[k]) return;
+      const date = new Date(daily.time[k] + 'T12:00:00');
+      const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
+      const md = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const hi = Math.round(daily.temperature_2m_max[k]);
+      const lo = Math.round(daily.temperature_2m_min[k]);
+      const code = daily.weather_code[k];
+      const precip = daily.precipitation_probability_max?.[k] ?? 0;
+
+      document.getElementById('wxDayLabel').textContent = (k === 0 ? 'TODAY · ' : '') + dayOfWeek.toUpperCase() + ' · ' + md.toUpperCase();
+      document.getElementById('tempNow').textContent = hi;
+      document.getElementById('tempC').textContent = 'HI ' + Math.round(fahrToCelsius(hi)) + '°C · LO ' + Math.round(fahrToCelsius(lo)) + '°C';
+      document.getElementById('weatherDesc').textContent = WMO_LABEL[code] || 'WEATHER';
+
+      const parts = ['Hi ' + hi + '°F · Lo ' + lo + '°F'];
+      if (precip > 5) parts.push(precip + '% rain');
+      if (daily.wind_speed_10m_max?.[k] != null) parts.push('Wind to ' + Math.round(daily.wind_speed_10m_max[k]) + ' mph');
+      document.getElementById('feelsLike').textContent = parts.join(' · ');
+
+      setUV(daily.uv_index_max?.[k]);
+
+      let advice = weatherSummary(code, (hi + lo) / 2);
+      if (precip > 40) advice = 'Rain likely (' + precip + '%). Plan for an umbrella.';
+      document.getElementById('weatherAdvice').textContent = advice;
+    }
+    box.classList.remove('fade');
+  }, 300);
+}
+
+function rotateWeather() {
+  if (!weatherData) return;
+  const maxDays = Math.min(weatherData.daily?.time?.length || 0, 7);
+  weatherDayIdx = (weatherDayIdx + 1) % (maxDays + 1);  // +1 for "NOW" slot
+  renderWeatherSlot();
+}
+
 async function refreshWeather() {
   try {
     const r = await fetch('/api/weather');
     const j = await r.json();
     if (!j.ok) throw new Error(j.error);
-    const d = j.data, cur = d.current, daily = d.daily;
+    weatherData = j.data;
 
-    const code = cur.weather_code;
-    const tempF = cur.temperature_2m;
-    document.getElementById('tempNow').textContent = Math.round(tempF);
-    document.getElementById('weatherDesc').textContent = WMO_LABEL[code] || 'WEATHER';
-    document.getElementById('weatherAdvice').textContent = weatherSummary(code, tempF);
-    document.getElementById('weatherIcon').textContent = 'wmo:' + code;
-
-    // Compact sub-line: feels like · hi / lo
-    const parts = ['Feels ' + Math.round(cur.apparent_temperature) + '°'];
-    if (daily && daily.temperature_2m_max && daily.temperature_2m_max.length) {
-      parts.push('Hi ' + Math.round(daily.temperature_2m_max[0]) + '°');
-      parts.push('Lo ' + Math.round(daily.temperature_2m_min[0]) + '°');
-      document.getElementById('hiTemp').textContent = Math.round(daily.temperature_2m_max[0]);
-      document.getElementById('loTemp').textContent = Math.round(daily.temperature_2m_min[0]);
-    }
-    if (cur.wind_speed_10m != null) parts.push(Math.round(cur.wind_speed_10m) + ' mph wind');
-    document.getElementById('feelsLike').textContent = parts.join(' · ');
-
+    // Sunrise / sunset — always based on today (daily[0])
+    const daily = weatherData.daily;
     if (daily && daily.sunrise && daily.sunset) {
       const sunrise = new Date(daily.sunrise[0]);
       const sunset  = new Date(daily.sunset[0]);
@@ -686,25 +823,30 @@ async function refreshWeather() {
         document.getElementById('sunDaylight').textContent = nextRise ? hoursMinutesBetween(now, nextRise) : '—';
       }
     }
+
+    // Keep current idx if rotation already started; render with fresh data
+    renderWeatherSlot();
   } catch (e) {
     console.warn('weather', e);
     document.getElementById('weatherDesc').textContent = 'OFFLINE';
-    document.getElementById('weatherAdvice').textContent =
-      'Could not reach weather service. Retrying automatically.';
   }
 }
+refreshWeather();
+setInterval(refreshWeather, 10 * 60 * 1000);
+setInterval(rotateWeather, WEATHER_ROTATE_MS);
 
 // ═════════════════════════════════════════════════════════════════
-// TRAINS — the main event
+// TRAIN DATA + ROTATING STATION VIEW
 // ═════════════════════════════════════════════════════════════════
-// Build a train row: clock time, minutes out, status tag, with styling
-// reflecting whether this is the catchable train, already missed, or later.
-function buildTrainRow(mins, walk, isCatchable) {
+let trainsData = null;
+let stationIdx = 0;
+
+function buildTrainRow(mins, walk, isCatch) {
   const arriveAt = new Date(Date.now() + mins * 60_000);
   const leaveIn = mins - walk;
   const row = el('div', 'train-row');
   let tag;
-  if (isCatchable) {
+  if (isCatch) {
     row.classList.add('catch');
     tag = (leaveIn <= 0) ? 'LEAVE NOW' : 'LEAVE IN ' + leaveIn + ' MIN';
   } else if (leaveIn < 1) {
@@ -718,50 +860,56 @@ function buildTrainRow(mins, walk, isCatchable) {
   row.appendChild(el('span', 'tag', tag));
   return row;
 }
-
-function buildStop(s, idx) {
-  const wrap = el('div', 'stop ' + (STATION_THEME[idx] || 'theme-cream'));
-  const walk = WALK_MIN[s.name] ?? 5;
-
-  // Header: station name + walk time
-  const header = el('div', 'stop-header');
-  header.appendChild(el('div', 'stop-name', s.name.toUpperCase()));
-  header.appendChild(el('div', 'stop-walk', walk + ' MIN WALK'));
-  wrap.appendChild(header);
-
-  // Next 5 trains, with first catchable highlighted.
-  const trains = (s.manhattan_bound || []).slice(0, 5);
-  const list = el('div', 'train-list');
-
-  if (!trains.length) {
+function fillDirection(hostId, trains, walk) {
+  const host = document.getElementById(hostId);
+  host.textContent = '';
+  const arr = (trains || []).slice(0, 5);
+  if (!arr.length) {
     const empty = el('div', 'train-row');
     empty.appendChild(el('span', 'tag', 'NO TRAINS SCHEDULED'));
-    list.appendChild(empty);
-  } else {
-    const catchIdx = trains.findIndex(m => m >= walk + 1);
-    trains.forEach((mins, i) => {
-      list.appendChild(buildTrainRow(mins, walk, i === catchIdx));
-    });
-    // If none are catchable, append a note so the card doesn't feel broken.
-    if (catchIdx === -1) {
-      const note = el('div', 'train-row missed');
-      note.appendChild(el('span', 'tag',
-        'ALL TRAINS IN FEED TOO CLOSE TO CATCH — CHECK BACK'));
-      list.appendChild(note);
-    }
+    host.appendChild(empty);
+    return;
   }
-  wrap.appendChild(list);
-
-  // Return trains
-  if (s.canarsie_bound && s.canarsie_bound.length) {
-    const ret = el('div', 'stop-return');
-    ret.appendChild(el('span', 'k', 'Return (Canarsie)'));
-    ret.appendChild(el('span', 'v',
-      s.canarsie_bound.slice(0, 3).map(x => x + 'm').join(' · ')));
-    wrap.appendChild(ret);
+  const catchIdx = arr.findIndex(m => m >= walk + 1);
+  arr.forEach((m, i) => host.appendChild(buildTrainRow(m, walk, i === catchIdx)));
+  if (catchIdx === -1) {
+    const note = el('div', 'train-row missed');
+    note.appendChild(el('span', 'tag', 'ALL TOO CLOSE — CHECK BACK'));
+    host.appendChild(note);
   }
+}
 
-  return wrap;
+function renderStationDots() {
+  const dots = document.getElementById('stationDots');
+  dots.textContent = '';
+  STATION_ORDER.forEach((name, i) => {
+    const d = el('div', 'dot' + (i === stationIdx ? ' active' : ''));
+    d.textContent = name.toUpperCase();
+    dots.appendChild(d);
+  });
+}
+
+function showStation() {
+  if (!trainsData) return;
+  const name = STATION_ORDER[stationIdx];
+  const s = (trainsData.stations || []).find(x => x.name === name);
+  if (!s) return;
+
+  const view = document.getElementById('stationView');
+  view.classList.add('fade');
+  setTimeout(() => {
+    document.getElementById('stationName').textContent = name.toUpperCase();
+    document.getElementById('stationWalk').textContent = WALK_MIN[name];
+    fillDirection('trainsN', s.manhattan_bound, WALK_MIN[name]);
+    fillDirection('trainsS', s.canarsie_bound,  WALK_MIN[name]);
+    renderStationDots();
+    view.classList.remove('fade');
+  }, 200);
+}
+
+function rotateStation() {
+  stationIdx = (stationIdx + 1) % STATION_ORDER.length;
+  showStation();
 }
 
 async function refreshTrains() {
@@ -769,84 +917,156 @@ async function refreshTrains() {
     const r = await fetch('/api/trains');
     const j = await r.json();
     if (!j.ok) throw new Error(j.error);
-    const host = document.getElementById('trainTiles');
-    host.textContent = '';
-    const stations = (j.data && j.data.stations) || [];
-    if (!stations.length) {
-      const box = el('div', 'stop theme-cream');
-      box.appendChild(el('div', 'stop-name', 'NO DATA'));
-      host.appendChild(box);
-      return;
+    trainsData = j.data;
+
+    // Alerts
+    renderAlerts(trainsData.alerts || []);
+
+    // Re-render currently-shown station with fresh numbers
+    if (trainsData.stations && trainsData.stations.length) {
+      if (stationIdx >= trainsData.stations.length) stationIdx = 0;
+      showStation();
     }
-    stations.forEach((s, i) => host.appendChild(buildStop(s, i)));
-    document.getElementById('trainsUpdated').textContent = 'UPD ' + fmtClock(new Date());
+
     document.getElementById('statusRight').textContent = 'LIVE';
+    document.getElementById('trainsUpdated').textContent = fmtClockShort(new Date());
   } catch (e) {
     console.warn('trains', e);
-    const host = document.getElementById('trainTiles');
-    host.textContent = '';
-    const box = el('div', 'stop theme-black');
-    box.appendChild(el('div', 'stop-name', 'MTA FEED OFFLINE'));
-    box.appendChild(el('div', 'stop-sub', 'Retrying…'));
-    host.appendChild(box);
     document.getElementById('statusRight').textContent = 'RETRY';
   }
 }
+refreshTrains();
+setInterval(refreshTrains, 20 * 1000);
+setInterval(rotateStation, STATION_ROTATE_MS);
 
 // ═════════════════════════════════════════════════════════════════
-// SLOGAN ROTATION — rotating communist jokes and quote-adjacent
-// aphorisms. A mix of lightly-edited Marx/Lenin, attributed parodies,
-// and freshly invented Greenpoint-specific kitsch. No actual politics.
+// MTA ALERTS — rotating ribbon
+// ═════════════════════════════════════════════════════════════════
+let alertList = [];
+let alertIdx = 0;
+function renderAlerts(alerts) {
+  alertList = alerts || [];
+  const rib = document.getElementById('alertRibbon');
+  if (!alertList.length) {
+    rib.classList.remove('visible');
+    return;
+  }
+  rib.classList.add('visible');
+  alertIdx = alertIdx % alertList.length;
+  document.getElementById('alertBody').textContent = alertList[alertIdx].header;
+}
+function rotateAlert() {
+  if (!alertList.length) return;
+  alertIdx = (alertIdx + 1) % alertList.length;
+  document.getElementById('alertBody').textContent = alertList[alertIdx].header;
+}
+setInterval(rotateAlert, ALERT_ROTATE_MS);
+
+// ═════════════════════════════════════════════════════════════════
+// SLOGAN BANK — 60+ quotes from real revolutionary sources plus
+// commute-adapted parodies. Attribution runs in red.
 // ═════════════════════════════════════════════════════════════════
 const SLOGANS = [
-  // Classic Marx/Lenin adapted to commuting
-  { t: 'Workers of the L-line, unite!',                                                a: 'K. Marx' },
-  { t: 'There are decades where nothing happens, then weeks where three trains arrive at once.', a: 'V. Lenin' },
-  { t: 'The philosophers have only interpreted the schedule. The point is to catch the train.', a: 'K. Marx' },
-  { t: 'Trust the MTA, but verify.',                                                   a: 'V. Lenin' },
-  { t: 'A specter is haunting Greenpoint — the G train.',                              a: 'Manifesto' },
-  { t: 'The state shall wither away. Monday will not.',                                a: 'F. Engels' },
-  { t: 'Religion is the opium of the people. Rain is the opium of the commuter.',     a: 'K. Marx' },
-  { t: 'The bourgeoisie takes a Lyft.',                                                a: 'Manifesto' },
-  { t: 'History repeats itself — first as tragedy, then as shuttle bus.',              a: 'K. Marx' },
-  { t: 'From each according to their MetroCard, to each according to their arrival.', a: 'K. Marx' },
-  { t: 'Workers have nothing to lose but their MetroCards.',                           a: 'Manifesto' },
-  { t: 'Fabriki, zavody, trains — to the workers!',                                    a: 'V. Lenin' },
+  // ═ Karl Marx / Engels / Manifesto ═══════════════════════════════
+  { t: "Workers of the world, unite! You have nothing to lose but your chains.",                 a: "K. Marx & F. Engels, Manifesto (1848)" },
+  { t: "The history of all hitherto existing society is the history of class struggles.",        a: "K. Marx, Manifesto" },
+  { t: "From each according to his ability, to each according to his needs.",                    a: "K. Marx, 1875" },
+  { t: "The philosophers have only interpreted the world; the point is to change it.",           a: "K. Marx, Theses on Feuerbach" },
+  { t: "Religion is the sigh of the oppressed creature, the opium of the people.",               a: "K. Marx, 1844" },
+  { t: "Capital is dead labor which, vampire-like, lives only by sucking living labor.",         a: "K. Marx, Das Kapital" },
+  { t: "An ounce of action is worth a ton of theory.",                                           a: "F. Engels" },
+  { t: "Freedom is the recognition of necessity.",                                               a: "F. Engels" },
+  { t: "A spectre is haunting Europe — the spectre of communism.",                               a: "Manifesto (1848)" },
 
-  // Dashboard-specific kitsch
-  { t: 'Five-year plan: arrive on time.',                                              a: 'Politburo' },
-  { t: 'Punctuality is the politeness of proletarians.',                               a: 'V. Lenin' },
-  { t: 'Every delay is a revolution deferred.' },
-  { t: 'The means of transportation belong to the people.',                            a: 'Manifesto' },
-  { t: 'Comrade, hold the door.' },
-  { t: 'Solidarity with the B43 bus.' },
-  { t: 'Weather has no politics. Umbrellas do.' },
-  { t: 'The L station is the engine of history.' },
-  { t: 'Yes, I still use a MetroCard. And?' },
-  { t: 'Subways of the world, unite!' },
-  { t: 'Greenpoint — where every commute is a struggle.' },
-  { t: 'The proletariat must seize the 7:34 L.' },
-  { t: 'Four more minutes until sunset. The revolution can wait.' },
+  // ═ Lenin ════════════════════════════════════════════════════════
+  { t: "There are decades where nothing happens, and there are weeks where decades happen.",     a: "V. Lenin" },
+  { t: "Trust is good; control is better.",                                                       a: "V. Lenin" },
+  { t: "Without revolutionary theory there can be no revolutionary movement.",                    a: "V. Lenin, What Is to Be Done?" },
+  { t: "One man with a gun can control a hundred without one.",                                   a: "V. Lenin" },
+  { t: "The best way to control the opposition is to lead it ourselves.",                         a: "V. Lenin, apocryphal" },
+
+  // ═ Rosa Luxemburg ═══════════════════════════════════════════════
+  { t: "Those who do not move do not notice their chains.",                                       a: "R. Luxemburg" },
+  { t: "Freedom is always, and exclusively, freedom for the one who thinks differently.",        a: "R. Luxemburg, 1918" },
+  { t: "The masses are the decisive element, they are the rock on which the final victory is built.", a: "R. Luxemburg" },
+
+  // ═ Leon Trotsky ═════════════════════════════════════════════════
+  { t: "You may not be interested in war, but war is interested in you.",                        a: "L. Trotsky" },
+  { t: "The end may justify the means as long as there is something that justifies the end.",   a: "L. Trotsky, Their Morals and Ours" },
+  { t: "Old age is the most unexpected of all the things that happen to a man.",                 a: "L. Trotsky, Diary in Exile" },
+
+  // ═ Che Guevara ══════════════════════════════════════════════════
+  { t: "At the risk of seeming ridiculous, let me say that the true revolutionary is guided by great feelings of love.", a: "E. Che Guevara" },
+  { t: "The revolution is not an apple that falls when it is ripe. You have to make it fall.",  a: "Che Guevara" },
+  { t: "If you tremble with indignation at every injustice, then you are a comrade of mine.",   a: "Che Guevara" },
+  { t: "Be realistic: demand the impossible.",                                                   a: "Paris, May 1968" },
+
+  // ═ Mao Zedong ═══════════════════════════════════════════════════
+  { t: "Let a hundred flowers bloom; let a hundred schools of thought contend.",                 a: "Mao Zedong, 1956" },
+  { t: "Women hold up half the sky.",                                                             a: "Mao Zedong" },
+  { t: "Revolution is not a dinner party, nor an essay, nor painting, nor embroidery.",         a: "Mao, 1927" },
+
+  // ═ Ho Chi Minh / Gramsci / Castro / Sankara ═════════════════════
+  { t: "Nothing is more precious than independence and freedom.",                                 a: "Ho Chi Minh" },
+  { t: "When the prison doors are opened, the real dragon will fly out.",                         a: "Ho Chi Minh" },
+  { t: "Pessimism of the intellect, optimism of the will.",                                       a: "A. Gramsci, Prison Notebooks" },
+  { t: "The old world is dying, and the new world struggles to be born: now is the time of monsters.", a: "A. Gramsci" },
+  { t: "Indifference is the dead weight of history.",                                             a: "A. Gramsci, 1917" },
+  { t: "History will absolve me.",                                                                a: "F. Castro, 1953" },
+  { t: "A revolution is a struggle to the death between the future and the past.",                a: "F. Castro" },
+  { t: "We must dare to invent the future.",                                                      a: "T. Sankara" },
+  { t: "He who feeds you, controls you.",                                                         a: "T. Sankara" },
+  { t: "If I can't dance, I don't want to be in your revolution.",                                a: "E. Goldman, paraphrased" },
+  { t: "The most violent element in society is ignorance.",                                       a: "E. Goldman" },
+
+  // ═ Brecht, Orwell, fellow-traveler writers ═════════════════════
+  { t: "The man who laughs has not yet heard the terrible news.",                                 a: "B. Brecht" },
+  { t: "First comes the food, then comes morality.",                                              a: "B. Brecht, Threepenny Opera" },
+
+  // ═ Commute-adapted parodies — the whole point ═══════════════════
+  { t: "Workers of the L-line, unite! You have nothing to lose but your MetroCards.",            a: "Manifesto, adapted" },
+  { t: "The philosophers have only interpreted the schedule; the point is to catch the train.",  a: "K. Marx, adapted" },
+  { t: "A spectre is haunting Greenpoint — the G train.",                                         a: "Manifesto, adapted" },
+  { t: "From each according to their MetroCard, to each according to their arrival.",             a: "K. Marx, adapted" },
+  { t: "Trust the MTA, but verify.",                                                               a: "V. Lenin, adapted" },
+  { t: "There are decades where no train comes; then weeks where three arrive at once.",         a: "V. Lenin, adapted" },
+  { t: "Religion is the opium of the people; rain is the opium of the commuter.",                a: "K. Marx, adapted" },
+  { t: "History repeats itself — first as tragedy, then as shuttle bus.",                         a: "K. Marx, adapted" },
+  { t: "The bourgeoisie takes a Lyft.",                                                            a: "Manifesto, adapted" },
+  { t: "A journey of a thousand stops begins with a single swipe.",                                a: "Lao Tzu, adapted" },
+  { t: "Those who do not move do not notice the delay.",                                           a: "R. Luxemburg, adapted" },
+  { t: "Pessimism of the MTA, optimism of the commuter.",                                          a: "A. Gramsci, adapted" },
+  { t: "The old schedule is dying; the new cannot be born; in this interregnum, shuttle buses appear.", a: "A. Gramsci, adapted" },
+  { t: "Let a hundred trains bloom; let a hundred routes contend.",                                a: "Mao Zedong, adapted" },
+  { t: "The revolution will arrive on the 7:34 L.",                                                a: "Greenpoint soviet" },
+  { t: "We must dare to invent the future. But first, check the weather.",                        a: "T. Sankara, adapted" },
+  { t: "You may not be interested in the MTA, but the MTA is interested in you.",                  a: "L. Trotsky, adapted" },
+  { t: "If I can't sit, I don't want to be in your subway.",                                       a: "E. Goldman, adapted" },
+  { t: "Comrade, hold the door.",                                                                    a: "Greenpoint soviet" },
+  { t: "Solidarity with the B43 bus.",                                                               a: "Greenpoint soviet" },
+  { t: "Five-year plan: arrive on time.",                                                             a: "Politburo" },
+  { t: "Punctuality is the politeness of proletarians.",                                              a: "V. Lenin, apocryphal" },
+  { t: "Nothing is more precious than an empty subway car.",                                         a: "Ho Chi Minh, adapted" },
+  { t: "Weather has no politics. Umbrellas do.",                                                     a: "R. Luxemburg, adapted" },
 ];
 
 let sloganIdx = Math.floor(Math.random() * SLOGANS.length);
 function rotateSlogan() {
   const node = document.getElementById('sloganText');
   if (!node) return;
-  // Pick the next slogan (not the one we just showed)
   let next;
   do { next = Math.floor(Math.random() * SLOGANS.length); }
   while (SLOGANS.length > 1 && next === sloganIdx);
   sloganIdx = next;
   const s = SLOGANS[sloganIdx];
 
-  // Fade out → swap text → fade in
   node.classList.add('fade');
   setTimeout(() => {
     node.textContent = '';
-    const t = document.createElement('span');
-    t.textContent = s.t.toUpperCase();
-    node.appendChild(t);
+    const body = document.createElement('span');
+    body.className = 'quote-body';
+    body.textContent = s.t.toUpperCase();
+    node.appendChild(body);
     if (s.a) {
       const a = document.createElement('span');
       a.className = 'attr';
@@ -857,13 +1077,7 @@ function rotateSlogan() {
   }, 400);
 }
 rotateSlogan();
-setInterval(rotateSlogan, 12 * 1000);
-
-// Kickoff
-refreshWeather();
-setInterval(refreshWeather, 10 * 60 * 1000);
-refreshTrains();
-setInterval(refreshTrains, 20 * 1000);
+setInterval(rotateSlogan, SLOGAN_ROTATE_MS);
 </script>
 </body>
 </html>

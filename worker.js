@@ -78,7 +78,8 @@ function allBytes(fields, tag)   { return (fields[tag] || []).map(f => f.val); }
 function firstVarint(fields, tag) { return fields[tag]?.[0]?.val; }
 
 // Given the raw L-line GTFS-RT protobuf bytes, return an object shaped
-// like the Pi's /api/trains response.
+// like the Pi's /api/trains response. Also extracts service alerts
+// (delays, suspensions) so the dashboard can surface them.
 function extractLArrivals(rawBytes) {
   const nowSec = Math.floor(Date.now() / 1000);
   const feed = parseMessage(rawBytes);
@@ -86,34 +87,82 @@ function extractLArrivals(rawBytes) {
   // FeedMessage.entity = field 2 (repeated FeedEntity)
   const entities = allBytes(feed, 2);
   const stopMap = {}; // stop_id -> [eta_sec, ...]
+  const alerts = [];
 
   for (const entBytes of entities) {
     const ent = parseMessage(entBytes);
-    // FeedEntity.trip_update = field 3 (TripUpdate)
+
+    // ── FeedEntity.trip_update = field 3 ─────────────────────────
     const tuBytes = firstBytes(ent, 3);
-    if (!tuBytes) continue;
-    const tu = parseMessage(tuBytes);
-    // TripUpdate.stop_time_update = field 2 (repeated StopTimeUpdate)
-    const stus = allBytes(tu, 2);
-    for (const stuBytes of stus) {
-      const stu = parseMessage(stuBytes);
-      // StopTimeUpdate.stop_id = field 4 (string)
-      const stopIdBytes = firstBytes(stu, 4);
-      if (!stopIdBytes) continue;
-      const stopId = new TextDecoder().decode(stopIdBytes);
-      // Prefer arrival (field 2), fall back to departure (field 1? — actually
-      // StopTimeUpdate.arrival = 2, departure = 3 in GTFS-RT spec).
-      const arrivalBytes  = firstBytes(stu, 2);
-      const departureBytes = firstBytes(stu, 3);
-      const teBytes = arrivalBytes || departureBytes;
-      if (!teBytes) continue;
-      const te = parseMessage(teBytes);
-      // StopTimeEvent.time = field 2 (int64)
-      const timeField = firstVarint(te, 2);
-      if (timeField == null) continue;
-      const eta = Number(timeField) - nowSec;
-      if (eta < 0) continue;
-      (stopMap[stopId] ||= []).push(eta);
+    if (tuBytes) {
+      const tu = parseMessage(tuBytes);
+      // TripUpdate.stop_time_update = field 2 (repeated)
+      const stus = allBytes(tu, 2);
+      for (const stuBytes of stus) {
+        const stu = parseMessage(stuBytes);
+        const stopIdBytes = firstBytes(stu, 4); // StopTimeUpdate.stop_id
+        if (!stopIdBytes) continue;
+        const stopId = new TextDecoder().decode(stopIdBytes);
+        // arrival = 2, departure = 1 (both StopTimeEvent); prefer arrival
+        const arrivalBytes  = firstBytes(stu, 2);
+        const departureBytes = firstBytes(stu, 1);
+        const teBytes = arrivalBytes || departureBytes;
+        if (!teBytes) continue;
+        const te = parseMessage(teBytes);
+        const timeField = firstVarint(te, 2); // StopTimeEvent.time (int64)
+        if (timeField == null) continue;
+        const eta = Number(timeField) - nowSec;
+        if (eta < 0) continue;
+        (stopMap[stopId] ||= []).push(eta);
+      }
+    }
+
+    // ── FeedEntity.alert = field 5 ───────────────────────────────
+    const alertBytes = firstBytes(ent, 5);
+    if (alertBytes) {
+      const alert = parseMessage(alertBytes);
+      // Alert.informed_entity = field 5 (repeated EntitySelector)
+      const ies = allBytes(alert, 5);
+      let mentionsL = false;
+      for (const ieBytes of ies) {
+        const ie = parseMessage(ieBytes);
+        // EntitySelector.route_id = field 2 (string)
+        const routeIdBytes = firstBytes(ie, 2);
+        if (routeIdBytes) {
+          const routeId = new TextDecoder().decode(routeIdBytes);
+          if (routeId === 'L') { mentionsL = true; break; }
+        }
+      }
+      if (!mentionsL) continue;
+
+      // Alert.header_text = field 10 (TranslatedString)
+      const headerTsBytes = firstBytes(alert, 10);
+      // Alert.description_text = field 11 (TranslatedString)
+      const descTsBytes   = firstBytes(alert, 11);
+
+      const decodeTs = (tsBytes) => {
+        if (!tsBytes) return '';
+        const ts = parseMessage(tsBytes);
+        // TranslatedString.translation = field 1 (repeated Translation)
+        const translations = allBytes(ts, 1);
+        for (const transBytes of translations) {
+          const trans = parseMessage(transBytes);
+          // Translation.text = field 1, Translation.language = field 2
+          const textBytes = firstBytes(trans, 1);
+          const langBytes = firstBytes(trans, 2);
+          const lang = langBytes ? new TextDecoder().decode(langBytes) : 'en';
+          if (textBytes && (lang === 'en' || lang === 'en-US' || lang === '')) {
+            return new TextDecoder().decode(textBytes);
+          }
+        }
+        return '';
+      };
+
+      const header = decodeTs(headerTsBytes);
+      const description = decodeTs(descTsBytes);
+      if (header) {
+        alerts.push({ header, description });
+      }
     }
   }
 
@@ -127,7 +176,16 @@ function extractLArrivals(rawBytes) {
       canarsie_bound:  s.map(e => Math.round(e / 60)),
     });
   }
-  return { stations, fetched_at: nowSec };
+
+  // Dedupe alerts by header text (MTA often sends multiple with same header)
+  const seenHeaders = new Set();
+  const uniqueAlerts = alerts.filter(a => {
+    if (seenHeaders.has(a.header)) return false;
+    seenHeaders.add(a.header);
+    return true;
+  });
+
+  return { stations, alerts: uniqueAlerts, fetched_at: nowSec };
 }
 
 // ─── JSON response helpers ───────────────────────────────────────────
@@ -146,13 +204,20 @@ async function handleWeather() {
   const params = new URLSearchParams({
     latitude:  DASH_LAT.toString(),
     longitude: DASH_LON.toString(),
-    current:   "temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day",
-    hourly:    "temperature_2m,weather_code,precipitation_probability",
-    daily:     "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset",
+    // Current conditions — add uv_index, dewpoint, precipitation for richer
+    // cards when the dashboard rotates through "right now" views.
+    current:   "temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,is_day,uv_index,precipitation",
+    hourly:    "temperature_2m,weather_code,precipitation_probability,uv_index",
+    // Daily: pull full week so dashboard can rotate through 7 days.
+    daily:     "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max,precipitation_sum,wind_speed_10m_max",
     temperature_unit: "fahrenheit",
     wind_speed_unit:  "mph",
     timezone:         "America/New_York",
-    forecast_days:    "2",
+    // 7 days of forecast for the rotating weather card.
+    forecast_days:    "7",
+    // Open-Meteo's "best_match" model blends ICON + GFS + ECMWF + AROME,
+    // which is their most accurate setting for NYC (default, but explicit).
+    models:           "best_match",
   });
   try {
     const r = await fetch("https://api.open-meteo.com/v1/forecast?" + params, {
