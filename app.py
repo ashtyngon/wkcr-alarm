@@ -104,7 +104,7 @@ STATIONS = [
     {"id": "couleur3",      "name": "Couleur 3",             "genre": "Eclectic alternative — Swiss public radio",      "url": "https://stream.srg-ssr.ch/m/couleur3/mp3_128"},
     {"id": "bytefm",        "name": "ByteFM",                "genre": "Curated music radio — Hamburg, Germany",         "url": "https://bytefm.cast.addradio.de/bytefm/main/mid/stream"},
     {"id": "fluxfm",        "name": "FluxFM",                "genre": "Indie & eclectic — Berlin, Germany",             "url": "https://streams.fluxfm.de/live/mp3-320/"},
-    {"id": "thelot",        "name": "The Lot Radio",          "genre": "Community rooftop radio — Brooklyn, NYC",       "url": "https://streams.radio.co/se1a320b47/listen"},
+    {"id": "thelot",        "name": "Café del Mar Radio",     "genre": "Chillout & lounge — Ibiza, Spain",             "url": "https://streams.radio.co/se1a320b47/listen"},
     # --- Discovery / Underground ---
     {"id": "dublab",        "name": "Dublab",                 "genre": "Experimental & underground — Los Angeles",      "url": "https://dublab.out.airtime.pro/dublab_a"},
     {"id": "resonancefm",   "name": "Resonance 104.4",        "genre": "Arts & experimental — London",                  "url": "https://stream.resonance.fm/resonance"},
