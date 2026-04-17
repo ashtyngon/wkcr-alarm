@@ -67,9 +67,11 @@ body {
 }
 .slogan-bar .lenin {
   flex: 0 0 auto;
-  width: 44px;
-  height: 54px;
-  color: var(--red);
+  width: 48px;
+  height: 56px;
+  background-color: var(--red);
+  -webkit-mask: url('/assets/lenin.svg') no-repeat center / contain;
+          mask: url('/assets/lenin.svg') no-repeat center / contain;
 }
 .slogan-bar .star {
   flex: 0 0 auto;
@@ -282,77 +284,130 @@ body {
 .stop.theme-black { background: var(--ink);   color: var(--paper); }
 .stop.theme-cream { background: var(--paper); color: var(--ink); }
 
+.stop-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 14px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid currentColor;
+  margin-bottom: 10px;
+}
 .stop-name {
   font-family: 'Oswald', sans-serif;
   font-weight: 700;
-  font-size: clamp(28px, 2.8vw, 48px);
+  font-size: clamp(24px, 2.3vw, 38px);
   letter-spacing: 0.02em;
   text-transform: uppercase;
   line-height: 0.95;
-  margin-bottom: 2px;
 }
-.stop-badge {
+.stop-walk {
   font-family: 'Roboto Mono', monospace;
   font-size: 12px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  font-weight: 500;
-  opacity: 0.7;
-  margin-bottom: 4px;
-}
-
-/* The verdict is the hero of this page. Huge slab type. */
-.stop-verdict {
-  font-family: 'Alfa Slab One', serif;
-  font-size: clamp(56px, 6.5vw, 120px);
-  line-height: 0.9;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-  word-break: break-word;
-  margin-top: auto;
-  margin-bottom: auto;
-}
-.stop.theme-cream .stop-verdict.go     { color: var(--red); }
-.stop.theme-cream .stop-verdict.soon   { color: var(--ink); }
-.stop.theme-cream .stop-verdict.plenty { color: var(--ink); }
-.stop.theme-cream .stop-verdict.miss   { color: var(--red); }
-.stop.theme-red .stop-verdict   { color: var(--paper); }
-.stop.theme-black .stop-verdict { color: var(--paper); }
-.stop.theme-black .stop-verdict.go { color: var(--red); }
-
-/* Single sub-line that explains the verdict in concrete terms */
-.stop-sub {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 500;
-  font-size: clamp(20px, 1.9vw, 30px);
-  line-height: 1.2;
-  opacity: 0.95;
-}
-
-/* Two big data points per card — walk time + train time */
-.stop-meta {
-  padding-top: 14px;
-  border-top: 3px solid currentColor;
-  display: flex; justify-content: space-between; gap: 10px;
-}
-.stop-meta .m {
-  display: flex; flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-.stop-meta .m .k {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  opacity: 0.65;
   font-weight: 500;
+  opacity: 0.75;
+  text-align: right;
+  white-space: nowrap;
 }
-.stop-meta .m .v {
+
+/* ── 5-train departure list ─────────────────────────────────── */
+.train-list {
+  display: flex; flex-direction: column; gap: 3px;
+  flex: 1; min-height: 0;
+}
+.train-row {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 10px;
+}
+.train-row .clock {
   font-family: 'Alfa Slab One', serif;
-  font-size: clamp(20px, 1.9vw, 28px);
+  font-size: clamp(18px, 1.8vw, 26px);
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.train-row .mins {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+  opacity: 0.55;
+}
+.train-row .tag {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: clamp(13px, 1.2vw, 17px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: right;
+  opacity: 0.75;
+  white-space: nowrap;
+}
+.train-row.missed {
+  opacity: 0.38;
+}
+.train-row.missed .tag {
+  color: var(--red);
+  font-weight: 700;
+  opacity: 1;
+}
+.stop.theme-red .train-row.missed .tag,
+.stop.theme-black .train-row.missed .tag { color: var(--paper); opacity: 0.6; }
+
+/* The one catchable train — blown up with inverse color block */
+.train-row.catch {
+  background: var(--red);
+  color: var(--paper);
+  padding: 14px 14px;
+  gap: 16px;
+  margin: 6px 0;
+}
+.train-row.catch .clock {
+  font-size: clamp(28px, 3vw, 48px);
+  letter-spacing: -0.02em;
+}
+.train-row.catch .mins {
+  color: var(--paper); opacity: 0.8;
+  font-size: 13px;
+}
+.train-row.catch .tag {
+  font-size: clamp(18px, 2vw, 28px);
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  opacity: 1;
+  line-height: 1.05;
+}
+.stop.theme-red .train-row.catch {
+  background: var(--ink);
+  color: var(--paper);
+}
+.stop.theme-black .train-row.catch {
+  background: var(--red);
+  color: var(--paper);
+}
+
+/* Footer row with return trains */
+.stop-return {
+  padding-top: 10px;
+  border-top: 2px solid currentColor;
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 10px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.stop-return .k { font-weight: 500; opacity: 0.7; }
+.stop-return .v {
+  font-family: 'Alfa Slab One', serif;
+  font-size: 15px;
+  letter-spacing: 0;
+  opacity: 1;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -432,28 +487,9 @@ body {
 
   <!-- ═════ SLOGAN BAR — Lenin silhouette + rotating quote ═════ -->
   <div class="slogan-bar">
-    <svg class="lenin" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <!-- Approximate Lenin profile silhouette facing right: bald
-           dome, prominent goatee extending to the lower right, suit
-           collar. Kitsch, not anatomical. -->
-      <path fill="currentColor" d="M 50 6
-        C 73 6, 88 20, 88 42
-        C 88 52, 86 60, 82 64
-        L 96 78
-        L 92 88
-        L 78 82
-        C 78 92, 70 100, 58 102
-        L 58 110
-        L 98 110
-        L 100 120
-        L 0 120
-        L 2 110
-        L 42 110
-        L 42 100
-        C 28 96, 22 85, 22 68
-        C 14 62, 14 46, 20 38
-        C 22 20, 32 10, 50 6 Z"/>
-    </svg>
+    <!-- Lenin silhouette — openclipart.org #1075 (public domain),
+         rendered via CSS mask so we can recolor it with --red. -->
+    <div class="lenin" role="img" aria-label="Lenin silhouette"></div>
     <svg class="star" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <polygon fill="currentColor" points="50,5 61,39 97,39 68,60 79,94 50,73 21,94 32,60 3,39 39,39"/>
     </svg>
@@ -511,10 +547,12 @@ body {
 // ═════════════════════════════════════════════════════════════════
 // CONFIG
 // ═════════════════════════════════════════════════════════════════
+// Walking time from 617 Humboldt St to each L station.
+// Calibrated from Google Maps walking estimates; tune if you drift.
 const WALK_MIN = {
-  'Nassau Av':  4,
-  'Graham Av':  10,
-  'Bedford Av': 18,
+  'Nassau Av':  9,    // ~0.5 mi NW, along Nassau Ave
+  'Graham Av':  12,   // ~0.5 mi SW, Humboldt → Metropolitan → Graham
+  'Bedford Av': 20,   // ~1.0 mi SW across Williamsburg grid
 };
 // Rotate card themes — classic constructivist poster palette cycle.
 const STATION_THEME = ['theme-red', 'theme-cream', 'theme-black'];
@@ -659,65 +697,70 @@ async function refreshWeather() {
 // ═════════════════════════════════════════════════════════════════
 // TRAINS — the main event
 // ═════════════════════════════════════════════════════════════════
-function verdictForStation(stopName, trains) {
-  const walk = WALK_MIN[stopName] ?? 5;
-  if (!trains || !trains.length) {
-    return { klass: '', text: 'NO TRAINS', sub: 'Nothing scheduled.', leaveAt: '—', trainAt: '—', walk: walk + ' MIN' };
+// Build a train row: clock time, minutes out, status tag, with styling
+// reflecting whether this is the catchable train, already missed, or later.
+function buildTrainRow(mins, walk, isCatchable) {
+  const arriveAt = new Date(Date.now() + mins * 60_000);
+  const leaveIn = mins - walk;
+  const row = el('div', 'train-row');
+  let tag;
+  if (isCatchable) {
+    row.classList.add('catch');
+    tag = (leaveIn <= 0) ? 'LEAVE NOW' : 'LEAVE IN ' + leaveIn + ' MIN';
+  } else if (leaveIn < 1) {
+    row.classList.add('missed');
+    tag = 'MISSED';
+  } else {
+    tag = 'Leave in ' + leaveIn + ' min';
   }
-  const catchable = trains.find(m => m >= walk + 1);
-  if (catchable == null) {
-    return {
-      klass: 'soon',
-      text: 'WAIT',
-      sub: 'Next ' + trains[0] + ' min train too close to catch from a ' + walk + '-min walk.',
-      leaveAt: '—',
-      trainAt: trains[0] + 'M',
-      walk: walk + ' MIN',
-    };
-  }
-  const leaveIn = catchable - walk;
-  const arriveAt = new Date(Date.now() + catchable * 60_000);
-  const leaveAt  = new Date(Date.now() + leaveIn * 60_000);
-
-  let klass, text;
-  if (leaveIn <= 0)      { klass = 'go';     text = 'GO NOW'; }
-  else if (leaveIn <= 2) { klass = 'go';     text = leaveIn + ' MIN'; }
-  else if (leaveIn <= 6) { klass = 'soon';   text = leaveIn + ' MIN'; }
-  else                   { klass = 'plenty'; text = leaveIn + ' MIN'; }
-
-  const backups = trains.filter(m => m > catchable).slice(0, 2);
-  const sub = 'Leave ' + (leaveIn <= 0 ? 'now' : 'in ' + leaveIn + ' min') +
-              ' for the ' + fmtClock(arriveAt) + ' train' +
-              (backups.length ? ' · then ' + backups.map(x => x + 'm').join(', ') : '');
-
-  return {
-    klass, text, sub,
-    leaveAt: fmtClockShort(leaveAt),
-    trainAt: fmtClockShort(arriveAt),
-    walk: walk + ' MIN',
-  };
+  row.appendChild(el('span', 'clock', fmtClockShort(arriveAt)));
+  row.appendChild(el('span', 'mins', '+' + mins + ' MIN'));
+  row.appendChild(el('span', 'tag', tag));
+  return row;
 }
 
 function buildStop(s, idx) {
   const wrap = el('div', 'stop ' + (STATION_THEME[idx] || 'theme-cream'));
-  wrap.appendChild(el('div', 'stop-name', s.name.toUpperCase()));
-  wrap.appendChild(el('div', 'stop-badge', 'L LINE · MANHATTAN'));
+  const walk = WALK_MIN[s.name] ?? 5;
 
-  const v = verdictForStation(s.name, s.manhattan_bound);
-  wrap.appendChild(el('div', 'stop-verdict ' + v.klass, v.text));
-  wrap.appendChild(el('div', 'stop-sub', v.sub));
+  // Header: station name + walk time
+  const header = el('div', 'stop-header');
+  header.appendChild(el('div', 'stop-name', s.name.toUpperCase()));
+  header.appendChild(el('div', 'stop-walk', walk + ' MIN WALK'));
+  wrap.appendChild(header);
 
-  const meta = el('div', 'stop-meta');
-  const mk = (k, val) => {
-    const m = el('div', 'm');
-    m.appendChild(el('span', 'k', k));
-    m.appendChild(el('span', 'v', val));
-    return m;
-  };
-  meta.appendChild(mk('Walk', v.walk));
-  meta.appendChild(mk('Leave', v.leaveAt));
-  meta.appendChild(mk('Train', v.trainAt));
-  wrap.appendChild(meta);
+  // Next 5 trains, with first catchable highlighted.
+  const trains = (s.manhattan_bound || []).slice(0, 5);
+  const list = el('div', 'train-list');
+
+  if (!trains.length) {
+    const empty = el('div', 'train-row');
+    empty.appendChild(el('span', 'tag', 'NO TRAINS SCHEDULED'));
+    list.appendChild(empty);
+  } else {
+    const catchIdx = trains.findIndex(m => m >= walk + 1);
+    trains.forEach((mins, i) => {
+      list.appendChild(buildTrainRow(mins, walk, i === catchIdx));
+    });
+    // If none are catchable, append a note so the card doesn't feel broken.
+    if (catchIdx === -1) {
+      const note = el('div', 'train-row missed');
+      note.appendChild(el('span', 'tag',
+        'ALL TRAINS IN FEED TOO CLOSE TO CATCH — CHECK BACK'));
+      list.appendChild(note);
+    }
+  }
+  wrap.appendChild(list);
+
+  // Return trains
+  if (s.canarsie_bound && s.canarsie_bound.length) {
+    const ret = el('div', 'stop-return');
+    ret.appendChild(el('span', 'k', 'Return (Canarsie)'));
+    ret.appendChild(el('span', 'v',
+      s.canarsie_bound.slice(0, 3).map(x => x + 'm').join(' · ')));
+    wrap.appendChild(ret);
+  }
+
   return wrap;
 }
 
