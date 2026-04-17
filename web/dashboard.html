@@ -316,12 +316,67 @@ body {
 .station-view.fade { opacity: 0.3; }
 .station-view, .station-view.fade { transition: opacity 0.25s ease; }
 
+/* STATION TABS — at top, so it's clear they're "which station"
+   pagination, not "next stops on the line". */
+.station-tabs {
+  display: flex;
+  border-bottom: 4px solid var(--ink);
+}
+.station-tabs .tab {
+  flex: 1;
+  padding: 8px 14px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(13px, 1.2vw, 17px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+  border-right: 2px solid var(--ink);
+  opacity: 0.45;
+  transition: opacity 0.3s ease;
+}
+.station-tabs .tab:last-child { border-right: none; }
+.station-tabs .tab.active {
+  opacity: 1;
+  background: var(--red);
+  color: var(--paper);
+}
+
+/* STATION HEADER — L badge + station name + walk time */
 .station-header {
   display: flex; justify-content: space-between; align-items: stretch;
   background: var(--ink);
   color: var(--paper);
   padding: 0;
   border-bottom: 4px solid var(--ink);
+}
+.station-header .L-badge {
+  padding: 10px 14px;
+  background: var(--ink);
+  color: var(--paper);
+  display: flex; align-items: center; gap: 10px;
+  border-right: 4px solid var(--red);
+}
+.station-header .L-badge .circle {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: #a7a9ac;    /* MTA L-line grey */
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Alfa Slab One', serif;
+  font-size: 28px;
+  line-height: 1;
+}
+.station-header .L-badge .lbl {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0.7;
+  line-height: 1.1;
+  max-width: 70px;
 }
 .station-header .name {
   padding: 14px 22px;
@@ -331,6 +386,7 @@ body {
   letter-spacing: -0.01em;
   flex: 1;
   text-transform: uppercase;
+  display: flex; align-items: center;
 }
 .station-header .walk {
   padding: 14px 22px;
@@ -369,12 +425,26 @@ body {
   font-family: 'Oswald', sans-serif;
   font-weight: 700;
   font-size: clamp(14px, 1.3vw, 20px);
-  letter-spacing: 0.2em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--red);
   padding-bottom: 6px;
   border-bottom: 2px solid var(--ink);
+  line-height: 1.15;
+  display: flex; align-items: baseline; gap: 8px;
+}
+.dir .dir-label .arrow {
+  font-family: 'Alfa Slab One', serif;
+  font-size: 1.2em;
   line-height: 1;
+}
+.dir .dir-label .terminus {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.55em;
+  letter-spacing: 0.18em;
+  color: var(--ink);
+  opacity: 0.55;
+  font-weight: 500;
 }
 .dir .train-list {
   display: flex; flex-direction: column; gap: 2px;
@@ -431,31 +501,20 @@ body {
   opacity: 1;
 }
 
-/* Station pagination dots */
-.station-dots {
-  display: flex; justify-content: center; align-items: center;
-  gap: 14px;
-  padding: 8px 0 2px;
-  font-family: 'Roboto Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--ink);
-  opacity: 0.75;
+/* Weather-rotation progress indicator — tiny bar below top strip
+   so viewer knows the weather slot is rotating. */
+.wx-progress {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  background: transparent;
+  pointer-events: none;
 }
-.station-dots .dot {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-weight: 500;
+.wx-progress .fill {
+  height: 100%;
+  background: var(--red);
+  transition: width 0.3s linear;
 }
-.station-dots .dot::before {
-  content: "";
-  width: 8px; height: 8px;
-  background: var(--ink);
-  opacity: 0.2;
-  display: inline-block;
-}
-.station-dots .dot.active { color: var(--red); font-weight: 700; }
-.station-dots .dot.active::before { background: var(--red); opacity: 1; }
 
 /* ══════════════════════════════════════════════════════════════
    FOOTER — date + sun info + live status
@@ -554,7 +613,15 @@ body {
 
   <!-- ═════ STATION VIEW — single station, both directions ═════ -->
   <section class="station-view" id="stationView">
+    <!-- Tabs at TOP, so it's clear this is "which station" pagination,
+         not "list of next stops on this line". -->
+    <div class="station-tabs" id="stationTabs"></div>
+
     <div class="station-header">
+      <div class="L-badge">
+        <div class="circle">L</div>
+        <div class="lbl">L Train · 14&nbsp;St Line</div>
+      </div>
       <div class="name" id="stationName">—</div>
       <div class="walk">
         <span class="k">Walk</span>
@@ -563,17 +630,23 @@ body {
     </div>
     <div class="dirs">
       <div class="dir">
-        <div class="dir-label" id="dirN">MANHATTAN-BOUND</div>
+        <div class="dir-label">
+          <span class="arrow">←</span>
+          <span>TO MANHATTAN</span>
+          <span class="terminus">8 AV</span>
+        </div>
         <div class="train-list" id="trainsN"></div>
       </div>
       <div class="dir">
-        <div class="dir-label" id="dirS">CANARSIE-BOUND</div>
+        <div class="dir-label">
+          <span>TO BROOKLYN</span>
+          <span class="terminus">ROCKAWAY PKWY · CANARSIE</span>
+          <span class="arrow">→</span>
+        </div>
         <div class="train-list" id="trainsS"></div>
       </div>
     </div>
   </section>
-
-  <div class="station-dots" id="stationDots"></div>
 
   <!-- ═════ FOOTER ═════ -->
   <div class="footer">
@@ -721,14 +794,29 @@ function hoursMinutesBetween(a, b) {
 let weatherData = null;
 let weatherDayIdx = 0;  // 0 = NOW, 1-7 = daily[0..6]
 
-function setUV(v) {
-  const uv = uvLevel(v);
+// UV can be displayed as "NOW" (current index) or "PEAK" (daily max).
+// These mean different things — a "Low" now at 4pm doesn't mean the
+// whole day was safe if the noon peak hit 7. Always label which one.
+function setUV(value, mode, peakTime) {
+  const uv = uvLevel(value);
   const box = document.getElementById('uvBox');
   box.classList.remove('low','mod','high','vhigh','extrm');
   box.classList.add(uv.key);
-  document.getElementById('uvValue').textContent = (v == null ? '—' : Math.round(v));
+
+  const kNode = document.querySelector('#uvBox .k');
+  if (kNode) kNode.textContent = (mode === 'peak') ? 'UV Peak Today' : 'UV Now';
+
+  document.getElementById('uvValue').textContent = (value == null ? '—' : Math.round(value));
   document.getElementById('uvLabel').textContent = uv.label;
-  document.getElementById('uvWarn').textContent  = uv.warn;
+
+  // Warning message adapts to mode + peak-time hint
+  let warn = uv.warn;
+  if (mode === 'now' && peakTime) {
+    warn = uv.warn + ' · Peaks ' + peakTime;
+  } else if (mode === 'peak') {
+    warn = 'Peak at midday — ' + uv.warn;
+  }
+  document.getElementById('uvWarn').textContent = warn;
 }
 
 function renderWeatherSlot() {
@@ -753,8 +841,27 @@ function renderWeatherSlot() {
       if (cur.relative_humidity_2m != null) parts.push(cur.relative_humidity_2m + '% humidity');
       document.getElementById('feelsLike').textContent = parts.join(' · ');
 
-      // UV from current (Open-Meteo supports current.uv_index)
-      setUV(cur.uv_index != null ? cur.uv_index : (d.daily?.uv_index_max?.[0]));
+      // UV: show NOW value, but hint at today's peak if it's meaningfully
+      // higher (e.g., "UV now: 1 (Low) · Peaks at 7 today").
+      const nowUV = cur.uv_index;
+      const peakUV = d.daily?.uv_index_max?.[0];
+      // Find hour of daily peak UV from hourly.uv_index
+      let peakTimeStr = null;
+      if (d.hourly && d.hourly.uv_index && d.hourly.time && peakUV > 2) {
+        let peakHour = null, peakVal = -1;
+        for (let i = 0; i < d.hourly.time.length && i < 24; i++) {
+          const v = d.hourly.uv_index[i];
+          if (v > peakVal) { peakVal = v; peakHour = d.hourly.time[i]; }
+        }
+        if (peakHour) {
+          const pd = new Date(peakHour);
+          let ph = pd.getHours();
+          const pap = ph >= 12 ? 'pm' : 'am';
+          ph = ph % 12 || 12;
+          peakTimeStr = ph + pap + ' at UV ' + Math.round(peakVal);
+        }
+      }
+      setUV(nowUV, 'now', peakTimeStr);
       document.getElementById('weatherAdvice').textContent = weatherSummary(code, tempF);
     } else {
       // FORECAST day k = weatherDayIdx-1 (0-based into daily)
@@ -779,7 +886,9 @@ function renderWeatherSlot() {
       if (daily.wind_speed_10m_max?.[k] != null) parts.push('Wind to ' + Math.round(daily.wind_speed_10m_max[k]) + ' mph');
       document.getElementById('feelsLike').textContent = parts.join(' · ');
 
-      setUV(daily.uv_index_max?.[k]);
+      // Forecast days: always show the PEAK UV for that day (there is no
+      // "current" UV for a future day). Labeled explicitly as "UV PEAK TODAY".
+      setUV(daily.uv_index_max?.[k], 'peak');
 
       let advice = weatherSummary(code, (hi + lo) / 2);
       if (precip > 40) advice = 'Rain likely (' + precip + '%). Plan for an umbrella.';
@@ -879,13 +988,13 @@ function fillDirection(hostId, trains, walk) {
   }
 }
 
-function renderStationDots() {
-  const dots = document.getElementById('stationDots');
-  dots.textContent = '';
+function renderStationTabs() {
+  const tabs = document.getElementById('stationTabs');
+  tabs.textContent = '';
   STATION_ORDER.forEach((name, i) => {
-    const d = el('div', 'dot' + (i === stationIdx ? ' active' : ''));
-    d.textContent = name.toUpperCase();
-    dots.appendChild(d);
+    const t = el('div', 'tab' + (i === stationIdx ? ' active' : ''));
+    t.textContent = name.toUpperCase();
+    tabs.appendChild(t);
   });
 }
 
@@ -902,7 +1011,7 @@ function showStation() {
     document.getElementById('stationWalk').textContent = WALK_MIN[name];
     fillDirection('trainsN', s.manhattan_bound, WALK_MIN[name]);
     fillDirection('trainsS', s.canarsie_bound,  WALK_MIN[name]);
-    renderStationDots();
+    renderStationTabs();
     view.classList.remove('fade');
   }, 200);
 }
