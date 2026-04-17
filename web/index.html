@@ -820,20 +820,31 @@ function toggleFav(id) {
 }
 
 // --- Player ---
+// Tap-to-play UX:
+//   - Tapping any station plays it immediately. No second "press play" step.
+//   - If the new stream fails, revert to the last known-good station so the
+//     user doesn't get dropped into silence mid-listen.
+//   - The first tap ever on the page counts as the user gesture required
+//     by browser autoplay policies.
+let _lastGoodId = null;   // most recent station whose 'playing' event fired
+let _pendingId = null;    // station we're trying to load but haven't confirmed
+
 function selectStation(id) {
-  const prev = selectedId;
+  // Save the current station before switching
+  const prev = isPlaying ? _lastGoodId : null;
+  _pendingId = id;
   selectedId = id;
   const s = stations.find(x => x.id === id);
   if (!s) return;
   localStorage.setItem(LS.last, id);
   updateHero(s);
   renderStations();
-  // If we were already playing, start this one immediately; otherwise just select
-  if (isPlaying || prev === id) play();
+  // One-tap playback — always start the new station when tapped
+  play({ prevWorkingId: prev });
 }
 
 function updateHero(s) {
-  $('heroLabel').textContent = isPlaying ? 'Now Streaming' : 'Ready to play';
+  $('heroLabel').textContent = isPlaying ? 'Now Streaming' : (s ? 'Tap to play' : 'Pick a station');
   $('heroStation').textContent = s ? s.name : '—';
   $('heroGenre').textContent = s ? (s.genre || '') : '';
 }
@@ -861,40 +872,41 @@ function _isHls(url) {
   return /\.m3u8(\?|$)/i.test(url);
 }
 
-function _loadStream(player, url) {
+// Load a stream without asserting playback state. Caller handles fallback
+// on failure. Returns a function that reports errors by calling onError.
+function _loadStream(player, url, onError) {
   _destroyHls();
   if (_isHls(url)) {
-    // Safari plays HLS natively via the <audio> src attribute
     if (player.canPlayType('application/vnd.apple.mpegurl')) {
       player.src = url;
     } else if (window.Hls && window.Hls.isSupported()) {
-      // Chrome/Firefox need hls.js as a shim
       _hlsInstance = new window.Hls({ lowLatencyMode: false });
       _hlsInstance.loadSource(url);
       _hlsInstance.attachMedia(player);
       _hlsInstance.on(window.Hls.Events.ERROR, (_, data) => {
         if (data.fatal) {
-          console.error('HLS error:', data);
-          toast('Stream failed — try another station');
-          isPlaying = false;
-          updatePlayButton();
+          console.warn('HLS error:', data);
+          onError && onError(data);
         }
       });
     } else {
-      toast('This stream format is not supported in this browser');
-      throw new Error('no HLS support');
+      throw new Error('HLS not supported in this browser');
     }
   } else {
     player.src = url;
   }
 }
 
-function play() {
+// Core play logic with graceful fallback. If loading the target stream
+// fails, and we have a prevWorkingId, silently revert so the user keeps
+// hearing whatever they had on.
+function play(opts) {
+  opts = opts || {};
+  const prevWorkingId = opts.prevWorkingId || null;
   const s = stations.find(x => x.id === selectedId);
   if (!s) return;
 
-  // If we have an active Cast session, route playback there instead of
-  // playing locally on the device. The Chromecast fetches the stream itself.
+  // Cast session: remote playback owns the failure recovery
   if (castSession) {
     isPlaying = true;
     updatePlayButton();
@@ -905,23 +917,58 @@ function play() {
   }
 
   const player = $('player');
+
+  // Recovery handler — used by both HLS errors and promise rejection
+  const fallback = (reason) => {
+    console.warn('Stream failed:', selectedId, reason);
+    if (prevWorkingId && prevWorkingId !== selectedId) {
+      // Revert to the previous working station
+      toast('Stream unreachable — keeping previous');
+      const prevStation = stations.find(x => x.id === prevWorkingId);
+      if (prevStation) {
+        _pendingId = prevWorkingId;
+        selectedId = prevWorkingId;
+        updateHero(prevStation);
+        renderStations();
+        try {
+          _loadStream(player, prevStation.url);
+          player.play().catch(() => {});
+        } catch (e) {
+          // Even the fallback failed — give up
+          isPlaying = false;
+          updatePlayButton();
+        }
+      }
+    } else {
+      // No previous station — just surface the error
+      isPlaying = false;
+      updatePlayButton();
+      updateHero(s);
+      toast('Stream unreachable — try another');
+    }
+  };
+
   try {
-    _loadStream(player, s.url);
+    _loadStream(player, s.url, fallback);
   } catch (e) {
-    return; // toast already shown
+    fallback(e);
+    return;
   }
-  // Optimistic UI
+  // Optimistic UI: show as playing immediately
   isPlaying = true;
   updatePlayButton();
   updateHero(s);
   renderStations();
   player.play().catch(e => {
-    // Browser blocked autoplay, or stream failed
-    isPlaying = false;
-    updatePlayButton();
-    updateHero(s);
-    toast(e.name === 'NotAllowedError' ? 'Tap play again to start' : 'Stream failed — try another station');
-    console.error('play error:', e);
+    if (e.name === 'NotAllowedError') {
+      // Browser blocked autoplay — require user gesture
+      isPlaying = false;
+      updatePlayButton();
+      updateHero(s);
+      toast('Tap the station again to start');
+    } else {
+      fallback(e);
+    }
   });
 }
 
@@ -967,6 +1014,8 @@ function updatePlayButton() {
 function initAudioEvents() {
   const player = $('player');
   player.addEventListener('playing', () => {
+    // Successfully streaming — remember this as the known-good station
+    _lastGoodId = selectedId;
     isPlaying = true; updatePlayButton();
     const s = stations.find(x => x.id === selectedId);
     updateHero(s); renderStations();
@@ -976,13 +1025,33 @@ function initAudioEvents() {
     isPlaying = false; updatePlayButton();
   });
   player.addEventListener('error', () => {
-    if (isPlaying) {
-      isPlaying = false; updatePlayButton();
-      toast('Stream unreachable — try another');
+    if (!isPlaying) return;
+    // Native media error (e.g., bad codec, stream disappeared). If we have
+    // a known-good previous station AND the user tapped something new that
+    // failed, revert silently so playback doesn't die mid-listen.
+    const tried = selectedId;
+    if (_lastGoodId && _lastGoodId !== tried) {
+      const prev = stations.find(x => x.id === _lastGoodId);
+      if (prev) {
+        toast('Stream unreachable — keeping previous');
+        _pendingId = _lastGoodId;
+        selectedId = _lastGoodId;
+        updateHero(prev);
+        renderStations();
+        try {
+          _loadStream(player, prev.url);
+          player.play().catch(() => {});
+        } catch (e) {
+          isPlaying = false; updatePlayButton();
+        }
+        return;
+      }
     }
+    isPlaying = false; updatePlayButton();
+    toast('Stream unreachable — try another');
   });
   player.addEventListener('stalled', () => {
-    // Show brief indicator but don't stop
+    // Brief network hiccup — audio element will resume on its own
   });
 
   // --- AirPlay (Safari only) ---
