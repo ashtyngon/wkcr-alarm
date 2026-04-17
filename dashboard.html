@@ -45,12 +45,58 @@ body {
 
 .frame {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto;
   height: 100vh;
   padding: 24px 36px;
-  gap: 20px;
+  gap: 16px;
   position: relative;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   SLOGAN BAR — rotating communist joke ticker with Lenin icon.
+   Kept deliberately thin so it doesn't crowd the trains.
+   ══════════════════════════════════════════════════════════════ */
+.slogan-bar {
+  display: flex; align-items: center; gap: 18px;
+  padding: 8px 18px;
+  background: var(--ink);
+  color: var(--paper);
+  border: 3px solid var(--ink);
+  overflow: hidden;
+  min-height: 54px;
+}
+.slogan-bar .lenin {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 54px;
+  color: var(--red);
+}
+.slogan-bar .star {
+  flex: 0 0 auto;
+  width: 30px; height: 30px;
+  color: var(--red);
+}
+.slogan-bar .slogan-text {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(15px, 1.5vw, 22px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.4s ease;
+}
+.slogan-bar .slogan-text .attr {
+  color: var(--red);
+  font-weight: 500;
+  margin-left: 14px;
+  letter-spacing: 0.1em;
+}
+.slogan-bar .slogan-text.fade { opacity: 0; }
 
 /* ══════════════════════════════════════════════════════════════
    TOP STRIP — time + weather in a single horizontal band.
@@ -384,6 +430,36 @@ body {
     </div>
   </div>
 
+  <!-- ═════ SLOGAN BAR — Lenin silhouette + rotating quote ═════ -->
+  <div class="slogan-bar">
+    <svg class="lenin" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- Approximate Lenin profile silhouette facing right: bald
+           dome, prominent goatee extending to the lower right, suit
+           collar. Kitsch, not anatomical. -->
+      <path fill="currentColor" d="M 50 6
+        C 73 6, 88 20, 88 42
+        C 88 52, 86 60, 82 64
+        L 96 78
+        L 92 88
+        L 78 82
+        C 78 92, 70 100, 58 102
+        L 58 110
+        L 98 110
+        L 100 120
+        L 0 120
+        L 2 110
+        L 42 110
+        L 42 100
+        C 28 96, 22 85, 22 68
+        C 14 62, 14 46, 20 38
+        C 22 20, 32 10, 50 6 Z"/>
+    </svg>
+    <svg class="star" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <polygon fill="currentColor" points="50,5 61,39 97,39 68,60 79,94 50,73 21,94 32,60 3,39 39,39"/>
+    </svg>
+    <div class="slogan-text" id="sloganText">WORKERS OF THE L-LINE, UNITE!<span class="attr">— K. MARX</span></div>
+  </div>
+
   <!-- ═════ TRAINS — MAIN EVENT ═════ -->
   <section class="train-frame">
     <div class="train-header">
@@ -673,6 +749,72 @@ async function refreshTrains() {
     document.getElementById('statusRight').textContent = 'RETRY';
   }
 }
+
+// ═════════════════════════════════════════════════════════════════
+// SLOGAN ROTATION — rotating communist jokes and quote-adjacent
+// aphorisms. A mix of lightly-edited Marx/Lenin, attributed parodies,
+// and freshly invented Greenpoint-specific kitsch. No actual politics.
+// ═════════════════════════════════════════════════════════════════
+const SLOGANS = [
+  // Classic Marx/Lenin adapted to commuting
+  { t: 'Workers of the L-line, unite!',                                                a: 'K. Marx' },
+  { t: 'There are decades where nothing happens, then weeks where three trains arrive at once.', a: 'V. Lenin' },
+  { t: 'The philosophers have only interpreted the schedule. The point is to catch the train.', a: 'K. Marx' },
+  { t: 'Trust the MTA, but verify.',                                                   a: 'V. Lenin' },
+  { t: 'A specter is haunting Greenpoint — the G train.',                              a: 'Manifesto' },
+  { t: 'The state shall wither away. Monday will not.',                                a: 'F. Engels' },
+  { t: 'Religion is the opium of the people. Rain is the opium of the commuter.',     a: 'K. Marx' },
+  { t: 'The bourgeoisie takes a Lyft.',                                                a: 'Manifesto' },
+  { t: 'History repeats itself — first as tragedy, then as shuttle bus.',              a: 'K. Marx' },
+  { t: 'From each according to their MetroCard, to each according to their arrival.', a: 'K. Marx' },
+  { t: 'Workers have nothing to lose but their MetroCards.',                           a: 'Manifesto' },
+  { t: 'Fabriki, zavody, trains — to the workers!',                                    a: 'V. Lenin' },
+
+  // Dashboard-specific kitsch
+  { t: 'Five-year plan: arrive on time.',                                              a: 'Politburo' },
+  { t: 'Punctuality is the politeness of proletarians.',                               a: 'V. Lenin' },
+  { t: 'Every delay is a revolution deferred.' },
+  { t: 'The means of transportation belong to the people.',                            a: 'Manifesto' },
+  { t: 'Comrade, hold the door.' },
+  { t: 'Solidarity with the B43 bus.' },
+  { t: 'Weather has no politics. Umbrellas do.' },
+  { t: 'The L station is the engine of history.' },
+  { t: 'Yes, I still use a MetroCard. And?' },
+  { t: 'Subways of the world, unite!' },
+  { t: 'Greenpoint — where every commute is a struggle.' },
+  { t: 'The proletariat must seize the 7:34 L.' },
+  { t: 'Four more minutes until sunset. The revolution can wait.' },
+];
+
+let sloganIdx = Math.floor(Math.random() * SLOGANS.length);
+function rotateSlogan() {
+  const node = document.getElementById('sloganText');
+  if (!node) return;
+  // Pick the next slogan (not the one we just showed)
+  let next;
+  do { next = Math.floor(Math.random() * SLOGANS.length); }
+  while (SLOGANS.length > 1 && next === sloganIdx);
+  sloganIdx = next;
+  const s = SLOGANS[sloganIdx];
+
+  // Fade out → swap text → fade in
+  node.classList.add('fade');
+  setTimeout(() => {
+    node.textContent = '';
+    const t = document.createElement('span');
+    t.textContent = s.t.toUpperCase();
+    node.appendChild(t);
+    if (s.a) {
+      const a = document.createElement('span');
+      a.className = 'attr';
+      a.textContent = '— ' + s.a.toUpperCase();
+      node.appendChild(a);
+    }
+    node.classList.remove('fade');
+  }, 400);
+}
+rotateSlogan();
+setInterval(rotateSlogan, 12 * 1000);
 
 // Kickoff
 refreshWeather();
