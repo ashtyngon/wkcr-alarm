@@ -4,7 +4,9 @@ import time
 import threading
 import logging
 import re
-from datetime import datetime
+import urllib.request
+import urllib.parse
+from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, send_file
 import pychromecast
 
@@ -729,6 +731,153 @@ def index():
     if os.path.exists(ui_path):
         return send_file(ui_path)
     return "<h1>Radio Alarm Clock</h1><p>UI file not found</p>", 404
+
+
+# =============================================================================
+# Wall-mounted dashboard (weather, MTA trains, clock)
+# =============================================================================
+
+# Greenpoint (near Nassau Ave) — 11222
+DASHBOARD_LAT = 40.724
+DASHBOARD_LON = -73.951
+
+# MTA stop IDs for the L line stations we care about.
+# Northbound (N) / Southbound (S) suffixes identify platform direction.
+# L17N/L17S = Bedford Av, L16N/L16S = Lorimer St (nearest to Graham via L/G
+# transfer), L15N/L15S = Graham Av, L14N/L14S = Grand St, L13N/L13S = Nassau Av.
+MTA_L_STATIONS = {
+    "Nassau Av": {"N": "L13N", "S": "L13S"},  # towards Manhattan / Canarsie
+    "Graham Av": {"N": "L15N", "S": "L15S"},
+    "Bedford Av": {"N": "L17N", "S": "L17S"},
+}
+MTA_L_FEED_URL = "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-l"
+
+# Simple TTL caches to avoid hammering upstream APIs
+_dash_cache = {
+    "weather": {"data": None, "ts": 0, "ttl": 600},   # 10 min
+    "trains":  {"data": None, "ts": 0, "ttl": 15},    # 15 sec (MTA updates ~30s)
+}
+_dash_lock = threading.Lock()
+
+
+def _cache_get(key):
+    entry = _dash_cache.get(key)
+    if not entry or not entry["data"]:
+        return None
+    if time.time() - entry["ts"] > entry["ttl"]:
+        return None
+    return entry["data"]
+
+
+def _cache_put(key, data):
+    _dash_cache[key]["data"] = data
+    _dash_cache[key]["ts"] = time.time()
+
+
+def _fetch_weather():
+    """Hit Open-Meteo for current conditions + hourly forecast. No API key."""
+    params = {
+        "latitude": DASHBOARD_LAT,
+        "longitude": DASHBOARD_LON,
+        "current": "temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day",
+        "hourly": "temperature_2m,weather_code,precipitation_probability",
+        "daily": "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset",
+        "temperature_unit": "fahrenheit",
+        "wind_speed_unit": "mph",
+        "timezone": "America/New_York",
+        "forecast_days": 2,
+    }
+    url = "https://api.open-meteo.com/v1/forecast?" + urllib.parse.urlencode(params)
+    req = urllib.request.Request(url, headers={"User-Agent": "SensoryRadio-Dashboard/1.0"})
+    with urllib.request.urlopen(req, timeout=10) as r:
+        return json.loads(r.read().decode("utf-8"))
+
+
+def _fetch_mta_trains():
+    """Fetch L-line GTFS-RT feed and extract upcoming arrivals per station."""
+    # Import lazily so the radio app still loads if the lib isn't installed.
+    try:
+        from google.transit import gtfs_realtime_pb2  # pip install gtfs-realtime-bindings
+    except ImportError:
+        LOG.warning("gtfs-realtime-bindings not installed — /api/trains will return empty")
+        return {"stations": [], "error": "missing gtfs-realtime-bindings"}
+
+    req = urllib.request.Request(MTA_L_FEED_URL, headers={"User-Agent": "SensoryRadio-Dashboard/1.0"})
+    with urllib.request.urlopen(req, timeout=10) as r:
+        raw = r.read()
+
+    feed = gtfs_realtime_pb2.FeedMessage()
+    feed.ParseFromString(raw)
+
+    now = int(time.time())
+    # Build map: stop_id -> [(eta_sec, direction_label, trip_id)]
+    stop_arrivals = {}
+    for ent in feed.entity:
+        if not ent.HasField("trip_update"):
+            continue
+        for stu in ent.trip_update.stop_time_update:
+            eta = stu.arrival.time if stu.HasField("arrival") and stu.arrival.time else \
+                  (stu.departure.time if stu.HasField("departure") and stu.departure.time else 0)
+            if not eta or eta < now:
+                continue
+            stop_arrivals.setdefault(stu.stop_id, []).append(eta - now)
+
+    # Compose per-station payload we want to render
+    stations_out = []
+    for name, dirs in MTA_L_STATIONS.items():
+        n_eta = sorted(stop_arrivals.get(dirs["N"], []))[:3]
+        s_eta = sorted(stop_arrivals.get(dirs["S"], []))[:3]
+        stations_out.append({
+            "name": name,
+            "manhattan_bound": [round(e / 60) for e in n_eta],   # minutes to arrival
+            "canarsie_bound":  [round(e / 60) for e in s_eta],
+        })
+    return {"stations": stations_out, "fetched_at": now}
+
+
+@app.route("/api/weather", methods=["GET"])
+def api_weather():
+    cached = _cache_get("weather")
+    if cached:
+        return jsonify({"ok": True, "data": cached, "cached": True})
+    try:
+        with _dash_lock:
+            cached = _cache_get("weather")  # double-check under lock
+            if cached:
+                return jsonify({"ok": True, "data": cached, "cached": True})
+            data = _fetch_weather()
+            _cache_put("weather", data)
+            return jsonify({"ok": True, "data": data, "cached": False})
+    except Exception as e:
+        LOG.error(f"Weather fetch failed: {e}")
+        return jsonify({"ok": False, "error": str(e)}), 502
+
+
+@app.route("/api/trains", methods=["GET"])
+def api_trains():
+    cached = _cache_get("trains")
+    if cached:
+        return jsonify({"ok": True, "data": cached, "cached": True})
+    try:
+        with _dash_lock:
+            cached = _cache_get("trains")
+            if cached:
+                return jsonify({"ok": True, "data": cached, "cached": True})
+            data = _fetch_mta_trains()
+            _cache_put("trains", data)
+            return jsonify({"ok": True, "data": data, "cached": False})
+    except Exception as e:
+        LOG.error(f"MTA fetch failed: {e}")
+        return jsonify({"ok": False, "error": str(e)}), 502
+
+
+@app.route("/dashboard")
+def dashboard():
+    """Serve the wall-mounted dashboard."""
+    path = os.path.join(os.path.dirname(__file__), "dashboard.html")
+    if os.path.exists(path):
+        return send_file(path)
+    return "<h1>Dashboard</h1><p>dashboard.html not found</p>", 404
 
 
 @app.route("/config", methods=["GET"])

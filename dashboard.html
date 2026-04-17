@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Greenpoint Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+  html, body { background: #0a0b0f; color: #e4e5ef; font-family: Manrope, sans-serif; }
+  body { min-height: 100dvh; overflow: hidden; }
+  .headline { font-family: 'Space Grotesk', sans-serif; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 48; }
+  .living-gradient {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(225,207,255,0.08) 0%, transparent 50%),
+      radial-gradient(circle at 85% 80%, rgba(156,251,250,0.05) 0%, transparent 50%);
+  }
+  .dim-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,var(--night-dim, 0));
+    pointer-events: none;
+    transition: background 2s ease;
+  }
+  @keyframes breathe { 0%,100% { opacity: 0.4 } 50% { opacity: 1 } }
+  .breathe { animation: breathe 8s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
+  .pulse-dot { animation: pulse 1.8s ease-in-out infinite; }
+  ::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body class="font-body antialiased">
+
+<div class="living-gradient"></div>
+<div class="fixed top-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-purple-500/5 blur-[140px] breathe pointer-events-none z-0"></div>
+<div class="fixed bottom-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-cyan-500/4 blur-[120px] breathe pointer-events-none z-0" style="animation-delay:-4s"></div>
+
+<main class="relative z-10 h-screen flex flex-col p-10 gap-6">
+
+  <section class="flex gap-6 min-h-[40vh]">
+    <div class="flex-1 flex flex-col justify-center">
+      <p class="headline text-[11px] tracking-[0.3em] uppercase text-zinc-500 mb-2" id="dateLabel">—</p>
+      <div class="headline font-light tracking-tighter leading-none text-[14rem] text-white" id="bigClock">--:--</div>
+      <p class="headline text-lg text-zinc-400 mt-3" id="seconds">—</p>
+    </div>
+
+    <div class="w-[38%] flex flex-col justify-center px-8 py-6 rounded-2xl bg-white/[0.03] border border-white/5">
+      <p class="headline text-[11px] tracking-[0.3em] uppercase text-zinc-500 mb-3">Greenpoint · weather</p>
+      <div class="flex items-start gap-5">
+        <span class="material-symbols-outlined !text-[6rem] text-amber-200" id="weatherIcon">cloud</span>
+        <div class="flex-1">
+          <div class="headline font-light text-7xl text-white leading-none" id="tempNow">—°</div>
+          <p class="text-zinc-400 text-sm mt-2" id="weatherDesc">Loading…</p>
+          <p class="text-zinc-500 text-xs mt-1" id="feelsLike">—</p>
+        </div>
+      </div>
+      <div class="flex justify-between mt-5 pt-4 border-t border-white/5" id="forecastStrip"></div>
+    </div>
+  </section>
+
+  <section class="flex-1 flex flex-col">
+    <div class="flex items-baseline justify-between mb-3">
+      <p class="headline text-[11px] tracking-[0.3em] uppercase text-zinc-500">L train · upcoming</p>
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
+        <span class="text-[10px] tracking-[0.15em] uppercase text-zinc-500" id="trainsUpdated">Live</span>
+      </div>
+    </div>
+    <div class="grid grid-cols-3 gap-4 flex-1" id="trainTiles"></div>
+  </section>
+
+  <section class="flex items-center justify-between text-[11px] tracking-[0.2em] uppercase text-zinc-600 border-t border-white/5 pt-4">
+    <span id="statusLeft">Sensory Dashboard · Greenpoint, 11222</span>
+    <span id="statusRight">—</span>
+  </section>
+</main>
+
+<div class="dim-overlay"></div>
+
+<script>
+// ----- Safe DOM helpers (avoid innerHTML on any user-derived data) -----
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = String(text);
+  return e;
+}
+function icon(name, cls) {
+  const s = el('span', 'material-symbols-outlined ' + (cls||''), name);
+  return s;
+}
+
+// ----- Clock -----
+function tickClock() {
+  const now = new Date();
+  document.getElementById('bigClock').textContent =
+    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('seconds').textContent =
+    String(now.getSeconds()).padStart(2,'0') + ' seconds';
+  document.getElementById('dateLabel').textContent =
+    now.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'});
+
+  const hour = now.getHours() + now.getMinutes()/60;
+  let dim = 0;
+  if (hour >= 22 || hour < 6) dim = 0.35;
+  else if (hour >= 21 && hour < 22) dim = (hour - 21) * 0.35;
+  else if (hour >= 6  && hour < 7)  dim = 0.35 - (hour - 6) * 0.35;
+  document.body.style.setProperty('--night-dim', dim.toFixed(2));
+}
+tickClock(); setInterval(tickClock, 1000);
+
+// ----- Weather -----
+const WMO = {
+  0:{i:'wb_sunny',d:'Clear'}, 1:{i:'partly_cloudy_day',d:'Mostly clear'},
+  2:{i:'partly_cloudy_day',d:'Partly cloudy'}, 3:{i:'cloud',d:'Overcast'},
+  45:{i:'foggy',d:'Fog'}, 48:{i:'foggy',d:'Rime fog'},
+  51:{i:'rainy',d:'Light drizzle'}, 53:{i:'rainy',d:'Drizzle'}, 55:{i:'rainy',d:'Heavy drizzle'},
+  61:{i:'rainy',d:'Light rain'}, 63:{i:'rainy',d:'Rain'}, 65:{i:'rainy',d:'Heavy rain'},
+  71:{i:'weather_snowy',d:'Light snow'}, 73:{i:'weather_snowy',d:'Snow'}, 75:{i:'weather_snowy',d:'Heavy snow'},
+  80:{i:'rainy',d:'Rain showers'}, 81:{i:'rainy',d:'Rain showers'}, 82:{i:'thunderstorm',d:'Violent showers'},
+  95:{i:'thunderstorm',d:'Thunderstorm'}, 96:{i:'thunderstorm',d:'Thunderstorm & hail'},
+  99:{i:'thunderstorm',d:'Thunderstorm & hail'},
+};
+
+async function refreshWeather() {
+  try {
+    const r = await fetch('/api/weather');
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error);
+    const d = j.data, cur = d.current;
+    const code = WMO[cur.weather_code] || {i:'help', d:'Unknown'};
+    document.getElementById('weatherIcon').textContent =
+      cur.is_day ? code.i : (code.i === 'wb_sunny' ? 'bedtime' : code.i);
+    document.getElementById('tempNow').textContent = Math.round(cur.temperature_2m) + '°';
+    document.getElementById('weatherDesc').textContent = code.d;
+    document.getElementById('feelsLike').textContent =
+      'Feels ' + Math.round(cur.apparent_temperature) + '° · Wind ' +
+      Math.round(cur.wind_speed_10m) + ' mph';
+
+    const strip = document.getElementById('forecastStrip');
+    strip.textContent = '';
+    const nowTime = Date.now();
+    // Pick next 6 hourly slots
+    const picks = d.hourly.time
+      .map((t,idx)=>({t: new Date(t).getTime(), idx}))
+      .filter(x => x.t > nowTime)
+      .slice(0, 6);
+    picks.forEach(p => {
+      const t = Math.round(d.hourly.temperature_2m[p.idx]);
+      const c = d.hourly.weather_code[p.idx];
+      const ic = (WMO[c] || {i:'help'}).i;
+      const hr = new Date(d.hourly.time[p.idx]);
+      const h = hr.getHours();
+      const label = h===0 ? '12a' : h===12 ? '12p' : h>12 ? (h-12)+'p' : h+'a';
+      const cell = el('div', 'flex flex-col items-center text-center flex-1');
+      cell.appendChild(el('span', 'text-[10px] tracking-wider uppercase text-zinc-600', label));
+      cell.appendChild(icon(ic, '!text-[1.4rem] text-zinc-400 mt-1'));
+      cell.appendChild(el('span', 'text-sm text-zinc-300 mt-1', t+'°'));
+      strip.appendChild(cell);
+    });
+  } catch (e) {
+    console.error('weather', e);
+  }
+}
+
+// ----- MTA Trains -----
+function buildTile(s) {
+  const tile = el('div', 'flex flex-col justify-between p-5 rounded-2xl bg-white/[0.03] border border-white/5');
+
+  const head = el('div', 'flex items-baseline justify-between');
+  head.appendChild(el('span', 'headline text-lg font-medium text-white', s.name));
+  head.appendChild(el('span', 'w-7 h-7 rounded-full bg-zinc-500 text-white flex items-center justify-center text-sm font-bold', 'L'));
+  tile.appendChild(head);
+
+  const sections = [
+    { label: 'Manhattan-bound', nums: s.manhattan_bound, size: 'text-4xl text-white',  labelCls: 'text-zinc-600', dotCls: 'text-zinc-600', emptyCls: 'text-zinc-600' },
+    { label: 'Canarsie-bound',  nums: s.canarsie_bound,  size: 'text-2xl text-zinc-400', labelCls: 'text-zinc-700', dotCls: 'text-zinc-700', emptyCls: 'text-zinc-700' },
+  ];
+  for (const sec of sections) {
+    const block = el('div', 'mt-3');
+    block.appendChild(el('p', 'text-[10px] tracking-[0.2em] uppercase ' + sec.labelCls, sec.label));
+    const row = el('div', 'flex items-baseline gap-1 mt-1');
+    if (sec.nums.length) {
+      sec.nums.forEach((m, idx) => {
+        row.appendChild(el('span', 'headline font-light ' + sec.size, m));
+        if (idx < sec.nums.length - 1) row.appendChild(el('span', sec.dotCls + ' mx-2', '·'));
+      });
+      row.appendChild(el('span', sec.emptyCls + ' text-xs ml-2', 'min'));
+    } else {
+      row.appendChild(el('span', sec.emptyCls + ' text-xs', 'no trains scheduled'));
+    }
+    block.appendChild(row);
+    tile.appendChild(block);
+  }
+  return tile;
+}
+
+function renderTrains(stations) {
+  const host = document.getElementById('trainTiles');
+  host.textContent = '';
+  stations.forEach(s => host.appendChild(buildTile(s)));
+}
+
+async function refreshTrains() {
+  const host = document.getElementById('trainTiles');
+  try {
+    const r = await fetch('/api/trains');
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error);
+    if (j.data.error) {
+      host.textContent = '';
+      const box = el('div', 'col-span-3 p-6 rounded-2xl bg-white/[0.03] border border-white/5 text-center text-zinc-400', j.data.error);
+      host.appendChild(box);
+      return;
+    }
+    renderTrains(j.data.stations);
+    const t = new Date();
+    document.getElementById('trainsUpdated').textContent =
+      'Updated ' + String(t.getHours()).padStart(2,'0') + ':' +
+                    String(t.getMinutes()).padStart(2,'0') + ':' +
+                    String(t.getSeconds()).padStart(2,'0');
+  } catch (e) {
+    console.error('trains', e);
+    host.textContent = '';
+    const box = el('div', 'col-span-3 p-6 rounded-2xl bg-red-950/30 border border-red-900/40 text-center text-red-200',
+      'Train feed offline — retrying automatically');
+    host.appendChild(box);
+  }
+}
+
+refreshWeather(); setInterval(refreshWeather, 10 * 60 * 1000);
+refreshTrains();  setInterval(refreshTrains, 20 * 1000);
+</script>
+</body>
+</html>
