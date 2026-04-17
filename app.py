@@ -822,11 +822,13 @@ def _fetch_mta_trains():
                 continue
             stop_arrivals.setdefault(stu.stop_id, []).append(eta - now)
 
-    # Compose per-station payload we want to render
+    # Compose per-station payload we want to render.
+    # Return up to 8 upcoming trains per direction so the dashboard can
+    # pick a catchable one even when the walk is long (e.g. 18 min to Bedford).
     stations_out = []
     for name, dirs in MTA_L_STATIONS.items():
-        n_eta = sorted(stop_arrivals.get(dirs["N"], []))[:3]
-        s_eta = sorted(stop_arrivals.get(dirs["S"], []))[:3]
+        n_eta = sorted(stop_arrivals.get(dirs["N"], []))[:8]
+        s_eta = sorted(stop_arrivals.get(dirs["S"], []))[:8]
         stations_out.append({
             "name": name,
             "manhattan_bound": [round(e / 60) for e in n_eta],   # minutes to arrival

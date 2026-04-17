@@ -215,8 +215,8 @@ body {
 }
 .stop-verdict {
   margin-top: 6px;
-  font-size: 28px; font-weight: 600;
-  line-height: 1.1;
+  font-size: 22px; font-weight: 600;
+  line-height: 1.15;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
@@ -477,49 +477,62 @@ async function refreshWeather() {
 // TRAINS — verdict = arrival minutes MINUS your walk time.
 // Every station uses its own walk value so advice actually fits.
 // ═════════════════════════════════════════════════════════════════
+function fmtClock(date) {
+  let h = date.getHours();
+  const m = String(date.getMinutes()).padStart(2, '0');
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return h + ':' + m + ' ' + ap;
+}
+
 function verdictForStation(stopName, trains) {
   const walk = WALK_MIN[stopName] ?? 5;
   if (!trains || !trains.length) {
-    return { klass: '', text: 'No trains', detail: 'Nothing scheduled in the next 30 min.' };
+    return { klass: '', text: 'No trains', detail: 'Nothing scheduled right now. Check back in a minute.' };
   }
 
-  // Find the soonest train you can actually catch: arrival >= walk time.
-  const catchable = trains.find(m => m >= walk);
-  const first = trains[0];
+  // Find the soonest train you can actually catch given your walking time.
+  // Add 1-minute buffer so you're not literally sprinting onto a closing door.
+  const catchable = trains.find(m => m >= walk + 1);
 
-  // No catchable train in the feed — show the trains that did show up.
+  // Feed doesn't show anything catchable yet — explain clearly.
   if (catchable == null) {
-    const list = trains.slice(0, 3).map(x => x + ' min').join(', ');
+    const soonest = trains[0];
     return {
-      klass: 'miss',
-      text: 'Too far',
-      detail: 'Upcoming: ' + list + ' — none reachable with a ' + walk + '-min walk.'
+      klass: 'soon',
+      text: 'Wait — trains too close',
+      detail: 'Nearest ' + trains.length + ' trains are ' +
+              trains.join(', ') + ' min out. None give you enough time to walk ' +
+              walk + ' min. Refreshes every 20 sec.'
     };
   }
 
-  // How many minutes until you need to leave?
+  // Headline: "Catch the 3:47 PM train"
+  const arriveAt = new Date(Date.now() + catchable * 60_000);
+  const leaveAt = new Date(Date.now() + (catchable - walk) * 60_000);
   const leaveIn = catchable - walk;
-  let klass, text;
-  if (leaveIn <= 0)      { klass = 'go';     text = 'Leave now'; }
-  else if (leaveIn <= 2) { klass = 'go';     text = 'Leave in ' + leaveIn + ' min'; }
-  else if (leaveIn <= 6) { klass = 'soon';   text = 'Leave in ' + leaveIn + ' min'; }
-  else                   { klass = 'plenty'; text = 'Leave in ' + leaveIn + ' min'; }
 
-  // Compute clock time to leave.
-  const leaveAt = new Date(Date.now() + leaveIn * 60_000);
-  let lh = leaveAt.getHours();
-  const lm = String(leaveAt.getMinutes()).padStart(2,'0');
-  const lap = lh >= 12 ? 'PM' : 'AM';
-  lh = lh % 12 || 12;
+  let klass;
+  let action;
+  if (leaveIn <= 0)      { klass = 'go';     action = 'Leave now'; }
+  else if (leaveIn <= 2) { klass = 'go';     action = 'Leave in ' + leaveIn + ' min'; }
+  else if (leaveIn <= 6) { klass = 'soon';   action = 'Leave in ' + leaveIn + ' min'; }
+  else                   { klass = 'plenty'; action = 'Leave in ' + leaveIn + ' min'; }
 
-  // Remaining upcoming trains (after the one we're catching)
-  const rest = trains.filter(m => m > catchable).slice(0, 3);
-
+  // Trains after the one we're catching — show a couple so you know your backups.
+  const backups = trains.filter(m => m > catchable).slice(0, 3);
   const detailParts = [];
-  detailParts.push('Train in ' + catchable + ' min · leave by ' + lh + ':' + lm + ' ' + lap);
-  if (rest.length) detailParts.push('Then: ' + rest.map(x => x + ' min').join(', '));
+  detailParts.push(action + ' for the ' + fmtClock(arriveAt) + ' train');
+  detailParts.push('(' + catchable + ' min away · walk ' + walk + ' min · leave by ' + fmtClock(leaveAt) + ')');
+  if (backups.length) {
+    detailParts.push('After that: ' + backups.map(x => x + ' min').join(', '));
+  }
 
-  return { klass, text, detail: detailParts.join(' · ') };
+  return {
+    klass,
+    text: 'Catch the ' + fmtClock(arriveAt) + ' train',
+    detail: detailParts.join(' · ')
+  };
 }
 
 function buildStop(s) {
