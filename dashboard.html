@@ -3,28 +3,34 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Greenpoint · dashboard</title>
+<title>Dashboard</title>
+<!-- Safari "Add to Dock" / iOS "Add to Home Screen" → standalone, no chrome -->
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Dashboard"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#0b1020"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 /* ──────────────────────────────────────────────────────────────────
-   Wall dashboard — Greenpoint, 11222.
-   Shows clock, current weather, 6-hour forecast, and L-train times
-   for the three closest stations, each calibrated to YOUR walking
-   time so "Leave now" means "start walking this second or miss it".
+   Wall dashboard.
+   Priorities: readable from across a room, information-dense without
+   being cluttered. Big typography, calibrated walk times.
    ────────────────────────────────────────────────────────────────── */
 :root {
   --bg:        #fafafa;
   --surface:   #ffffff;
-  --ink:       #111827;
-  --ink-2:     #374151;
-  --muted:     #6b7280;
-  --line:      #e5e7eb;
-  --accent:    #0a66ff;   /* go */
-  --warn:      #d97706;   /* almost */
-  --danger:    #dc2626;   /* miss */
-  --ok:        #059669;   /* plenty of time */
+  --ink:       #0f172a;
+  --ink-2:     #334155;
+  --muted:     #64748b;
+  --muted-2:   #94a3b8;
+  --line:      #e2e8f0;
+  --accent:    #0a66ff;   /* go — blue */
+  --warn:      #d97706;   /* caution — amber */
+  --danger:    #dc2626;   /* miss — red */
+  --ok:        #059669;   /* plenty — green */
 }
 body[data-theme="dark"] {
   --bg:        #0b1020;
@@ -32,6 +38,7 @@ body[data-theme="dark"] {
   --ink:       #f3f4f6;
   --ink-2:     #d1d5db;
   --muted:     #9ca3af;
+  --muted-2:   #6b7280;
   --line:      #1f2937;
   --accent:    #60a5fa;
   --warn:      #f59e0b;
@@ -44,8 +51,8 @@ html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 16px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 18px;
   font-feature-settings: "ss01", "cv11", "tnum";
   -webkit-font-smoothing: antialiased;
   transition: background .6s ease, color .6s ease;
@@ -53,249 +60,293 @@ body {
 
 .stage {
   display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: 28px;
+  grid-template-rows: auto auto 1fr;
+  gap: 32px;
   height: 100vh;
-  padding: 36px 48px 28px;
+  padding: 40px 56px 40px;
 }
 
-/* ── Top bar ───────────────────────────────────────────────────── */
-.topbar {
-  display: flex; justify-content: space-between; align-items: baseline;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px; letter-spacing: 0.08em;
-  color: var(--muted); text-transform: uppercase;
-}
-.topbar .status { color: var(--ink-2); }
-.topbar .dot {
-  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--ok); margin-right: 8px; vertical-align: middle;
-}
-
-/* ── Hero: time + current weather side by side ─────────────────── */
+/* ── HERO: Time + Weather ──────────────────────────────────────── */
 .hero {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 48px;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
   align-items: start;
 }
 
+/* LEFT: Time */
 .time-block { min-width: 0; }
 .time-now {
-  font-size: clamp(90px, 13vw, 200px);
-  font-weight: 300;
-  letter-spacing: -0.045em;
-  line-height: 0.95;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-.time-now .ampm {
-  font-size: 0.28em;
-  font-weight: 500;
-  color: var(--muted);
-  margin-left: 12px;
-  letter-spacing: 0;
-  vertical-align: 0.9em;
-}
-.time-date {
-  margin-top: 4px;
-  font-size: 20px; font-weight: 500;
-  color: var(--ink-2);
-}
-.time-sub {
-  margin-top: 2px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px; letter-spacing: 0.12em;
-  color: var(--muted); text-transform: uppercase;
-}
-
-/* Weather block (right side of hero) */
-.wx { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.wx-row {
-  display: flex; align-items: baseline; gap: 20px;
-}
-.wx-temp {
-  font-size: clamp(80px, 11vw, 160px);
-  font-weight: 300;
-  letter-spacing: -0.04em;
+  font-size: clamp(140px, 19vw, 320px);
+  font-weight: 200;
+  letter-spacing: -0.05em;
   line-height: 0.9;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
-.wx-temp .deg { color: var(--muted); font-weight: 300; }
+.time-now .ampm {
+  font-size: 0.24em;
+  font-weight: 500;
+  color: var(--muted);
+  margin-left: 16px;
+  letter-spacing: 0;
+  vertical-align: 1em;
+}
+.time-date {
+  margin-top: 14px;
+  font-size: clamp(28px, 3vw, 44px);
+  font-weight: 600;
+  color: var(--ink-2);
+  line-height: 1;
+}
+.time-sub {
+  margin-top: 10px;
+  display: flex; gap: 24px; flex-wrap: wrap;
+  font-size: 18px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.time-sub .pill {
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.time-sub .pill .k {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted-2);
+}
+.time-sub .pill .v {
+  color: var(--ink-2); font-weight: 500;
+}
+
+/* RIGHT: Weather */
+.wx-block { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.wx-main { display: flex; align-items: baseline; gap: 28px; }
+.wx-temp {
+  font-size: clamp(130px, 17vw, 290px);
+  font-weight: 200;
+  letter-spacing: -0.04em;
+  line-height: 0.88;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.wx-temp .deg { color: var(--muted); font-weight: 200; }
 .wx-caption {
-  display: flex; flex-direction: column; gap: 2px;
-  padding-bottom: 12px;
+  display: flex; flex-direction: column; gap: 6px;
+  padding-bottom: 16px;
 }
 .wx-caption .label {
-  font-size: 22px; font-weight: 600;
-  color: var(--ink); line-height: 1.15;
+  font-size: clamp(28px, 3.2vw, 42px);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
 }
+.wx-caption .hi-lo {
+  font-size: 20px; color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+.wx-caption .hi-lo .sep { color: var(--muted-2); margin: 0 8px; }
 .wx-caption .feels {
-  font-size: 14px; color: var(--muted);
+  font-size: 17px; color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 .wx-summary {
-  font-size: 17px; color: var(--ink-2);
-  max-width: 42ch;
-  line-height: 1.4;
+  font-size: clamp(19px, 1.6vw, 26px);
+  color: var(--ink-2);
+  max-width: 38ch;
+  line-height: 1.35;
+  font-weight: 500;
 }
 
-/* 6-hour forecast strip */
+/* ── FORECAST STRIP ────────────────────────────────────────────── */
 .forecast {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 0;
-  margin-top: 8px;
   border-top: 1px solid var(--line);
-  padding-top: 14px;
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
 }
 .fc-cell {
-  display: flex; flex-direction: column; gap: 4px;
-  padding: 0 8px;
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 0 16px;
   border-left: 1px solid var(--line);
 }
 .fc-cell:first-child { border-left: none; padding-left: 0; }
 .fc-cell .hr {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px; letter-spacing: 0.1em;
+  font-size: 14px; letter-spacing: 0.08em;
   color: var(--muted); text-transform: uppercase;
+  font-weight: 500;
 }
 .fc-cell .t {
-  font-size: 22px; font-weight: 500; color: var(--ink);
+  font-size: 40px; font-weight: 600; color: var(--ink);
   font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.fc-cell .row-under {
+  display: flex; align-items: baseline; gap: 10px;
+  flex-wrap: wrap;
 }
 .fc-cell .c {
-  font-size: 12px; color: var(--muted);
+  font-size: 15px; color: var(--muted-2);
+  font-weight: 500;
+}
+.fc-cell .p {
+  font-size: 14px; font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
 }
 
-/* ── Trains ────────────────────────────────────────────────────── */
+/* ── TRAINS ────────────────────────────────────────────────────── */
 .trains {
-  border-top: 1px solid var(--line);
-  padding-top: 18px;
   display: grid;
-  grid-template-columns: auto 1fr 1fr 1fr;
-  gap: 24px 36px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
   align-items: stretch;
+  min-height: 0;
 }
-.trains-head {
-  display: flex; flex-direction: column; gap: 8px;
-  padding-right: 20px;
-  border-right: 1px solid var(--line);
-}
-.trains-head .L {
-  width: 52px; height: 52px; border-radius: 50%;
-  background: #a7a9ac; /* MTA L grey */
-  color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 28px; letter-spacing: -0.02em;
-}
-.trains-head .hl {
-  font-size: 13px; font-weight: 500;
-  color: var(--ink-2);
-}
-.trains-head .ts {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px; color: var(--muted);
-  letter-spacing: 0.08em; text-transform: uppercase;
-}
-
 .stop {
-  display: flex; flex-direction: column; gap: 6px;
-  min-width: 0;
+  display: flex; flex-direction: column;
+  padding: 24px 28px 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  gap: 8px;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+.stop-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 2px;
 }
 .stop-name {
-  font-size: 18px; font-weight: 600;
+  font-size: clamp(26px, 2.2vw, 34px);
+  font-weight: 700;
   color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1;
 }
-.stop-walk {
-  font-size: 12px; color: var(--muted);
+.stop-badge {
+  display: flex; align-items: center; gap: 8px;
   font-family: 'IBM Plex Mono', monospace;
-  letter-spacing: 0.08em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: 0.08em;
+  color: var(--muted); text-transform: uppercase;
+  font-weight: 500;
+}
+.stop-badge .L {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #a7a9ac; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700; font-size: 15px; letter-spacing: 0;
 }
 .stop-verdict {
-  margin-top: 6px;
-  font-size: 22px; font-weight: 600;
-  line-height: 1.15;
-  font-variant-numeric: tabular-nums;
+  margin-top: 8px;
+  font-size: clamp(32px, 3.1vw, 50px);
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
   color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 .stop-verdict.go     { color: var(--accent); }
 .stop-verdict.soon   { color: var(--warn); }
 .stop-verdict.plenty { color: var(--ok); }
 .stop-verdict.miss   { color: var(--danger); }
 
-.stop-detail {
-  font-size: 14px; color: var(--muted);
+.stop-sub {
+  margin-top: 6px;
+  font-size: clamp(17px, 1.4vw, 22px);
+  color: var(--ink-2);
   font-variant-numeric: tabular-nums;
-  line-height: 1.4;
+  line-height: 1.35;
+  font-weight: 500;
 }
-.stop-detail .k {
-  color: var(--ink-2); font-weight: 500;
-}
-.stop-detail .ret {
-  display: block; margin-top: 2px;
+.stop-meta {
+  margin-top: auto;
+  padding-top: 14px;
+  display: flex; gap: 20px; flex-wrap: wrap;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px; letter-spacing: 0.06em;
+  font-size: 13px; letter-spacing: 0.05em;
   color: var(--muted); text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
 }
+.stop-meta .m {
+  display: inline-flex; gap: 8px; align-items: baseline;
+}
+.stop-meta .m .k { color: var(--muted-2); font-size: 11px; }
+.stop-meta .m .v { color: var(--ink-2); font-weight: 600; font-size: 14px; letter-spacing: 0; }
+
+/* live updated indicator, bottom-right */
+.status-indicator {
+  position: fixed;
+  right: 18px; bottom: 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.12em;
+  color: var(--muted-2); text-transform: uppercase;
+  opacity: 0.6;
+}
+.status-indicator .dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--ok); margin-right: 6px; vertical-align: middle;
+  animation: pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.25 } }
 </style>
 </head>
 <body data-theme="light">
 
 <div class="stage">
 
-  <!-- TOP META BAR -->
-  <div class="topbar">
-    <span><span class="dot" id="livedot"></span><span id="location">Greenpoint · 11222</span></span>
-    <span class="status" id="statusRight">updating…</span>
-  </div>
-
   <!-- HERO: TIME + WEATHER -->
   <section class="hero">
-
     <div class="time-block">
       <div class="time-now">
         <span id="bigClock">—</span><span class="ampm" id="ampm">—</span>
       </div>
       <div class="time-date" id="dateLabel">—</div>
-      <div class="time-sub" id="dateSub">—</div>
-      <!-- hidden compat spans for any consumers that still read these IDs -->
+      <div class="time-sub">
+        <span class="pill"><span class="k">Sunrise</span><span class="v" id="sunrise">—</span></span>
+        <span class="pill"><span class="k">Sunset</span><span class="v" id="sunset">—</span></span>
+        <span class="pill"><span class="k" id="sunDirLabel">Daylight</span><span class="v" id="sunDaylight">—</span></span>
+      </div>
+      <!-- compat -->
       <span id="seconds" style="display:none"></span>
       <span id="weatherIcon" style="display:none"></span>
+      <span id="dateSub" style="display:none"></span>
     </div>
 
-    <div class="wx">
-      <div class="wx-row">
+    <div class="wx-block">
+      <div class="wx-main">
         <div class="wx-temp"><span id="tempNow">—</span><span class="deg">°</span></div>
         <div class="wx-caption">
           <div class="label" id="weatherDesc">loading…</div>
+          <div class="hi-lo"><span id="hiTemp">—</span><span class="sep">/</span><span id="loTemp">—</span> today</div>
           <div class="feels" id="feelsLike">—</div>
         </div>
       </div>
       <div class="wx-summary" id="weatherAdvice">—</div>
-
-      <div class="forecast" id="forecastStrip"></div>
     </div>
-
   </section>
+
+  <!-- 6-HOUR FORECAST STRIP -->
+  <section class="forecast" id="forecastStrip"></section>
 
   <!-- TRAINS -->
-  <section class="trains">
-    <div class="trains-head">
-      <div class="L">L</div>
-      <div class="hl">Next train, Manhattan-bound</div>
-      <div class="ts" id="trainsUpdated">—</div>
-    </div>
-    <div id="trainTiles" style="display:contents"></div>
-  </section>
+  <section class="trains" id="trainTiles"></section>
 
 </div>
+
+<!-- Live indicator -->
+<div class="status-indicator"><span class="dot"></span><span id="statusRight">Live</span><span id="trainsUpdated" style="display:none"></span></div>
 
 <script>
 // ═════════════════════════════════════════════════════════════════
 // CONFIG — walking time from the apartment to each L station.
-// Update WALK_MIN if you move or want to calibrate verdicts.
 // ═════════════════════════════════════════════════════════════════
 const WALK_MIN = {
   'Nassau Av':  4,
@@ -304,7 +355,7 @@ const WALK_MIN = {
 };
 
 // ═════════════════════════════════════════════════════════════════
-// SAFE DOM HELPERS (never assign innerHTML from API data)
+// SAFE DOM HELPERS
 // ═════════════════════════════════════════════════════════════════
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -314,9 +365,23 @@ function el(tag, cls, text) {
 }
 
 // ═════════════════════════════════════════════════════════════════
-// CLOCK — 12-hour with AM/PM, updates every second.
-// Auto-dims to dark theme between 10pm and 7am.
+// CLOCK
 // ═════════════════════════════════════════════════════════════════
+function fmtClock(date) {
+  let h = date.getHours();
+  const m = String(date.getMinutes()).padStart(2, '0');
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return h + ':' + m + ' ' + ap;
+}
+function fmtClockShort(date) {
+  let h = date.getHours();
+  const m = String(date.getMinutes()).padStart(2, '0');
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return h + ':' + m + ap.toLowerCase();
+}
+
 function tickClock() {
   const now = new Date();
   let h = now.getHours();
@@ -331,11 +396,9 @@ function tickClock() {
 
   const weekday = now.toLocaleDateString('en-US', { weekday: 'long' });
   const md = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-  const yr = now.getFullYear();
   document.getElementById('dateLabel').textContent = weekday + ', ' + md;
-  document.getElementById('dateSub').textContent = yr + '';
 
-  // Auto-switch theme by hour
+  // Dark theme 10pm–7am
   const hr24 = now.getHours();
   document.body.setAttribute('data-theme', (hr24 >= 22 || hr24 < 7) ? 'dark' : 'light');
 }
@@ -343,84 +406,74 @@ tickClock();
 setInterval(tickClock, 1000);
 
 // ═════════════════════════════════════════════════════════════════
-// WEATHER — practical language, no metaphors.
-// Headline states what it is. Summary tells you what to do.
+// WEATHER
 // ═════════════════════════════════════════════════════════════════
 const WMO_LABEL = {
-  0:  { short: 'Clear',          long: 'Clear skies' },
-  1:  { short: 'Mostly clear',   long: 'Mostly clear' },
-  2:  { short: 'Partly cloudy',  long: 'Partly cloudy' },
-  3:  { short: 'Overcast',       long: 'Overcast' },
-  45: { short: 'Fog',            long: 'Fog' },
-  48: { short: 'Freezing fog',   long: 'Freezing fog' },
-  51: { short: 'Light drizzle',  long: 'Light drizzle' },
-  53: { short: 'Drizzle',        long: 'Drizzle' },
-  55: { short: 'Heavy drizzle',  long: 'Heavy drizzle' },
-  61: { short: 'Light rain',     long: 'Light rain' },
-  63: { short: 'Rain',           long: 'Rain' },
-  65: { short: 'Heavy rain',     long: 'Heavy rain' },
-  71: { short: 'Light snow',     long: 'Light snow' },
-  73: { short: 'Snow',           long: 'Snow' },
-  75: { short: 'Heavy snow',     long: 'Heavy snow' },
-  77: { short: 'Snow grains',    long: 'Snow grains' },
-  80: { short: 'Showers',        long: 'Rain showers' },
-  81: { short: 'Showers',        long: 'Heavy showers' },
-  82: { short: 'Downpour',       long: 'Violent showers' },
-  85: { short: 'Snow showers',   long: 'Snow showers' },
-  86: { short: 'Snow showers',   long: 'Heavy snow showers' },
-  95: { short: 'Thunderstorm',   long: 'Thunderstorm' },
-  96: { short: 'Thunderstorm',   long: 'Thunderstorm with hail' },
-  99: { short: 'Severe storm',   long: 'Severe storm with hail' },
+  0:  { short: 'Clear',           long: 'Clear skies' },
+  1:  { short: 'Mostly clear',    long: 'Mostly clear' },
+  2:  { short: 'Partly cloudy',   long: 'Partly cloudy' },
+  3:  { short: 'Overcast',        long: 'Overcast' },
+  45: { short: 'Fog',             long: 'Fog' },
+  48: { short: 'Freezing fog',    long: 'Freezing fog' },
+  51: { short: 'Light drizzle',   long: 'Light drizzle' },
+  53: { short: 'Drizzle',         long: 'Drizzle' },
+  55: { short: 'Heavy drizzle',   long: 'Heavy drizzle' },
+  61: { short: 'Light rain',      long: 'Light rain' },
+  63: { short: 'Rain',            long: 'Rain' },
+  65: { short: 'Heavy rain',      long: 'Heavy rain' },
+  71: { short: 'Light snow',      long: 'Light snow' },
+  73: { short: 'Snow',            long: 'Snow' },
+  75: { short: 'Heavy snow',      long: 'Heavy snow' },
+  77: { short: 'Snow grains',     long: 'Snow grains' },
+  80: { short: 'Showers',         long: 'Rain showers' },
+  81: { short: 'Showers',         long: 'Heavy showers' },
+  82: { short: 'Downpour',        long: 'Violent showers' },
+  85: { short: 'Snow showers',    long: 'Snow showers' },
+  86: { short: 'Snow showers',    long: 'Heavy snow showers' },
+  95: { short: 'Thunderstorm',    long: 'Thunderstorm' },
+  96: { short: 'Thunderstorm',    long: 'Thunderstorm with hail' },
+  99: { short: 'Severe storm',    long: 'Severe storm with hail' },
 };
 
-// Short practical sentence — what the day is actually going to be like.
-function weatherSummary(code, tempF, windMph, precipIn, isDay) {
-  const hot = tempF >= 85;
-  const warm = tempF >= 70 && tempF < 85;
-  const mild = tempF >= 55 && tempF < 70;
-  const cool = tempF >= 40 && tempF < 55;
+function weatherSummary(code, tempF, windMph) {
+  const hot = tempF >= 85, warm = tempF >= 70 && tempF < 85;
+  const mild = tempF >= 55 && tempF < 70, cool = tempF >= 40 && tempF < 55;
   const cold = tempF < 40;
-  const windy = windMph >= 15;
 
-  if ([95,96,99].includes(code))
-    return 'Thunderstorms expected. Stay inside if you can, and unplug anything you care about.';
-  if ([65,82].includes(code))
-    return 'Heavy rain. Umbrella is not optional — take the full jacket.';
-  if ([61,63,80,81].includes(code))
-    return 'Rain on and off. Grab an umbrella on the way out.';
-  if ([51,53,55].includes(code))
-    return 'Light drizzle. A hood or light jacket should handle it.';
-  if ([71,73,75,77,85,86].includes(code))
-    return 'Snow is falling. Boots and gloves — and give yourself extra time.';
-  if ([45,48].includes(code))
-    return 'Foggy. Visibility is low, so walk with care and add a few minutes to any trip.';
+  if ([95,96,99].includes(code)) return 'Thunderstorms expected. Stay inside if you can.';
+  if ([65,82].includes(code))    return 'Heavy rain — full umbrella and jacket.';
+  if ([61,63,80,81].includes(code)) return 'Rain on and off. Grab an umbrella.';
+  if ([51,53,55].includes(code)) return 'Light drizzle. A hood should handle it.';
+  if ([71,73,75,77,85,86].includes(code)) return 'Snow is falling. Boots and extra time.';
+  if ([45,48].includes(code))    return 'Foggy. Low visibility — walk carefully.';
+  if (code === 3)                return 'Overcast but dry. A sweater is enough.';
+  if (code === 2)                return 'Partly cloudy. Pleasant mix of sun and shade.';
+  if (code === 1)                return 'Mostly sunny. Easy day to be outside.';
 
-  if (code === 3)
-    return 'Overcast but dry. No umbrella needed — a sweater is usually enough.';
-  if (code === 2)
-    return 'Partly cloudy. Pleasant mix of sun and shade today.';
-  if (code === 1)
-    return 'Mostly sunny with a few clouds. An easy day to be outside.';
-
-  // Clear sky — depends on temp
-  if (hot)   return 'Clear and hot. Sunscreen, hat, and carry water.';
-  if (warm)  return 'Clear and comfortable. Great day to be outside.';
-  if (mild)  return 'Clear and mild. A light layer is plenty.';
-  if (cool)  return 'Clear but cool. A jacket is a good idea.';
-  if (cold)  return 'Clear and cold. Heavy coat and gloves.';
-  return 'Clear skies today.';
+  if (hot)  return 'Clear and hot. Sunscreen, hat, carry water.';
+  if (warm) return 'Clear and comfortable. Great day to be outside.';
+  if (mild) return 'Clear and mild. A light layer is plenty.';
+  if (cool) return 'Clear but cool. A jacket is a good idea.';
+  if (cold) return 'Clear and cold. Heavy coat and gloves.';
+  return 'Clear skies.';
 }
 
 function feelsLikeLine(tempF, apparentF, humidity, windMph) {
   const diff = Math.round(apparentF - tempF);
-  const parts = [];
-  parts.push('Feels like ' + Math.round(apparentF) + '°');
-  if (Math.abs(diff) >= 3) {
-    parts.push(diff > 0 ? '(' + diff + '° warmer)' : '(' + Math.abs(diff) + '° cooler)');
-  }
-  if (windMph != null) parts.push('· ' + Math.round(windMph) + ' mph wind');
-  if (humidity != null) parts.push('· ' + Math.round(humidity) + '% humidity');
-  return parts.join(' ');
+  const parts = ['Feels like ' + Math.round(apparentF) + '°'];
+  if (Math.abs(diff) >= 3) parts.push(diff > 0 ? '+' + diff + '°' : diff + '°');
+  if (windMph != null) parts.push(Math.round(windMph) + ' mph wind');
+  if (humidity != null) parts.push(Math.round(humidity) + '% humidity');
+  return parts.join(' · ');
+}
+
+function hoursMinutesBetween(a, b) {
+  const totalMin = Math.abs(Math.round((b - a) / 60000));
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h === 0) return m + ' min';
+  if (m === 0) return h + ' hr';
+  return h + ' hr ' + m + ' min';
 }
 
 async function refreshWeather() {
@@ -428,24 +481,47 @@ async function refreshWeather() {
     const r = await fetch('/api/weather');
     const j = await r.json();
     if (!j.ok) throw new Error(j.error);
-    const d = j.data, cur = d.current;
+    const d = j.data, cur = d.current, daily = d.daily;
 
     const code = cur.weather_code;
     const label = (WMO_LABEL[code] && WMO_LABEL[code].long) || 'Weather';
     const tempF = cur.temperature_2m;
-    const apparentF = cur.apparent_temperature;
-    const wind = cur.wind_speed_10m;
-    const humidity = cur.relative_humidity_2m;
 
     document.getElementById('tempNow').textContent = Math.round(tempF);
     document.getElementById('weatherDesc').textContent = label;
     document.getElementById('feelsLike').textContent =
-      feelsLikeLine(tempF, apparentF, humidity, wind);
+      feelsLikeLine(tempF, cur.apparent_temperature, cur.relative_humidity_2m, cur.wind_speed_10m);
     document.getElementById('weatherAdvice').textContent =
-      weatherSummary(code, tempF, wind, cur.precipitation, cur.is_day);
+      weatherSummary(code, tempF, cur.wind_speed_10m);
     document.getElementById('weatherIcon').textContent = 'wmo:' + code;
 
-    // Forecast strip — next 6 hours
+    // Today's high / low (daily[0])
+    if (daily && daily.temperature_2m_max && daily.temperature_2m_max.length) {
+      document.getElementById('hiTemp').textContent = Math.round(daily.temperature_2m_max[0]) + '°';
+      document.getElementById('loTemp').textContent = Math.round(daily.temperature_2m_min[0]) + '°';
+    }
+
+    // Sunrise / sunset / time remaining
+    if (daily && daily.sunrise && daily.sunset) {
+      const sunrise = new Date(daily.sunrise[0]);
+      const sunset  = new Date(daily.sunset[0]);
+      document.getElementById('sunrise').textContent = fmtClockShort(sunrise);
+      document.getElementById('sunset').textContent  = fmtClockShort(sunset);
+      const now = new Date();
+      let label, value;
+      if (now < sunrise) {
+        label = 'Until sunrise'; value = hoursMinutesBetween(now, sunrise);
+      } else if (now < sunset) {
+        label = 'Until sunset'; value = hoursMinutesBetween(now, sunset);
+      } else {
+        const nextRise = daily.sunrise[1] ? new Date(daily.sunrise[1]) : null;
+        label = 'Until sunrise'; value = nextRise ? hoursMinutesBetween(now, nextRise) : '—';
+      }
+      document.getElementById('sunDirLabel').textContent = label;
+      document.getElementById('sunDaylight').textContent = value;
+    }
+
+    // 6-hour forecast strip with precipitation %
     const strip = document.getElementById('forecastStrip');
     strip.textContent = '';
     const nowMs = Date.now();
@@ -461,100 +537,103 @@ async function refreshWeather() {
       const cell = el('div', 'fc-cell');
       cell.appendChild(el('span', 'hr', h + ap));
       cell.appendChild(el('span', 't', Math.round(d.hourly.temperature_2m[p.idx]) + '°'));
+      const under = el('div', 'row-under');
       const wmo = d.hourly.weather_code[p.idx];
       const short = (WMO_LABEL[wmo] && WMO_LABEL[wmo].short) || '';
-      cell.appendChild(el('span', 'c', short));
+      under.appendChild(el('span', 'c', short));
+      const precip = d.hourly.precipitation_probability && d.hourly.precipitation_probability[p.idx];
+      if (precip != null && precip > 10) {
+        under.appendChild(el('span', 'p', precip + '%'));
+      }
+      cell.appendChild(under);
       strip.appendChild(cell);
     });
   } catch (e) {
     console.warn('weather', e);
     document.getElementById('weatherDesc').textContent = 'Weather unavailable';
-    document.getElementById('weatherAdvice').textContent = 'Could not reach weather service. Will retry automatically.';
+    document.getElementById('weatherAdvice').textContent =
+      'Could not reach weather service. Will retry automatically.';
   }
 }
 
 // ═════════════════════════════════════════════════════════════════
-// TRAINS — verdict = arrival minutes MINUS your walk time.
-// Every station uses its own walk value so advice actually fits.
+// TRAINS
 // ═════════════════════════════════════════════════════════════════
-function fmtClock(date) {
-  let h = date.getHours();
-  const m = String(date.getMinutes()).padStart(2, '0');
-  const ap = h >= 12 ? 'PM' : 'AM';
-  h = h % 12 || 12;
-  return h + ':' + m + ' ' + ap;
-}
-
 function verdictForStation(stopName, trains) {
   const walk = WALK_MIN[stopName] ?? 5;
   if (!trains || !trains.length) {
-    return { klass: '', text: 'No trains', detail: 'Nothing scheduled right now. Check back in a minute.' };
+    return { klass: '', text: 'No trains', sub: 'Nothing scheduled. Check back soon.', meta: [] };
   }
 
-  // Find the soonest train you can actually catch given your walking time.
-  // Add 1-minute buffer so you're not literally sprinting onto a closing door.
+  // First catchable train = arrival >= walk + 1 min buffer.
   const catchable = trains.find(m => m >= walk + 1);
 
-  // Feed doesn't show anything catchable yet — explain clearly.
   if (catchable == null) {
-    const soonest = trains[0];
+    const list = trains.slice(0, 3).map(x => x + ' min').join(', ');
     return {
       klass: 'soon',
-      text: 'Wait — trains too close',
-      detail: 'Nearest ' + trains.length + ' trains are ' +
-              trains.join(', ') + ' min out. None give you enough time to walk ' +
-              walk + ' min. Refreshes every 20 sec.'
+      text: 'Check back',
+      sub: 'Next trains (' + list + ') arrive before a ' + walk + '-min walk can get you there.',
+      meta: [['Walk', walk + ' min'], ['Next', list]]
     };
   }
 
-  // Headline: "Catch the 3:47 PM train"
-  const arriveAt = new Date(Date.now() + catchable * 60_000);
-  const leaveAt = new Date(Date.now() + (catchable - walk) * 60_000);
   const leaveIn = catchable - walk;
-
-  let klass;
-  let action;
-  if (leaveIn <= 0)      { klass = 'go';     action = 'Leave now'; }
-  else if (leaveIn <= 2) { klass = 'go';     action = 'Leave in ' + leaveIn + ' min'; }
-  else if (leaveIn <= 6) { klass = 'soon';   action = 'Leave in ' + leaveIn + ' min'; }
-  else                   { klass = 'plenty'; action = 'Leave in ' + leaveIn + ' min'; }
-
-  // Trains after the one we're catching — show a couple so you know your backups.
+  const arriveAt = new Date(Date.now() + catchable * 60_000);
+  const leaveAt  = new Date(Date.now() + leaveIn * 60_000);
   const backups = trains.filter(m => m > catchable).slice(0, 3);
-  const detailParts = [];
-  detailParts.push(action + ' for the ' + fmtClock(arriveAt) + ' train');
-  detailParts.push('(' + catchable + ' min away · walk ' + walk + ' min · leave by ' + fmtClock(leaveAt) + ')');
-  if (backups.length) {
-    detailParts.push('After that: ' + backups.map(x => x + ' min').join(', '));
-  }
+
+  let klass, text;
+  if (leaveIn <= 0)      { klass = 'go';     text = 'Leave now'; }
+  else if (leaveIn <= 2) { klass = 'go';     text = 'Leave in ' + leaveIn + ' min'; }
+  else if (leaveIn <= 6) { klass = 'soon';   text = 'Leave in ' + leaveIn + ' min'; }
+  else                   { klass = 'plenty'; text = 'Leave in ' + leaveIn + ' min'; }
+
+  const sub = 'Catch the ' + fmtClock(arriveAt) + ' train' +
+              (backups.length ? ' · then ' + backups.map(x => x + ' min').join(', ') : '');
 
   return {
-    klass,
-    text: 'Catch the ' + fmtClock(arriveAt) + ' train',
-    detail: detailParts.join(' · ')
+    klass, text, sub,
+    meta: [
+      ['Walk',  walk + ' min'],
+      ['Leave', fmtClock(leaveAt)],
+      ['Train', fmtClock(arriveAt)],
+    ],
   };
 }
 
 function buildStop(s) {
   const wrap = el('div', 'stop');
-  wrap.appendChild(el('div', 'stop-name', s.name));
-  const walk = WALK_MIN[s.name];
-  wrap.appendChild(el('div', 'stop-walk', (walk != null ? walk + ' min walk' : '')));
+
+  const head = el('div', 'stop-head');
+  head.appendChild(el('div', 'stop-name', s.name));
+  const badge = el('div', 'stop-badge');
+  const lBadge = el('span', 'L', 'L');
+  badge.appendChild(lBadge);
+  badge.appendChild(el('span', '', 'Manhattan'));
+  head.appendChild(badge);
+  wrap.appendChild(head);
 
   const v = verdictForStation(s.name, s.manhattan_bound);
-  const vDiv = el('div', 'stop-verdict ' + v.klass, v.text);
-  wrap.appendChild(vDiv);
+  wrap.appendChild(el('div', 'stop-verdict ' + v.klass, v.text));
+  wrap.appendChild(el('div', 'stop-sub', v.sub));
 
-  wrap.appendChild(el('div', 'stop-detail', v.detail));
+  const meta = el('div', 'stop-meta');
+  v.meta.forEach(([k, val]) => {
+    const m = el('div', 'm');
+    m.appendChild(el('span', 'k', k));
+    m.appendChild(el('span', 'v', val));
+    meta.appendChild(m);
+  });
 
-  // Return trains — small return label (Canarsie-bound = coming home)
-  const back = s.canarsie_bound;
-  if (back && back.length) {
-    const ret = el('div', 'stop-detail');
-    const span = el('span', 'ret', 'Return (Canarsie): ' + back.slice(0, 3).map(x => x + ' min').join(', '));
-    ret.appendChild(span);
-    wrap.appendChild(ret);
+  // Return trains (Canarsie-bound)
+  if (s.canarsie_bound && s.canarsie_bound.length) {
+    const retM = el('div', 'm');
+    retM.appendChild(el('span', 'k', 'Return'));
+    retM.appendChild(el('span', 'v', s.canarsie_bound.slice(0, 3).map(x => x + ' min').join(' · ')));
+    meta.appendChild(retM);
   }
+  wrap.appendChild(meta);
 
   return wrap;
 }
@@ -568,26 +647,21 @@ async function refreshTrains() {
     host.textContent = '';
     const stations = (j.data && j.data.stations) || [];
     if (!stations.length) {
-      host.appendChild(el('div', 'stop', 'No train data'));
+      const box = el('div', 'stop');
+      box.appendChild(el('div', 'stop-name', 'No train data'));
+      host.appendChild(box);
       return;
     }
     stations.forEach(s => host.appendChild(buildStop(s)));
-
-    const t = new Date();
-    let th = t.getHours();
-    const tm = String(t.getMinutes()).padStart(2,'0');
-    const ts = String(t.getSeconds()).padStart(2,'0');
-    const tap = th >= 12 ? 'PM' : 'AM';
-    th = th % 12 || 12;
-    document.getElementById('trainsUpdated').textContent = 'Updated ' + th + ':' + tm + ':' + ts + ' ' + tap;
-    document.getElementById('statusRight').textContent = 'Live';
+    document.getElementById('statusRight').textContent = 'Live · ' + fmtClock(new Date());
+    document.getElementById('trainsUpdated').textContent = fmtClock(new Date());
   } catch (e) {
     console.warn('trains', e);
     const host = document.getElementById('trainTiles');
     host.textContent = '';
     const box = el('div', 'stop');
     box.appendChild(el('div', 'stop-name', 'MTA feed unavailable'));
-    box.appendChild(el('div', 'stop-detail', 'Retrying in a few seconds.'));
+    box.appendChild(el('div', 'stop-sub', 'Retrying in a few seconds.'));
     host.appendChild(box);
     document.getElementById('statusRight').textContent = 'Retrying';
   }
