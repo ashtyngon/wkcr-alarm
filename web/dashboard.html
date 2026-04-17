@@ -14,21 +14,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
 <style>
 /* ──────────────────────────────────────────────────────────────────
-   Soviet Avant-Garde / Constructivist dashboard.
-   Palette: Rodchenko-ish newsprint cream + vermilion red + black.
-   Typography: Alfa Slab One (display numerals) +
-               Oswald (condensed sans-serif for labels) +
-               Roboto Mono (data, metadata).
-   Layout: asymmetric, heavy rules, diagonal wedge, oversized numerals.
+   Soviet avant-garde dashboard, v2.
+   Train verdicts are the main event — they fill the center of the
+   screen. Time + weather live in a compact top strip; date, sunrise
+   & sunset in a thin footer.
    ────────────────────────────────────────────────────────────────── */
 :root {
   --paper:   #f2e7cc;
   --paper-2: #e5d8b8;
   --ink:     #0a0a0a;
   --red:     #c4201e;
-  --red-2:   #8a1513;
   --ochre:   #d4a017;
-  --white:   #f8efd6;
 }
 
 * { box-sizing: border-box; }
@@ -42,343 +38,138 @@ body {
   font-size: 18px;
   font-weight: 500;
   -webkit-font-smoothing: antialiased;
-  /* Faint paper grain — subtle turbulence so it doesn't feel too clean */
   background-image:
     radial-gradient(ellipse at 70% 10%, rgba(0,0,0,0.04), transparent 60%),
     radial-gradient(ellipse at 10% 90%, rgba(196, 32, 30, 0.06), transparent 55%);
 }
 
-/* Grid scaffolding for whole screen */
 .frame {
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto 1fr auto;
   height: 100vh;
-  padding: 28px 40px 32px;
+  padding: 24px 36px;
   gap: 20px;
   position: relative;
-  overflow: hidden;
-}
-
-/* ── Diagonal red wedge (decorative, points to the time) ──────── */
-.frame::before {
-  content: "";
-  position: absolute;
-  top: -40px; right: -80px;
-  width: 360px; height: 220px;
-  background: var(--red);
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 40% 100%);
-  transform: rotate(-8deg);
-  z-index: 0;
-  pointer-events: none;
-}
-/* Black block on the bottom-left as compositional counterweight */
-.frame::after {
-  content: "";
-  position: absolute;
-  left: -30px; bottom: -30px;
-  width: 120px; height: 120px;
-  background: var(--ink);
-  transform: rotate(14deg);
-  z-index: 0;
-  pointer-events: none;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   HEADER STRIP — city name, bilingual. Heavy black bar.
+   TOP STRIP — time + weather in a single horizontal band.
+   Compact but still prominent, leaves center for trains.
    ══════════════════════════════════════════════════════════════ */
-.banner {
-  position: relative; z-index: 2;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 16px;
-  background: var(--ink);
-  color: var(--paper);
-  border: 4px solid var(--ink);
-}
-.banner .loc {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: clamp(20px, 2vw, 32px);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  line-height: 1;
-}
-.banner .loc .sep {
-  color: var(--red);
-  margin: 0 14px;
-  font-weight: 500;
-}
-.banner .live {
-  display: inline-flex; align-items: center; gap: 10px;
-  font-family: 'Roboto Mono', monospace;
-  font-size: 13px; letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-.banner .live .dot {
-  width: 10px; height: 10px; background: var(--red);
-  display: inline-block;
-  animation: blink 1.6s steps(2, start) infinite;
-}
-@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.25; } }
-
-/* ══════════════════════════════════════════════════════════════
-   HERO — time on left, weather on right, massive type
-   ══════════════════════════════════════════════════════════════ */
-.hero {
-  position: relative; z-index: 2;
+.top {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 36px;
-  border-top: 6px solid var(--ink);
-  border-bottom: 6px solid var(--ink);
-  padding: 20px 0 22px;
-  background: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
-}
-
-/* LEFT: Time */
-.time-col {
-  position: relative;
-  padding-right: 24px;
-  border-right: 4px solid var(--ink);
-  display: flex; flex-direction: column; gap: 8px;
-}
-.time-col .label-rot {
-  position: absolute;
-  top: 20px; right: 16px;
-  font-family: 'Oswald', sans-serif;
-  font-size: 14px; letter-spacing: 0.26em; text-transform: uppercase;
-  color: var(--ink);
-  transform: rotate(-90deg); transform-origin: 100% 0;
-  white-space: nowrap;
-  font-weight: 600;
-}
-.time-now {
-  font-family: 'Alfa Slab One', 'Times New Roman', serif;
-  font-size: clamp(140px, 20vw, 300px);
-  line-height: 0.82;
-  letter-spacing: -0.03em;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-  display: flex; align-items: flex-start; gap: 18px;
-}
-.time-now .nums {
-  background: var(--red);
-  color: var(--paper);
-  padding: 0 20px 8px;
-  display: inline-block;
-}
-.time-now .ampm {
-  font-family: 'Oswald', sans-serif;
-  font-size: 0.18em;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: var(--ink);
-  margin-top: 18px;
-  writing-mode: vertical-rl;
-  line-height: 1;
-  text-transform: uppercase;
-}
-.time-date {
-  margin-top: 4px;
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: clamp(28px, 3vw, 48px);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink);
-  line-height: 1;
-}
-.time-date .accent { color: var(--red); }
-
-.sun-row {
-  display: flex; gap: 0;
-  margin-top: 10px;
-  border-top: 3px solid var(--ink);
-  border-bottom: 3px solid var(--ink);
-}
-.sun-row .cell {
-  flex: 1;
-  padding: 8px 12px;
-  border-right: 2px solid var(--ink);
-  display: flex; flex-direction: column; gap: 2px;
-}
-.sun-row .cell:last-child { border-right: none; }
-.sun-row .cell.inv {
-  background: var(--ink); color: var(--paper);
-}
-.sun-row .cell .k {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 10px; letter-spacing: 0.18em;
-  text-transform: uppercase; font-weight: 500;
-  opacity: 0.7;
-}
-.sun-row .cell .v {
-  font-family: 'Alfa Slab One', serif;
-  font-size: clamp(18px, 1.6vw, 24px);
-  line-height: 1.05;
-  font-variant-numeric: tabular-nums;
-}
-
-/* RIGHT: Weather */
-.wx-col {
-  position: relative;
-  padding-left: 24px;
-  display: flex; flex-direction: column; gap: 10px;
-}
-.wx-col .label-top {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: clamp(14px, 1.3vw, 20px);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--ink);
-  line-height: 1;
-  border-bottom: 3px solid var(--ink);
-  padding-bottom: 6px;
-  display: flex; justify-content: space-between; align-items: baseline;
-}
-.wx-col .label-top .sep { color: var(--red); }
-.wx-col .label-top .hi-lo {
-  font-family: 'Roboto Mono', monospace;
-  font-weight: 700;
-  font-size: 0.85em;
-  letter-spacing: 0.05em;
-}
-.wx-col .label-top .hi-lo .hi { color: var(--red); }
-.wx-col .label-top .hi-lo .lo { color: var(--ink); opacity: 0.55; }
-
-.wx-temp {
-  font-family: 'Alfa Slab One', serif;
-  font-size: clamp(130px, 17vw, 240px);
-  line-height: 0.85;
-  letter-spacing: -0.04em;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-  display: flex; align-items: flex-start; gap: 6px;
-}
-.wx-temp .deg {
-  color: var(--red);
-  font-size: 0.7em;
-  line-height: 1;
-}
-.wx-desc {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: clamp(32px, 3.2vw, 52px);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  line-height: 1;
-  color: var(--ink);
-  background: var(--ink);
-  color: var(--paper);
-  padding: 6px 14px;
-  display: inline-block;
-  align-self: flex-start;
-}
-.wx-feels {
-  font-family: 'Roboto Mono', monospace;
-  font-size: clamp(13px, 1.1vw, 16px);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink);
-  opacity: 0.7;
-  font-weight: 500;
-}
-.wx-summary {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 500;
-  font-size: clamp(19px, 1.7vw, 26px);
-  line-height: 1.3;
-  color: var(--ink);
-  max-width: 34ch;
-  border-left: 5px solid var(--red);
-  padding-left: 14px;
-  margin-top: 4px;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   FORECAST STRIP — 6 cells, alternating red/black/cream
-   like a propaganda filmstrip
-   ══════════════════════════════════════════════════════════════ */
-.forecast {
-  position: relative; z-index: 2;
-  display: grid;
-  grid-template-columns: auto repeat(6, 1fr);
+  grid-template-columns: auto 1fr auto;
+  align-items: stretch;
   gap: 0;
   border: 4px solid var(--ink);
-  background: var(--ink);
 }
-.forecast .fc-label {
+
+.top .time {
   background: var(--red);
   color: var(--paper);
-  padding: 14px 18px;
-  display: flex; flex-direction: column; justify-content: center;
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  padding: 8px 24px 10px;
+  display: flex; align-items: baseline; gap: 14px;
+  min-width: 0;
 }
-.forecast .fc-label .big {
-  font-size: clamp(20px, 1.8vw, 28px);
-  line-height: 1;
-}
-.forecast .fc-label .small {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  font-weight: 500;
-  opacity: 0.9;
-  margin-top: 4px;
-}
-.forecast .fc-cell {
-  padding: 14px 14px 12px;
-  border-left: 3px solid var(--ink);
-  display: flex; flex-direction: column; gap: 4px;
-  background: var(--paper);
-  color: var(--ink);
-}
-.forecast .fc-cell:nth-child(3),
-.forecast .fc-cell:nth-child(5),
-.forecast .fc-cell:nth-child(7) {
-  background: var(--ink); color: var(--paper);
-}
-.forecast .fc-cell .hr {
-  font-family: 'Roboto Mono', monospace;
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  opacity: 0.8;
-}
-.forecast .fc-cell .t {
+.top .time .nums {
   font-family: 'Alfa Slab One', serif;
-  font-size: clamp(34px, 3.2vw, 48px);
-  line-height: 0.95;
+  font-size: clamp(64px, 7vw, 110px);
+  line-height: 0.92;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
-.forecast .fc-cell .c {
+.top .time .ampm {
   font-family: 'Oswald', sans-serif;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: clamp(18px, 1.6vw, 26px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.top .wx {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 10px 24px;
+  display: flex; align-items: center; gap: 20px;
+  min-width: 0;
+}
+.top .wx .temp {
+  font-family: 'Alfa Slab One', serif;
+  font-size: clamp(56px, 6vw, 96px);
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  display: flex; align-items: flex-start;
+}
+.top .wx .temp .deg { color: var(--red); }
+.top .wx .caption {
+  display: flex; flex-direction: column; gap: 4px;
+  min-width: 0; flex: 1;
+}
+.top .wx .caption .label {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(22px, 2.2vw, 34px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.top .wx .caption .sub {
+  font-family: 'Roboto Mono', monospace;
   font-size: 13px;
   letter-spacing: 0.08em;
+  font-weight: 500;
+  opacity: 0.8;
   text-transform: uppercase;
-  line-height: 1.1;
 }
-.forecast .fc-cell .p {
-  font-family: 'Roboto Mono', monospace;
+.top .wx .caption .advice {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: clamp(16px, 1.35vw, 20px);
+  line-height: 1.2;
+  opacity: 0.95;
+  max-width: 40ch;
+}
+
+.top .place {
+  background: var(--paper);
+  color: var(--ink);
+  padding: 8px 18px;
+  border-left: 4px solid var(--ink);
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 4px;
+}
+.top .place .cy {
+  font-family: 'Oswald', sans-serif;
   font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.04em;
+  font-size: clamp(16px, 1.5vw, 22px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.top .place .en {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(16px, 1.5vw, 22px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1;
   color: var(--red);
 }
-.forecast .fc-cell:nth-child(3) .p,
-.forecast .fc-cell:nth-child(5) .p,
-.forecast .fc-cell:nth-child(7) .p { color: var(--ochre); }
+.top .place .zip {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  font-weight: 500;
+  opacity: 0.7;
+  margin-top: 2px;
+}
 
 /* ══════════════════════════════════════════════════════════════
-   TRAINS — three station cards, each a heavy propaganda tile
+   TRAIN FRAME — the main event
    ══════════════════════════════════════════════════════════════ */
 .train-frame {
-  position: relative; z-index: 2;
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 14px;
@@ -392,81 +183,88 @@ body {
 .train-header .L-badge {
   background: var(--ink);
   color: var(--paper);
-  width: 64px;
+  width: 70px;
   display: flex; align-items: center; justify-content: center;
   font-family: 'Alfa Slab One', serif;
-  font-size: 42px; line-height: 1;
+  font-size: clamp(42px, 4vw, 64px);
+  line-height: 1;
   border-right: 4px solid var(--red);
 }
 .train-header .title {
   flex: 1;
   background: var(--red);
   color: var(--paper);
-  padding: 10px 18px;
+  padding: 10px 22px;
   display: flex; align-items: center; justify-content: space-between;
   font-family: 'Oswald', sans-serif;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
+  gap: 16px;
 }
 .train-header .title .big {
-  font-size: clamp(22px, 2.2vw, 32px);
+  font-size: clamp(22px, 2.4vw, 36px);
   line-height: 1;
 }
 .train-header .title .stat {
   font-family: 'Roboto Mono', monospace;
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.18em;
   font-weight: 500;
   opacity: 0.9;
+  white-space: nowrap;
 }
 
-.stations { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; min-height: 0; }
+.stations {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  min-height: 0;
+}
 .stop {
   position: relative;
   display: flex; flex-direction: column;
-  padding: 20px 22px 16px;
+  padding: 22px 26px 20px;
   border: 4px solid var(--ink);
   background: var(--paper);
   color: var(--ink);
-  min-height: 0;
   gap: 6px;
+  min-height: 0;
+  min-width: 0;
 }
-.stop.theme-red { background: var(--red); color: var(--paper); }
-.stop.theme-black { background: var(--ink); color: var(--paper); }
+.stop.theme-red   { background: var(--red);   color: var(--paper); }
+.stop.theme-black { background: var(--ink);   color: var(--paper); }
 .stop.theme-cream { background: var(--paper); color: var(--ink); }
-.stop .stop-num {
-  position: absolute;
-  top: 10px; right: 14px;
-  font-family: 'Alfa Slab One', serif;
-  font-size: clamp(48px, 5vw, 90px);
-  line-height: 0.8;
-  opacity: 0.15;
-  color: currentColor;
-  pointer-events: none;
-}
+
 .stop-name {
   font-family: 'Oswald', sans-serif;
   font-weight: 700;
-  font-size: clamp(28px, 2.6vw, 42px);
-  letter-spacing: 0.04em;
+  font-size: clamp(28px, 2.8vw, 48px);
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   line-height: 0.95;
+  margin-bottom: 2px;
 }
 .stop-badge {
   font-family: 'Roboto Mono', monospace;
-  font-size: 11px; letter-spacing: 0.2em;
-  text-transform: uppercase; font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
   opacity: 0.7;
-  margin-top: -2px;
+  margin-bottom: 4px;
 }
+
+/* The verdict is the hero of this page. Huge slab type. */
 .stop-verdict {
   font-family: 'Alfa Slab One', serif;
-  font-size: clamp(34px, 3.4vw, 56px);
-  line-height: 0.92;
-  letter-spacing: -0.01em;
-  margin-top: 8px;
+  font-size: clamp(56px, 6.5vw, 120px);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
+  word-break: break-word;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 .stop.theme-cream .stop-verdict.go     { color: var(--red); }
 .stop.theme-cream .stop-verdict.soon   { color: var(--ink); }
@@ -476,38 +274,88 @@ body {
 .stop.theme-black .stop-verdict { color: var(--paper); }
 .stop.theme-black .stop-verdict.go { color: var(--red); }
 
+/* Single sub-line that explains the verdict in concrete terms */
 .stop-sub {
   font-family: 'Oswald', sans-serif;
   font-weight: 500;
-  font-size: clamp(16px, 1.4vw, 21px);
-  line-height: 1.25;
-  margin-top: 4px;
+  font-size: clamp(20px, 1.9vw, 30px);
+  line-height: 1.2;
   opacity: 0.95;
 }
+
+/* Two big data points per card — walk time + train time */
 .stop-meta {
-  margin-top: auto;
-  padding-top: 10px;
-  border-top: 2px solid currentColor;
+  padding-top: 14px;
+  border-top: 3px solid currentColor;
   display: flex; justify-content: space-between; gap: 10px;
-  font-family: 'Roboto Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
 }
 .stop-meta .m {
   display: flex; flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
-.stop-meta .m .k { font-weight: 500; opacity: 0.6; font-size: 10px; }
+.stop-meta .m .k {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  font-weight: 500;
+}
 .stop-meta .m .v {
   font-family: 'Alfa Slab One', serif;
-  font-size: 15px;
-  letter-spacing: 0.02em;
+  font-size: clamp(20px, 1.9vw, 28px);
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
-/* Hide legacy elements kept for backend compat */
+/* ══════════════════════════════════════════════════════════════
+   FOOTER — date + sunrise/sunset + live status
+   ══════════════════════════════════════════════════════════════ */
+.footer {
+  display: flex; align-items: stretch;
+  border: 3px solid var(--ink);
+}
+.footer .cell {
+  flex: 1;
+  padding: 10px 18px;
+  display: flex; align-items: center;
+  gap: 14px;
+  border-right: 3px solid var(--ink);
+  min-width: 0;
+}
+.footer .cell:last-child { border-right: none; }
+.footer .cell.inv { background: var(--ink); color: var(--paper); }
+.footer .cell.red { background: var(--red); color: var(--paper); }
+.footer .cell .k {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.footer .cell .v {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(16px, 1.6vw, 24px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.footer .live-dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  background: var(--paper);
+  animation: blink 1.6s steps(2, start) infinite;
+}
+@keyframes blink { 0%, 50% { opacity: 1 } 51%, 100% { opacity: 0.25 } }
+
+/* legacy compat — hidden */
 .legacy { display: none; }
 </style>
 </head>
@@ -515,85 +363,73 @@ body {
 
 <div class="frame">
 
-  <!-- ═════ BANNER ═════ -->
-  <div class="banner">
-    <div class="loc">
-      ГРИНПОЙНТ<span class="sep">·</span>GREENPOINT<span class="sep">·</span>11222
+  <!-- ═════ TOP STRIP ═════ -->
+  <div class="top">
+    <div class="time">
+      <span class="nums"><span id="bigClock">—</span></span>
+      <span class="ampm" id="ampm">—</span>
     </div>
-    <div class="live"><span class="dot"></span><span id="statusRight">В ЭФИРЕ · LIVE</span></div>
+    <div class="wx">
+      <div class="temp"><span id="tempNow">—</span><span class="deg">°</span></div>
+      <div class="caption">
+        <div class="label" id="weatherDesc">LOADING…</div>
+        <div class="sub" id="feelsLike">—</div>
+        <div class="advice" id="weatherAdvice">—</div>
+      </div>
+    </div>
+    <div class="place">
+      <div class="cy">ГРИНПОЙНТ</div>
+      <div class="en">GREENPOINT</div>
+      <div class="zip">11222 · BK</div>
+    </div>
   </div>
 
-  <!-- ═════ HERO ═════ -->
-  <section class="hero">
-    <!-- Time column -->
-    <div class="time-col">
-      <span class="label-rot">ВРЕМЯ · TIME</span>
-      <div class="time-now">
-        <span class="nums"><span id="bigClock">—</span></span>
-        <span class="ampm" id="ampm">AM</span>
-      </div>
-      <div class="time-date" id="dateLabel">—</div>
-      <div class="sun-row">
-        <div class="cell">
-          <span class="k">Восход · Sunrise</span>
-          <span class="v" id="sunrise">—</span>
-        </div>
-        <div class="cell inv">
-          <span class="k" id="sunDirLabel">Until Sunset</span>
-          <span class="v" id="sunDaylight">—</span>
-        </div>
-        <div class="cell">
-          <span class="k">Закат · Sunset</span>
-          <span class="v" id="sunset">—</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Weather column -->
-    <div class="wx-col">
-      <div class="label-top">
-        <span>ПОГОДА<span class="sep"> · </span>WEATHER</span>
-        <span class="hi-lo">
-          HI <span class="hi" id="hiTemp">—</span> / LO <span class="lo" id="loTemp">—</span>
-        </span>
-      </div>
-      <div class="wx-temp">
-        <span id="tempNow">—</span><span class="deg">°</span>
-      </div>
-      <div class="wx-desc" id="weatherDesc">LOADING…</div>
-      <div class="wx-feels" id="feelsLike">—</div>
-      <div class="wx-summary" id="weatherAdvice">—</div>
-    </div>
-  </section>
-
-  <!-- ═════ FORECAST STRIP ═════ -->
-  <section class="forecast" id="forecastStrip">
-    <div class="fc-label">
-      <span class="big">6 ЧАСОВ</span>
-      <span class="small">6-HR FORECAST</span>
-    </div>
-    <!-- cells appended dynamically -->
-  </section>
-
-  <!-- ═════ TRAIN FRAME ═════ -->
+  <!-- ═════ TRAINS — MAIN EVENT ═════ -->
   <section class="train-frame">
     <div class="train-header">
       <div class="L-badge">L</div>
       <div class="title">
-        <span class="big">МЕТРОПОЛИТЕН<span style="color:var(--ink);margin:0 12px;">·</span>SUBWAY<span style="color:var(--ink);margin:0 12px;">·</span>MANHATTAN-BOUND</span>
+        <span class="big">MANHATTAN-BOUND · МЕТРО</span>
         <span class="stat" id="trainsUpdated">—</span>
       </div>
     </div>
     <div class="stations" id="trainTiles"></div>
   </section>
 
+  <!-- ═════ FOOTER ═════ -->
+  <div class="footer">
+    <div class="cell">
+      <span class="k">Date</span>
+      <span class="v" id="dateLabel">—</span>
+    </div>
+    <div class="cell inv">
+      <span class="k">Sunrise</span>
+      <span class="v" id="sunrise">—</span>
+    </div>
+    <div class="cell">
+      <span class="k" id="sunDirLabel">Until Sunset</span>
+      <span class="v" id="sunDaylight">—</span>
+    </div>
+    <div class="cell inv">
+      <span class="k">Sunset</span>
+      <span class="v" id="sunset">—</span>
+    </div>
+    <div class="cell red">
+      <span class="live-dot"></span>
+      <span class="v" id="statusRight">LIVE</span>
+    </div>
+  </div>
+
 </div>
 
-<!-- Legacy placeholders backend consumers rely on -->
+<!-- Legacy placeholders kept for backend API compat -->
 <span id="seconds" class="legacy"></span>
 <span id="weatherIcon" class="legacy"></span>
 <span id="dateSub" class="legacy"></span>
 <span id="location" class="legacy">Greenpoint · 11222</span>
+<span id="hiTemp" class="legacy"></span>
+<span id="loTemp" class="legacy"></span>
+<span id="forecastStrip" class="legacy"></span>
 
 <script>
 // ═════════════════════════════════════════════════════════════════
@@ -604,15 +440,8 @@ const WALK_MIN = {
   'Graham Av':  10,
   'Bedford Av': 18,
 };
-// Rotate card themes so the row reads like a constructivist poster.
+// Rotate card themes — classic constructivist poster palette cycle.
 const STATION_THEME = ['theme-red', 'theme-cream', 'theme-black'];
-
-// Cyrillic transliteration of station names, for flavor.
-const CYRILLIC_STATION = {
-  'Nassau Av':  'НАССАУ',
-  'Graham Av':  'ГРЭМ',
-  'Bedford Av': 'БЕДФОРД',
-};
 
 // ═════════════════════════════════════════════════════════════════
 // SAFE DOM
@@ -642,9 +471,6 @@ function fmtClockShort(date) {
   return h + ':' + m + ap.toLowerCase();
 }
 
-const CYRILLIC_WEEKDAY = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
-const CYRILLIC_MONTH = ['Января','Февраля','Марта','Апреля','Мая','Июня','Июля','Августа','Сентября','Октября','Ноября','Декабря'];
-
 function tickClock() {
   const now = new Date();
   let h = now.getHours();
@@ -652,87 +478,46 @@ function tickClock() {
   const ampm = h >= 12 ? 'PM' : 'AM';
   h = h % 12 || 12;
   const mm = String(m).padStart(2, '0');
-
   document.getElementById('bigClock').textContent = h + ':' + mm;
   document.getElementById('ampm').textContent = ampm;
   document.getElementById('seconds').textContent = String(now.getSeconds()).padStart(2,'0');
 
-  const weekday = now.toLocaleDateString('en-US', { weekday: 'long' });
-  const month = now.toLocaleDateString('en-US', { month: 'long' });
-  const day = now.getDate();
-  // e.g. "ЧЕТВЕРГ · THU 17 · АПР"
-  const dow = now.getDay();
-  const dateHTML = document.getElementById('dateLabel');
-  dateHTML.textContent = '';
-  const a = el('span', '', CYRILLIC_WEEKDAY[dow]);
-  const sep1 = el('span', 'accent', ' · ');
-  const b = el('span', '', day + ' ' + month.toUpperCase());
-  dateHTML.appendChild(a);
-  dateHTML.appendChild(sep1);
-  dateHTML.appendChild(b);
+  const weekday = now.toLocaleDateString('en-US', { weekday: 'short' }); // THU
+  const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  document.getElementById('dateLabel').textContent = weekday + ' · ' + md;
 }
 tickClock();
 setInterval(tickClock, 1000);
 
 // ═════════════════════════════════════════════════════════════════
-// WEATHER LABELS
+// WEATHER
 // ═════════════════════════════════════════════════════════════════
 const WMO_LABEL = {
-  0:  { short: 'Clear',          long: 'CLEAR SKIES' },
-  1:  { short: 'Mostly clear',   long: 'MOSTLY CLEAR' },
-  2:  { short: 'Partly cloudy',  long: 'PARTLY CLOUDY' },
-  3:  { short: 'Overcast',       long: 'OVERCAST' },
-  45: { short: 'Fog',            long: 'FOG' },
-  48: { short: 'Freezing fog',   long: 'FREEZING FOG' },
-  51: { short: 'Light drizzle',  long: 'LIGHT DRIZZLE' },
-  53: { short: 'Drizzle',        long: 'DRIZZLE' },
-  55: { short: 'Heavy drizzle',  long: 'HEAVY DRIZZLE' },
-  61: { short: 'Light rain',     long: 'LIGHT RAIN' },
-  63: { short: 'Rain',           long: 'RAIN' },
-  65: { short: 'Heavy rain',     long: 'HEAVY RAIN' },
-  71: { short: 'Light snow',     long: 'LIGHT SNOW' },
-  73: { short: 'Snow',           long: 'SNOW' },
-  75: { short: 'Heavy snow',     long: 'HEAVY SNOW' },
-  77: { short: 'Snow grains',    long: 'SNOW GRAINS' },
-  80: { short: 'Showers',        long: 'RAIN SHOWERS' },
-  81: { short: 'Showers',        long: 'HEAVY SHOWERS' },
-  82: { short: 'Downpour',       long: 'VIOLENT SHOWERS' },
-  85: { short: 'Snow showers',   long: 'SNOW SHOWERS' },
-  86: { short: 'Snow showers',   long: 'HEAVY SNOW SHOWERS' },
-  95: { short: 'Thunderstorm',   long: 'THUNDERSTORM' },
-  96: { short: 'Thunderstorm',   long: 'THUNDERSTORM + HAIL' },
-  99: { short: 'Severe storm',   long: 'SEVERE STORM + HAIL' },
+  0:  'CLEAR', 1: 'MOSTLY CLEAR', 2: 'PARTLY CLOUDY', 3: 'OVERCAST',
+  45: 'FOG', 48: 'FREEZING FOG',
+  51: 'LIGHT DRIZZLE', 53: 'DRIZZLE', 55: 'HEAVY DRIZZLE',
+  61: 'LIGHT RAIN', 63: 'RAIN', 65: 'HEAVY RAIN',
+  71: 'LIGHT SNOW', 73: 'SNOW', 75: 'HEAVY SNOW', 77: 'SNOW GRAINS',
+  80: 'RAIN SHOWERS', 81: 'HEAVY SHOWERS', 82: 'VIOLENT SHOWERS',
+  85: 'SNOW SHOWERS', 86: 'HEAVY SNOW SHOWERS',
+  95: 'THUNDERSTORM', 96: 'THUNDERSTORM + HAIL', 99: 'SEVERE STORM',
 };
 
 function weatherSummary(code, tempF) {
-  const hot = tempF >= 85, warm = tempF >= 70 && tempF < 85;
-  const mild = tempF >= 55 && tempF < 70, cool = tempF >= 40 && tempF < 55;
-  const cold = tempF < 40;
-
   if ([95,96,99].includes(code)) return 'Thunderstorms expected. Stay inside if you can.';
   if ([65,82].includes(code))    return 'Heavy rain — full umbrella and jacket.';
   if ([61,63,80,81].includes(code)) return 'Rain on and off. Grab an umbrella.';
   if ([51,53,55].includes(code)) return 'Light drizzle. A hood should handle it.';
   if ([71,73,75,77,85,86].includes(code)) return 'Snow is falling. Boots and extra time.';
-  if ([45,48].includes(code))    return 'Foggy. Low visibility — walk carefully.';
+  if ([45,48].includes(code))    return 'Foggy. Walk carefully.';
   if (code === 3)                return 'Overcast but dry. A sweater is enough.';
   if (code === 2)                return 'Partly cloudy. Pleasant mix of sun and shade.';
   if (code === 1)                return 'Mostly sunny. Easy day to be outside.';
-  if (hot)  return 'Clear and hot. Sunscreen, hat, carry water.';
-  if (warm) return 'Clear and comfortable. Great day to be outside.';
-  if (mild) return 'Clear and mild. A light layer is plenty.';
-  if (cool) return 'Clear but cool. A jacket is a good idea.';
-  if (cold) return 'Clear and cold. Heavy coat and gloves.';
-  return 'Clear skies.';
-}
-
-function feelsLikeLine(tempF, apparentF, humidity, windMph) {
-  const diff = Math.round(apparentF - tempF);
-  const parts = ['Feels like ' + Math.round(apparentF) + '°'];
-  if (Math.abs(diff) >= 3) parts.push(diff > 0 ? '+' + diff + '°' : diff + '°');
-  if (windMph != null) parts.push(Math.round(windMph) + ' mph wind');
-  if (humidity != null) parts.push(Math.round(humidity) + '% humidity');
-  return parts.join(' · ');
+  if (tempF >= 85) return 'Clear and hot. Sunscreen, hat, carry water.';
+  if (tempF >= 70) return 'Clear and comfortable. Great day to be outside.';
+  if (tempF >= 55) return 'Clear and mild. A light layer is plenty.';
+  if (tempF >= 40) return 'Clear but cool. A jacket is a good idea.';
+  return 'Clear and cold. Heavy coat and gloves.';
 }
 
 function hoursMinutesBetween(a, b) {
@@ -752,21 +537,22 @@ async function refreshWeather() {
     const d = j.data, cur = d.current, daily = d.daily;
 
     const code = cur.weather_code;
-    const label = (WMO_LABEL[code] && WMO_LABEL[code].long) || 'WEATHER';
     const tempF = cur.temperature_2m;
-
     document.getElementById('tempNow').textContent = Math.round(tempF);
-    document.getElementById('weatherDesc').textContent = label;
-    document.getElementById('feelsLike').textContent =
-      feelsLikeLine(tempF, cur.apparent_temperature, cur.relative_humidity_2m, cur.wind_speed_10m);
-    document.getElementById('weatherAdvice').textContent =
-      weatherSummary(code, tempF);
+    document.getElementById('weatherDesc').textContent = WMO_LABEL[code] || 'WEATHER';
+    document.getElementById('weatherAdvice').textContent = weatherSummary(code, tempF);
     document.getElementById('weatherIcon').textContent = 'wmo:' + code;
 
+    // Compact sub-line: feels like · hi / lo
+    const parts = ['Feels ' + Math.round(cur.apparent_temperature) + '°'];
     if (daily && daily.temperature_2m_max && daily.temperature_2m_max.length) {
-      document.getElementById('hiTemp').textContent = Math.round(daily.temperature_2m_max[0]) + '°';
-      document.getElementById('loTemp').textContent = Math.round(daily.temperature_2m_min[0]) + '°';
+      parts.push('Hi ' + Math.round(daily.temperature_2m_max[0]) + '°');
+      parts.push('Lo ' + Math.round(daily.temperature_2m_min[0]) + '°');
+      document.getElementById('hiTemp').textContent = Math.round(daily.temperature_2m_max[0]);
+      document.getElementById('loTemp').textContent = Math.round(daily.temperature_2m_min[0]);
     }
+    if (cur.wind_speed_10m != null) parts.push(Math.round(cur.wind_speed_10m) + ' mph wind');
+    document.getElementById('feelsLike').textContent = parts.join(' · ');
 
     if (daily && daily.sunrise && daily.sunset) {
       const sunrise = new Date(daily.sunrise[0]);
@@ -774,120 +560,87 @@ async function refreshWeather() {
       document.getElementById('sunrise').textContent = fmtClockShort(sunrise);
       document.getElementById('sunset').textContent  = fmtClockShort(sunset);
       const now = new Date();
-      let label, value;
       if (now < sunrise) {
-        label = 'Until Sunrise · До Рассвета'; value = hoursMinutesBetween(now, sunrise);
+        document.getElementById('sunDirLabel').textContent = 'Until Sunrise';
+        document.getElementById('sunDaylight').textContent = hoursMinutesBetween(now, sunrise);
       } else if (now < sunset) {
-        label = 'Until Sunset · До Заката'; value = hoursMinutesBetween(now, sunset);
+        document.getElementById('sunDirLabel').textContent = 'Until Sunset';
+        document.getElementById('sunDaylight').textContent = hoursMinutesBetween(now, sunset);
       } else {
         const nextRise = daily.sunrise[1] ? new Date(daily.sunrise[1]) : null;
-        label = 'Until Sunrise · До Рассвета'; value = nextRise ? hoursMinutesBetween(now, nextRise) : '—';
+        document.getElementById('sunDirLabel').textContent = 'Until Sunrise';
+        document.getElementById('sunDaylight').textContent = nextRise ? hoursMinutesBetween(now, nextRise) : '—';
       }
-      document.getElementById('sunDirLabel').textContent = label;
-      document.getElementById('sunDaylight').textContent = value;
     }
-
-    // Forecast strip
-    const strip = document.getElementById('forecastStrip');
-    // Remove existing dynamic cells (keep the .fc-label header cell)
-    [...strip.querySelectorAll('.fc-cell')].forEach(n => n.remove());
-    const nowMs = Date.now();
-    const picks = d.hourly.time
-      .map((t, idx) => ({ ms: new Date(t).getTime(), idx }))
-      .filter(x => x.ms > nowMs)
-      .slice(0, 6);
-    picks.forEach(p => {
-      const dt = new Date(d.hourly.time[p.idx]);
-      let h = dt.getHours();
-      const ap = h >= 12 ? 'PM' : 'AM';
-      h = h % 12 || 12;
-      const cell = el('div', 'fc-cell');
-      cell.appendChild(el('span', 'hr', h + ap));
-      cell.appendChild(el('span', 't', Math.round(d.hourly.temperature_2m[p.idx]) + '°'));
-      const wmo = d.hourly.weather_code[p.idx];
-      const short = (WMO_LABEL[wmo] && WMO_LABEL[wmo].short) || '';
-      cell.appendChild(el('span', 'c', short));
-      const precip = d.hourly.precipitation_probability && d.hourly.precipitation_probability[p.idx];
-      if (precip != null && precip > 10) {
-        cell.appendChild(el('span', 'p', precip + '% RAIN'));
-      }
-      strip.appendChild(cell);
-    });
   } catch (e) {
     console.warn('weather', e);
-    document.getElementById('weatherDesc').textContent = 'WEATHER OFFLINE';
+    document.getElementById('weatherDesc').textContent = 'OFFLINE';
     document.getElementById('weatherAdvice').textContent =
-      'Could not reach weather service. Will retry automatically.';
+      'Could not reach weather service. Retrying automatically.';
   }
 }
 
 // ═════════════════════════════════════════════════════════════════
-// TRAINS
+// TRAINS — the main event
 // ═════════════════════════════════════════════════════════════════
 function verdictForStation(stopName, trains) {
   const walk = WALK_MIN[stopName] ?? 5;
   if (!trains || !trains.length) {
-    return { klass: '', text: 'NO TRAINS', sub: 'Nothing scheduled.', meta: [] };
+    return { klass: '', text: 'NO TRAINS', sub: 'Nothing scheduled.', leaveAt: '—', trainAt: '—', walk: walk + ' MIN' };
   }
   const catchable = trains.find(m => m >= walk + 1);
   if (catchable == null) {
-    const list = trains.slice(0, 3).map(x => x + ' min').join(', ');
     return {
       klass: 'soon',
       text: 'WAIT',
-      sub: 'Next trains (' + list + ') arrive before a ' + walk + '-min walk gets you there.',
-      meta: [['WALK', walk + ' MIN'], ['NEXT', trains[0] + ' MIN']]
+      sub: 'Next ' + trains[0] + ' min train too close to catch from a ' + walk + '-min walk.',
+      leaveAt: '—',
+      trainAt: trains[0] + 'M',
+      walk: walk + ' MIN',
     };
   }
   const leaveIn = catchable - walk;
   const arriveAt = new Date(Date.now() + catchable * 60_000);
   const leaveAt  = new Date(Date.now() + leaveIn * 60_000);
-  const backups = trains.filter(m => m > catchable).slice(0, 3);
 
   let klass, text;
   if (leaveIn <= 0)      { klass = 'go';     text = 'GO NOW'; }
-  else if (leaveIn <= 2) { klass = 'go';     text = 'LEAVE IN ' + leaveIn + ' MIN'; }
-  else if (leaveIn <= 6) { klass = 'soon';   text = 'LEAVE IN ' + leaveIn + ' MIN'; }
-  else                   { klass = 'plenty'; text = 'LEAVE IN ' + leaveIn + ' MIN'; }
+  else if (leaveIn <= 2) { klass = 'go';     text = leaveIn + ' MIN'; }
+  else if (leaveIn <= 6) { klass = 'soon';   text = leaveIn + ' MIN'; }
+  else                   { klass = 'plenty'; text = leaveIn + ' MIN'; }
 
-  const sub = 'Catch the ' + fmtClock(arriveAt) + ' train' +
-              (backups.length ? ' · next ' + backups.map(x => x + ' min').join(', ') : '');
+  const backups = trains.filter(m => m > catchable).slice(0, 2);
+  const sub = 'Leave ' + (leaveIn <= 0 ? 'now' : 'in ' + leaveIn + ' min') +
+              ' for the ' + fmtClock(arriveAt) + ' train' +
+              (backups.length ? ' · then ' + backups.map(x => x + 'm').join(', ') : '');
 
   return {
     klass, text, sub,
-    meta: [
-      ['WALK',  walk + ' MIN'],
-      ['LEAVE', fmtClock(leaveAt).replace(' ', '')],
-      ['TRAIN', fmtClock(arriveAt).replace(' ', '')],
-    ],
+    leaveAt: fmtClockShort(leaveAt),
+    trainAt: fmtClockShort(arriveAt),
+    walk: walk + ' MIN',
   };
 }
 
 function buildStop(s, idx) {
   const wrap = el('div', 'stop ' + (STATION_THEME[idx] || 'theme-cream'));
-  // big station number behind
-  wrap.appendChild(el('div', 'stop-num', String(idx + 1).padStart(2, '0')));
-
-  wrap.appendChild(el('div', 'stop-name', (CYRILLIC_STATION[s.name] || '') + (CYRILLIC_STATION[s.name] ? ' · ' : '') + s.name.toUpperCase()));
-  wrap.appendChild(el('div', 'stop-badge', 'L LINE · MANHATTAN-BOUND'));
+  wrap.appendChild(el('div', 'stop-name', s.name.toUpperCase()));
+  wrap.appendChild(el('div', 'stop-badge', 'L LINE · MANHATTAN'));
 
   const v = verdictForStation(s.name, s.manhattan_bound);
   wrap.appendChild(el('div', 'stop-verdict ' + v.klass, v.text));
   wrap.appendChild(el('div', 'stop-sub', v.sub));
 
   const meta = el('div', 'stop-meta');
-  v.meta.forEach(([k, val]) => {
+  const mk = (k, val) => {
     const m = el('div', 'm');
     m.appendChild(el('span', 'k', k));
     m.appendChild(el('span', 'v', val));
-    meta.appendChild(m);
-  });
-  if (s.canarsie_bound && s.canarsie_bound.length) {
-    const m = el('div', 'm');
-    m.appendChild(el('span', 'k', 'RETURN'));
-    m.appendChild(el('span', 'v', s.canarsie_bound.slice(0, 2).map(x => x + 'M').join(' · ')));
-    meta.appendChild(m);
-  }
+    return m;
+  };
+  meta.appendChild(mk('Walk', v.walk));
+  meta.appendChild(mk('Leave', v.leaveAt));
+  meta.appendChild(mk('Train', v.trainAt));
   wrap.appendChild(meta);
   return wrap;
 }
@@ -908,7 +661,7 @@ async function refreshTrains() {
     }
     stations.forEach((s, i) => host.appendChild(buildStop(s, i)));
     document.getElementById('trainsUpdated').textContent = 'UPD ' + fmtClock(new Date());
-    document.getElementById('statusRight').textContent = 'В ЭФИРЕ · LIVE';
+    document.getElementById('statusRight').textContent = 'LIVE';
   } catch (e) {
     console.warn('trains', e);
     const host = document.getElementById('trainTiles');
@@ -917,7 +670,7 @@ async function refreshTrains() {
     box.appendChild(el('div', 'stop-name', 'MTA FEED OFFLINE'));
     box.appendChild(el('div', 'stop-sub', 'Retrying…'));
     host.appendChild(box);
-    document.getElementById('statusRight').textContent = 'RETRYING';
+    document.getElementById('statusRight').textContent = 'RETRY';
   }
 }
 
