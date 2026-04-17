@@ -353,6 +353,7 @@ STATIONS = [
     {"id": "errklara",              "name": "ERR Klara Klassika",                  "genre": "Estonian classical thematic",                               "url": "https://icecast.err.ee/klaraklassika.mp3"},
 
 
+    {"id": "rbcradio",      "name": "РБК Радио",               "genre": "Business news & talk — Moscow, Russia",        "url": "https://hls-01-rbc.hostingradio.ru/rbc-fed0/112/playlist.m3u8"},
     # --- Custom ---
     {"id": "custom",        "name": "Custom URL",             "genre": "Paste any stream URL",                          "url": ""},
 ]
