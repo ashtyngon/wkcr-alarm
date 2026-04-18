@@ -89,9 +89,13 @@ body.dark-mode {
 }
 .gdown-takeover.visible { display: flex; }
 .gdown-takeover img {
-  max-width: 86vw;
-  max-height: 50vh;       /* shrunk to give the 4× caption room */
+  /* 3× bigger clown — enforced via height clamp so the GIF
+     scales UP from its native size instead of just respecting it. */
+  height: clamp(420px, 52vh, 780px);
+  width: auto;
+  max-width: 88vw;
   object-fit: contain;
+  image-rendering: auto;          /* let browser smooth the upscale */
 }
 .gdown-takeover .gdown-caption {
   /* 4× the previous Fraunces 32–62 → 128–248 in Archivo Black,
@@ -1999,15 +2003,31 @@ async function refreshTrains() {
 
 // ═════════════════════════════════════════════════════════════════
 // G-DOWN DETECTION + FULLSCREEN GIF TAKEOVER
-// When the G line has no arrivals or active alerts, briefly flash
-// the clown GIF across the whole screen (5s on, ~40s off) to make
-// the disruption unmistakable.
+// When the G line has no arrivals or active alerts, flash a
+// clown GIF (random pick from a bank) across the whole screen.
 // ═════════════════════════════════════════════════════════════════
 const GDOWN_GIF_DURATION_MS = 14_000;  // how long the takeover shows each cycle
 const GDOWN_CYCLE_MS       = 60_000;   // how often the takeover fires when G is down
+
+// Bank of clown GIFs. Random pick on each burst so the takeover
+// feels less repetitive when G stays down for a while.
+const GDOWN_GIFS = [
+  'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGhjZWdlbDk0aGY5cjJtOXM0MHhyY2JqcWpqMTg2eWJ2Njg5YzF0ZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xxLszVeawO8zS/giphy.gif',
+  'https://i.pinimg.com/originals/66/dc/12/66dc125d18116a923c5d3c847970489c.gif',
+  'https://media.tenor.com/RcN_11AKMuQAAAAM/clown-clown-meme.gif',
+  'https://i.pinimg.com/originals/91/ae/3f/91ae3fe0e0a3fa7c3940657908c00c8a.gif',
+  'https://images.hellokids.com/_uploads/_tiny_galerie/200901/musician-clown-source_9gm.gif',
+  'https://i.pinimg.com/originals/a4/ea/a8/a4eaa8e10ab9a52a5ea86d5c9d5a8d7d.gif',
+  'https://i.pinimg.com/originals/43/79/d5/4379d54ecc8c08afa18d77992ad5ba53.gif',
+  'https://i.pinimg.com/originals/42/26/02/422602af4cf5b6c0bac95c4cbe706cc9.gif',
+];
+// Preload all clown GIFs so each burst plays without network delay.
+GDOWN_GIFS.forEach(url => { const i = new Image(); i.src = url; });
+
 let _gIsDown = false;
 let _gdownCycleId = null;
 let _gdownHideId  = null;
+let _gdownLastIdx = -1;
 
 function isGDown() {
   if (!trainsData) return false;
@@ -2038,17 +2058,51 @@ function pickGDownSub() {
   return 'G train · no arrivals right now';
 }
 
+// 25% of bursts pull from the EXTRAS bank instead of the clowns,
+// for variety. Extras display longer (15s) since they're text-heavy
+// memes that need reading time.
+const GDOWN_EXTRAS = [
+  // TODO: host the "woman yelling at cat / train dispatcher" meme
+  // and put its URL here. Until then this entry stays commented out.
+  // { url: 'https://YOUR-HOST/train-dispatcher-meme.jpg', duration: 15_000 },
+];
+
+function pickClownGif() {
+  // Avoid showing the same clown twice in a row.
+  let next;
+  do { next = Math.floor(Math.random() * GDOWN_GIFS.length); }
+  while (GDOWN_GIFS.length > 1 && next === _gdownLastIdx);
+  _gdownLastIdx = next;
+  return GDOWN_GIFS[next];
+}
+
 function showGDownGif() {
   const overlay = document.getElementById('gdownTakeover');
+  const img = overlay?.querySelector('img');
   const cap = document.getElementById('gdownCaption');
   const sub = document.getElementById('gdownSub');
   if (!overlay) return;
-  if (cap) cap.textContent = pickGDownCaption();
-  if (sub) sub.textContent = pickGDownSub();
+
+  // 25% chance of picking an EXTRA (text-heavy meme, 15s) — but
+  // only if the EXTRAS bank actually has anything in it.
+  const useExtra = GDOWN_EXTRAS.length > 0 && Math.random() < 0.25;
+  let duration = GDOWN_GIF_DURATION_MS;
+  if (useExtra) {
+    const meme = GDOWN_EXTRAS[Math.floor(Math.random() * GDOWN_EXTRAS.length)];
+    if (img) img.src = meme.url;
+    duration = meme.duration || 15_000;
+    if (cap) cap.textContent = '';     // image already has text baked in
+    if (sub) sub.textContent = pickGDownSub();
+  } else {
+    if (img) img.src = pickClownGif();
+    if (cap) cap.textContent = pickGDownCaption();
+    if (sub) sub.textContent = pickGDownSub();
+  }
+
   overlay.classList.add('visible');
   overlay.setAttribute('aria-hidden', 'false');
   clearTimeout(_gdownHideId);
-  _gdownHideId = setTimeout(hideGDownGif, GDOWN_GIF_DURATION_MS);
+  _gdownHideId = setTimeout(hideGDownGif, duration);
 }
 function hideGDownGif() {
   const overlay = document.getElementById('gdownTakeover');
