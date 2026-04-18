@@ -391,21 +391,20 @@ body.dark-mode {
   justify-content: space-around;
 }
 /* Station row: 6 fixed-width columns so every row shares the same
-   column positions. Times don't drift based on terminus length,
-   left times' left edges align across rows, right times' right
-   edges align across rows. */
+   column positions. Widths sized so "ROCKAWAY PKWY" (the longest
+   terminus) fits comfortably without overflowing into times. */
 .st-row {
   display: grid;
   grid-template-columns:
-    clamp(200px, 16vw, 280px)   /* 1: left times (left-aligned) */
-    clamp(200px, 16vw, 280px)   /* 2: left terminus (right-aligned, near station) */
-    auto                         /* 3: station block (centered) */
-    clamp(200px, 16vw, 280px)   /* 4: right terminus (left-aligned, near station) */
-    clamp(200px, 16vw, 280px)   /* 5: right times (right-aligned) */
-    clamp(110px, 9vw, 160px);   /* 6: walk (right-aligned) */
+    clamp(140px, 11vw, 200px)   /* 1: left times */
+    clamp(240px, 19vw, 360px)   /* 2: left terminus (widest — fits ROCKAWAY PKWY) */
+    auto                         /* 3: station block */
+    clamp(240px, 19vw, 360px)   /* 4: right terminus */
+    clamp(140px, 11vw, 200px)   /* 5: right times */
+    clamp(100px, 8vw, 140px);   /* 6: walk */
   align-items: center;
-  gap: clamp(14px, 1.5vw, 26px);
-  padding: clamp(16px, 1.8vw, 26px) clamp(22px, 2.4vw, 36px);
+  gap: clamp(14px, 1.4vw, 24px);
+  padding: clamp(16px, 1.8vw, 26px) clamp(20px, 2.2vw, 32px);
   border-bottom: 2px solid var(--hair);
   flex: 1;
   min-height: 0;
@@ -422,18 +421,18 @@ body.dark-mode {
 .st-row .station-block .sb-arrow {
   font-family: 'PT Serif', serif;
   color: var(--red); font-weight: 700;
-  font-size: clamp(42px, 3.8vw, 66px);
+  font-size: clamp(34px, 3vw, 52px);
   line-height: 1;
 }
 .st-row .circle {
-  width: clamp(48px, 4.2vw, 68px);
-  height: clamp(48px, 4.2vw, 68px);
+  width: clamp(42px, 3.6vw, 58px);
+  height: clamp(42px, 3.6vw, 58px);
   border-radius: 50%;
   background: #a7a9ac; color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-family: 'PT Serif', serif;
   font-weight: 700;
-  font-size: clamp(26px, 2.4vw, 38px);
+  font-size: clamp(22px, 2vw, 32px);
   line-height: 1;
   flex: 0 0 auto;
 }
@@ -442,21 +441,23 @@ body.dark-mode {
 .st-row .name {
   font-family: 'PT Serif', serif;
   font-weight: 700;
-  font-size: clamp(38px, 3.4vw, 58px);
+  font-size: clamp(30px, 2.8vw, 46px);
   line-height: 1;
   letter-spacing: -0.005em;
   white-space: nowrap;
   text-transform: uppercase;
 }
 
-/* Times block — 2 equal sub-cells with a thin divider between them */
+/* Times block — 2 equal sub-cells with a thin divider between them.
+   Font size reduced from previous so the pair fits in a ~180px
+   column without overflowing. */
 .st-row .times {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0;
   font-family: 'PT Serif', serif;
   font-weight: 700;
-  font-size: clamp(42px, 3.8vw, 66px);
+  font-size: clamp(32px, 2.8vw, 48px);
   line-height: 1;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -482,13 +483,12 @@ body.dark-mode {
 /* ensure the time cells themselves follow container text-align */
 .st-row .times-left  .time { text-align: left;  }
 .st-row .times-right .time { text-align: right; }
-/* Terminus — serif, uppercase, near-parity with train time.
-   Left terminus right-aligned (hugs station), right terminus
-   left-aligned (hugs station). */
+/* Terminus — serif, uppercase. Font sized to let longest name
+   ("ROCKAWAY PKWY") fit inside the allocated column width. */
 .st-row .terminus {
   font-family: 'PT Serif', serif;
   font-weight: 700;
-  font-size: clamp(36px, 3.2vw, 56px);
+  font-size: clamp(26px, 2.4vw, 42px);
   line-height: 1;
   letter-spacing: 0.02em;
   text-transform: uppercase;
