@@ -69,6 +69,54 @@ body.dark-mode {
   transition: opacity 0.35s ease;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   G-DOWN FULLSCREEN TAKEOVER — when the G is down or has active
+   alerts, flashes the clown-meme GIF full-screen for 5 seconds
+   on a rotating cycle (every ~45s). Sits above the dim overlay
+   so it's always readable regardless of brightness setting.
+   ══════════════════════════════════════════════════════════════ */
+.gdown-takeover {
+  position: fixed;
+  inset: 0;
+  background: #0a0a0a;
+  z-index: 10010;         /* above .dim-overlay */
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 32px;
+  padding: 40px;
+}
+.gdown-takeover.visible { display: flex; }
+.gdown-takeover img {
+  max-width: 90vw;
+  max-height: 72vh;
+  object-fit: contain;
+}
+.gdown-takeover .gdown-caption {
+  font-family: 'Fraunces', 'PT Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 600;
+  font-variation-settings: "opsz" 144;
+  font-size: clamp(32px, 3.6vw, 62px);
+  color: #f3e8cd;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 90vw;
+  letter-spacing: -0.01em;
+}
+.gdown-takeover .gdown-caption em {
+  font-style: italic;
+  color: #c4201e;
+}
+.gdown-takeover .gdown-sub {
+  font-family: 'PT Mono', monospace;
+  font-size: clamp(13px, 1.3vw, 20px);
+  color: rgba(243, 232, 205, 0.55);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
 /* Flex column instead of grid: the hero and station-table share
    remaining vertical space at a 1.5 : 1 ratio (hero dominant but
    station-table guaranteed ~40% of the free space). Conditional
@@ -426,14 +474,53 @@ body.dark-mode {
   justify-self: start;
 }
 .st-row.st-row-empty .empty-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 1.4vw, 24px);
+  text-align: center;
+}
+.st-row.st-row-empty .empty-glyph {
+  font-size: clamp(44px, 4vw, 68px);
+  line-height: 1;
+  flex: 0 0 auto;
+}
+.st-row.st-row-empty .empty-text {
   font-family: 'PT Sans', sans-serif;
   font-weight: 500;
   font-style: italic;
-  font-size: clamp(22px, 2vw, 32px);
-  color: var(--red);
+  font-size: clamp(22px, 2vw, 34px);
+  color: var(--ink);
   letter-spacing: 0.01em;
   line-height: 1.25;
-  text-align: center;
+}
+
+/* Variant: MTA alert — treat it as urgent, red */
+.st-row.st-row-empty.empty-alert .empty-text { color: var(--red); }
+
+/* Variant: night / late — muted, no humor */
+.st-row.st-row-empty.empty-night .empty-text { color: var(--muted); }
+
+/* Variant: G IS DOWN — lean into the joke. Larger serif quote,
+   warm ochre wash background, chunky clown glyph. */
+.st-row.st-row-empty.empty-g-down {
+  background: rgba(212, 160, 23, 0.10);  /* warm ochre wash */
+  border-left: 8px solid var(--ochre);
+  padding-left: clamp(20px, 2vw, 32px);
+}
+.st-row.st-row-empty.empty-g-down .empty-glyph {
+  font-size: clamp(56px, 5vw, 88px);    /* BIG CLOWN */
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+}
+.st-row.st-row-empty.empty-g-down .empty-text {
+  font-family: 'Fraunces', 'PT Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 600;
+  font-variation-settings: "opsz" 144, "SOFT" 80;
+  font-size: clamp(28px, 2.6vw, 44px);
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  line-height: 1.2;
 }
 
 /* Station block — arrows flank badge + name, pointing outward */
@@ -1299,6 +1386,14 @@ body.mode-weather .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
 <!-- Dimming overlay: black alpha layer above everything for even dimming -->
 <div class="dim-overlay" id="dimOverlay"></div>
 
+<!-- G-down fullscreen takeover. Preloaded img so first burst is
+     instant; hidden until the G goes quiet/disrupted. -->
+<div class="gdown-takeover" id="gdownTakeover" aria-hidden="true">
+  <img src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGhjZWdlbDk0aGY5cjJtOXM0MHhyY2JqcWpqMTg2eWJ2Njg5YzF0ZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xxLszVeawO8zS/giphy.gif" alt="">
+  <div class="gdown-caption" id="gdownCaption">The G is a myth.</div>
+  <div class="gdown-sub" id="gdownSub">G train · no arrivals right now</div>
+</div>
+
 <!-- legacy IDs for backend compat -->
 <span id="seconds" class="legacy"></span>
 <span id="weatherIcon" class="legacy"></span>
@@ -1763,31 +1858,61 @@ function buildTimesBlock(trains, walk, side) {
   return block;
 }
 
+// ═════════════════════════════════════════════════════════════════
+// G TRAIN JOKES — NYC transit folklore: the G is famously short
+// (4 cars), infrequent, elusive, skips Manhattan. When the feed
+// goes silent, we lean into the joke instead of dead dashes.
+// Picked for brevity + authentic phrasing you'd actually see on
+// Brooklyn Reddit or transit Twitter.
+// ═════════════════════════════════════════════════════════════════
+const G_TRAIN_JOKES = [
+  "The G is a myth.",
+  "G stands for ghost.",
+  "Schrödinger's G train.",
+  "It's not delayed. It's existential.",
+  "The G runs on vibes.",
+  "Half the cars, twice the wait.",
+  "G is for 'good luck'.",
+  "The G has its own time zone.",
+  "Just bike it.",
+  "Two G trains. Neither on time.",
+  "Take a photo for proof.",
+  "The G is on its own schedule. Always was.",
+  "The G train: making people late since 1937.",
+  "Faster to walk to the L.",
+  "Waiting for the G is character development.",
+  "The G doesn't go to Manhattan. That's not even its biggest problem.",
+  "If you see two G trains within ten minutes, call your mother.",
+  "Officially: every 8 minutes. In practice: pray.",
+  "The G train is gentrification's last natural enemy.",
+  "Don't trust the G. It doesn't trust you.",
+];
+
 // When a station has no trains in EITHER direction, build a
-// single-message row explaining why. Looks for a line-specific
-// MTA alert first; falls back to time-of-day-aware phrasing.
+// single-message explaining why. Returns { glyph, text, variant }.
+// Looks for line-specific MTA alert first; falls back to
+// time-of-day, then line-specific humor for the G.
 function emptyStationMessage(s) {
   const alerts = trainsData?.alerts || [];
   const lineAlert = alerts.find(a => a.line === s.line);
   if (lineAlert && lineAlert.header) {
-    // Prepend the line letter if the alert doesn't already name it
     const hdr = lineAlert.header;
     const prefix = new RegExp('\\b' + s.line + '\\b').test(hdr) ? '' : s.line + ' train: ';
-    return prefix + hdr;
+    return { glyph: '⚠', text: prefix + hdr, variant: 'alert' };
   }
   const hour = new Date().getHours();
   if (hour >= 1 && hour < 5) {
-    return s.line + ' train on overnight service — arrivals are spread far apart';
+    return { glyph: '☾', text: s.line + ' on overnight service — long gaps between trains', variant: 'night' };
   }
-  if (hour >= 0 && hour < 1) {
-    return s.line + ' train winding down for the night — next arrivals may take a while';
+  if (hour === 0) {
+    return { glyph: '☾', text: s.line + ' winding down for the night', variant: 'night' };
   }
-  // The G is famously flaky — when the feed is quiet during daytime
-  // it's usually a real disruption the alert system hasn't caught up to
+  // G train went quiet during the day → lean into it
   if (s.line === 'G') {
-    return 'G train feed is quiet right now — service may be disrupted. Check MTA.';
+    const joke = G_TRAIN_JOKES[Math.floor(Math.random() * G_TRAIN_JOKES.length)];
+    return { glyph: '🤡', text: joke, variant: 'g-down' };
   }
-  return s.line + ' train feed has no arrivals at the moment';
+  return { glyph: '·', text: s.line + ' train has no arrivals in the feed right now', variant: 'info' };
 }
 
 function renderStationTable() {
@@ -1806,12 +1931,19 @@ function renderStationTable() {
     const nTrains = s.directions?.N?.trains || [];
     const sTrains = s.directions?.S?.trains || [];
     if (nTrains.length === 0 && sTrains.length === 0) {
-      const row = el('div', 'st-row st-row-empty');
+      const msg = emptyStationMessage(s);
+      const row = el('div', 'st-row st-row-empty empty-' + msg.variant);
       const sb = el('div', 'station-block');
       sb.appendChild(el('span', 'circle line-' + s.line, s.line));
       sb.appendChild(el('span', 'name', s.name));
       row.appendChild(sb);
-      row.appendChild(el('div', 'empty-message', emptyStationMessage(s)));
+
+      // Message = glyph (big) + text (serif italic for jokes, bold for alerts)
+      const messageEl = el('div', 'empty-message');
+      messageEl.appendChild(el('span', 'empty-glyph', msg.glyph));
+      messageEl.appendChild(el('span', 'empty-text', msg.text));
+      row.appendChild(messageEl);
+
       row.appendChild(el('div', 'walk', walk + ' min walk'));
       host.appendChild(row);
       return;
@@ -1852,9 +1984,86 @@ async function refreshTrains() {
     renderHero();
     renderStationTable();
     renderAlerts(trainsData.alerts || []);
+    updateGDownState();
     document.getElementById('statusRight').textContent = 'Live';
   } catch (e) {
     document.getElementById('statusRight').textContent = 'Retry';
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════
+// G-DOWN DETECTION + FULLSCREEN GIF TAKEOVER
+// When the G line has no arrivals or active alerts, briefly flash
+// the clown GIF across the whole screen (5s on, ~40s off) to make
+// the disruption unmistakable.
+// ═════════════════════════════════════════════════════════════════
+const GDOWN_GIF_DURATION_MS = 5_000;   // how long the takeover shows each cycle
+const GDOWN_CYCLE_MS       = 45_000;   // how often the takeover fires when G is down
+let _gIsDown = false;
+let _gdownCycleId = null;
+let _gdownHideId  = null;
+
+function isGDown() {
+  if (!trainsData) return false;
+  // Any MTA alert on the G counts as "disrupted" even if trains still come.
+  const hasGAlert = (trainsData.alerts || []).some(a => a.line === 'G');
+  if (hasGAlert) return true;
+  // Or: every G station shows no trains in either direction.
+  const gStations = (trainsData.stations || []).filter(s => s.line === 'G');
+  if (!gStations.length) return false;
+  const anyTrains = gStations.some(s => {
+    const n = s.directions?.N?.trains?.length || 0;
+    const sc = s.directions?.S?.trains?.length || 0;
+    return n > 0 || sc > 0;
+  });
+  return !anyTrains;
+}
+
+function pickGDownCaption() {
+  // Reuse the joke list so the full-screen caption matches what
+  // the station-table row is also showing.
+  const joke = G_TRAIN_JOKES[Math.floor(Math.random() * G_TRAIN_JOKES.length)];
+  return joke;
+}
+function pickGDownSub() {
+  const alerts = trainsData?.alerts || [];
+  const gAlert = alerts.find(a => a.line === 'G');
+  if (gAlert) return gAlert.header.slice(0, 80);
+  return 'G train · no arrivals right now';
+}
+
+function showGDownGif() {
+  const overlay = document.getElementById('gdownTakeover');
+  const cap = document.getElementById('gdownCaption');
+  const sub = document.getElementById('gdownSub');
+  if (!overlay) return;
+  if (cap) cap.textContent = pickGDownCaption();
+  if (sub) sub.textContent = pickGDownSub();
+  overlay.classList.add('visible');
+  overlay.setAttribute('aria-hidden', 'false');
+  clearTimeout(_gdownHideId);
+  _gdownHideId = setTimeout(hideGDownGif, GDOWN_GIF_DURATION_MS);
+}
+function hideGDownGif() {
+  const overlay = document.getElementById('gdownTakeover');
+  if (overlay) {
+    overlay.classList.remove('visible');
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+}
+
+function updateGDownState() {
+  const wasDown = _gIsDown;
+  _gIsDown = isGDown();
+  if (_gIsDown && !wasDown) {
+    // Just went down — show immediately, then start the cycle.
+    showGDownGif();
+    if (_gdownCycleId) clearInterval(_gdownCycleId);
+    _gdownCycleId = setInterval(showGDownGif, GDOWN_CYCLE_MS);
+  } else if (!_gIsDown && wasDown) {
+    // Recovered — stop cycle and hide immediately.
+    if (_gdownCycleId) { clearInterval(_gdownCycleId); _gdownCycleId = null; }
+    hideGDownGif();
   }
 }
 refreshTrains();
