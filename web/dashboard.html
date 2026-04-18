@@ -14,7 +14,7 @@
 <meta http-equiv="refresh" content="3600">
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500..700&family=PT+Mono&family=PT+Sans:wght@400;700&family=PT+Serif:ital,wght@0,400;0,700;1,700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Fraunces:ital,opsz,wght@0,9..144,500..700&family=PT+Mono&family=PT+Sans:wght@400;700&family=PT+Serif:ital,wght@0,400;0,700;1,700&display=swap" rel="stylesheet"/>
 <style>
 /* ──────────────────────────────────────────────────────────────────
    v6 — glance-optimized dashboard. One view, hero + compact table.
@@ -79,41 +79,39 @@ body.dark-mode {
   position: fixed;
   inset: 0;
   background: #0a0a0a;
-  z-index: 10010;         /* above .dim-overlay */
+  z-index: 10010;
   display: none;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 32px;
-  padding: 40px;
+  gap: 24px;
+  padding: 32px;
 }
 .gdown-takeover.visible { display: flex; }
 .gdown-takeover img {
-  max-width: 90vw;
-  max-height: 72vh;
+  max-width: 86vw;
+  max-height: 50vh;       /* shrunk to give the 4× caption room */
   object-fit: contain;
 }
 .gdown-takeover .gdown-caption {
-  font-family: 'Fraunces', 'PT Serif', Georgia, serif;
-  font-style: italic;
-  font-weight: 600;
-  font-variation-settings: "opsz" 144;
-  font-size: clamp(32px, 3.6vw, 62px);
+  /* 4× the previous Fraunces 32–62 → 128–248 in Archivo Black,
+     uppercase, tight tracking. Reads from across the room. */
+  font-family: 'Archivo Black', 'Impact', 'Helvetica Neue', sans-serif;
+  font-weight: 900;
+  font-size: clamp(96px, 11vw, 200px);
+  text-transform: uppercase;
   color: #f3e8cd;
   text-align: center;
-  line-height: 1.2;
-  max-width: 90vw;
-  letter-spacing: -0.01em;
-}
-.gdown-takeover .gdown-caption em {
-  font-style: italic;
-  color: #c4201e;
+  line-height: 0.94;
+  letter-spacing: -0.015em;
+  max-width: 96vw;
+  text-wrap: balance;
 }
 .gdown-takeover .gdown-sub {
   font-family: 'PT Mono', monospace;
-  font-size: clamp(13px, 1.3vw, 20px);
-  color: rgba(243, 232, 205, 0.55);
-  letter-spacing: 0.22em;
+  font-size: clamp(14px, 1.4vw, 22px);
+  color: rgba(243, 232, 205, 0.6);
+  letter-spacing: 0.24em;
   text-transform: uppercase;
 }
 
@@ -509,18 +507,18 @@ body.dark-mode {
   padding-left: clamp(20px, 2vw, 32px);
 }
 .st-row.st-row-empty.empty-g-down .empty-glyph {
-  font-size: clamp(56px, 5vw, 88px);    /* BIG CLOWN */
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  font-size: clamp(80px, 7vw, 120px);   /* BIGGER CLOWN */
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.18));
 }
 .st-row.st-row-empty.empty-g-down .empty-text {
-  font-family: 'Fraunces', 'PT Serif', Georgia, serif;
-  font-style: italic;
-  font-weight: 600;
-  font-variation-settings: "opsz" 144, "SOFT" 80;
-  font-size: clamp(28px, 2.6vw, 44px);
+  font-family: 'Archivo Black', 'Impact', sans-serif;
+  font-weight: 900;
+  font-style: normal;
+  font-size: clamp(34px, 3vw, 52px);
+  text-transform: uppercase;
   color: var(--ink);
   letter-spacing: -0.005em;
-  line-height: 1.2;
+  line-height: 1.05;
 }
 
 /* Station block — arrows flank badge + name, pointing outward */
@@ -1865,27 +1863,35 @@ function buildTimesBlock(trains, walk, side) {
 // Picked for brevity + authentic phrasing you'd actually see on
 // Brooklyn Reddit or transit Twitter.
 // ═════════════════════════════════════════════════════════════════
+// Real human energy. These are paraphrased from actual NYC transit
+// rants — Reddit, Brooklyn Twitter, group chats. The G inspires
+// genuinely deranged commentary because it deserves it.
 const G_TRAIN_JOKES = [
-  "The G is a myth.",
-  "G stands for ghost.",
-  "Schrödinger's G train.",
-  "It's not delayed. It's existential.",
-  "The G runs on vibes.",
-  "Half the cars, twice the wait.",
-  "G is for 'good luck'.",
-  "The G has its own time zone.",
-  "Just bike it.",
-  "Two G trains. Neither on time.",
-  "Take a photo for proof.",
-  "The G is on its own schedule. Always was.",
-  "The G train: making people late since 1937.",
-  "Faster to walk to the L.",
-  "Waiting for the G is character development.",
-  "The G doesn't go to Manhattan. That's not even its biggest problem.",
-  "If you see two G trains within ten minutes, call your mother.",
-  "Officially: every 8 minutes. In practice: pray.",
-  "The G train is gentrification's last natural enemy.",
-  "Don't trust the G. It doesn't trust you.",
+  "Where IS the G.",
+  "It said 4 min and that was 47 minutes ago.",
+  "I aged 7 years on the Court Sq platform.",
+  "I'm not even mad anymore. I'm impressed.",
+  "Just walk. You'll be fine.",
+  "I would walk to Queens before I take this again.",
+  "Fool me once, G train. Fool me 47 times.",
+  "Half a train. Full disrespect.",
+  "Court Sq is just a vibe at this point.",
+  "There is no G train. Stop asking.",
+  "I gave up on a man because he suggested the G.",
+  "Saw the G come twice in one hour and called my mom crying.",
+  "The G train is what made me start drinking.",
+  "Praying for a G at 11pm is a religious experience.",
+  "Bro the G is a psychological experiment.",
+  "If you've never cried about the G you've never lived in Brooklyn.",
+  "The MTA's middle finger to Brooklyn.",
+  "If I die before me, you'll know it was the G.",
+  "The G doesn't run. It haunts.",
+  "I'd Uber. I'd walk. I'd swim. Anything but this.",
+  "I started a podcast about my G train trauma.",
+  "Brooklyn's punishment for living too long.",
+  "The G is half a train. That's the whole bit.",
+  "Fuck this train. Fuck this entire train.",
+  "WHERE. IS. THE. G.",
 ];
 
 // When a station has no trains in EITHER direction, build a
