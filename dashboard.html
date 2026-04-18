@@ -227,42 +227,43 @@ body {
    SLOGAN BAR — Lenin + Fraunces pull-quote
    ══════════════════════════════════════════════════════════════ */
 .slogan-bar {
-  display: flex; align-items: center; gap: 18px;
-  padding: 10px 22px;
+  display: flex; align-items: center; gap: 22px;
+  padding: 16px 24px;
   background: var(--paper); color: var(--ink);
   border: 2px solid var(--ink);
-  min-height: 62px;
 }
 .slogan-bar .lenin {
-  flex: 0 0 auto; width: 46px; height: 54px;
+  flex: 0 0 auto; width: 78px; height: 92px;
   background-color: var(--red);
   -webkit-mask: url('/assets/lenin.svg') no-repeat center / contain;
           mask: url('/assets/lenin.svg') no-repeat center / contain;
 }
 .slogan-bar .star {
-  flex: 0 0 auto; width: 28px; height: 28px; color: var(--red);
+  flex: 0 0 auto; width: 40px; height: 40px; color: var(--red);
 }
 .slogan-bar .slogan-text {
   font-family: 'Fraunces', 'PT Serif', Georgia, serif;
   font-weight: 500;
-  font-size: clamp(17px, 1.55vw, 23px);
-  font-variation-settings: "opsz" 96, "SOFT" 60;
-  line-height: 1.28;
+  /* 3× the previous 17-23px range → 51-69px */
+  font-size: clamp(51px, 4.65vw, 69px);
+  font-variation-settings: "opsz" 120, "SOFT" 50;
+  line-height: 1.1;
   color: var(--ink);
   flex: 1; min-width: 0;
   transition: opacity 0.4s ease;
 }
 .slogan-bar .slogan-text.fade { opacity: 0; }
 .slogan-bar .slogan-text .attr {
-  display: inline-block;
+  display: block;
+  margin-top: 8px;
   font-family: 'Fraunces', 'PT Serif', Georgia, serif;
   font-style: italic;
   font-weight: 500;
-  font-variation-settings: "opsz" 48, "SOFT" 100;
+  font-variation-settings: "opsz" 60, "SOFT" 100;
   color: var(--red);
-  margin-left: 14px;
-  font-size: 0.78em;
-  letter-spacing: 0.02em;
+  margin-left: 0;
+  font-size: 0.42em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -645,6 +646,18 @@ body {
 @keyframes blink { 0%, 50% { opacity: 1 } 51%, 100% { opacity: 0.25 } }
 
 .legacy { display: none; }
+
+/* ══════════════════════════════════════════════════════════════
+   DARK MODE — invert paper↔ink while keeping red as red.
+   Toggled from /control via CMS settings.
+   ══════════════════════════════════════════════════════════════ */
+body.dark-mode {
+  --paper:   #1a1510;
+  --paper-2: #2a2318;
+  --ink:     #f3e8cd;
+  --muted:   #8a7d68;
+  --hair:    rgba(243,232,205,0.18);
+}
 </style>
 </head>
 <body>
@@ -1177,9 +1190,81 @@ function showPanel(idx) {
 }
 showPanel(0);
 setInterval(() => {
+  // Skip rotation when CMS says paused or forces a specific panel
+  if (_settings && _settings.paused) return;
+  if (_settings && _settings.force_panel) return;
   panelIdx = (panelIdx + 1) % PANELS.length;
   showPanel(panelIdx);
 }, PANEL_ROTATE_MS);
+
+// ═════════════════════════════════════════════════════════════════
+// AUTO-RELOAD — poll /api/version, reload when it changes.
+// WORKER_VERSION is regenerated on every Worker cold-start, so a new
+// deploy propagates to the wall display within ~30 seconds.
+// ═════════════════════════════════════════════════════════════════
+let _seenVersion = null;
+async function checkVersion() {
+  try {
+    const r = await fetch('/api/version', { cache: 'no-cache' });
+    const j = await r.json();
+    if (_seenVersion && j.version !== _seenVersion) {
+      console.log('Worker version changed, reloading…');
+      location.reload();
+      return;
+    }
+    _seenVersion = j.version;
+  } catch (e) { /* offline, try again next tick */ }
+}
+checkVersion();
+setInterval(checkVersion, 30_000);
+
+// ═════════════════════════════════════════════════════════════════
+// CMS SETTINGS — poll /api/settings, apply brightness/pause/etc.
+// The /control page writes to the same endpoint.
+// ═════════════════════════════════════════════════════════════════
+let _settings = null;
+async function pollSettings() {
+  try {
+    const r = await fetch('/api/settings', { cache: 'no-cache' });
+    const j = await r.json();
+    if (!j.ok) return;
+    applySettings(j.data);
+  } catch (e) { /* ignore transient failures */ }
+}
+function applySettings(s) {
+  if (!s) return;
+  const prev = _settings || {};
+  _settings = s;
+
+  // Brightness: CSS filter on body (non-destructive)
+  const b = Math.max(10, Math.min(100, Number(s.brightness ?? 100)));
+  document.body.style.filter = 'brightness(' + b + '%)';
+
+  // Show/hide slogan + footer
+  const sloganBar = document.querySelector('.slogan-bar');
+  if (sloganBar) sloganBar.style.display = (s.show_slogan === false) ? 'none' : '';
+  const footer = document.querySelector('.footer');
+  if (footer) footer.style.display = (s.show_footer === false) ? 'none' : '';
+
+  // Dark mode
+  document.body.classList.toggle('dark-mode', !!s.dark_mode);
+
+  // Force-panel: if CMS pins a specific panel, jump to it
+  if (s.force_panel && s.force_panel !== prev.force_panel) {
+    let targetIdx = -1;
+    if (s.force_panel === 'weather') {
+      targetIdx = PANELS.findIndex(p => p.type === 'weather');
+    } else {
+      targetIdx = PANELS.findIndex(p => p.station === s.force_panel);
+    }
+    if (targetIdx >= 0) {
+      panelIdx = targetIdx;
+      showPanel(panelIdx);
+    }
+  }
+}
+pollSettings();
+setInterval(pollSettings, 3_000);
 
 // ═════════════════════════════════════════════════════════════════
 // ALERTS

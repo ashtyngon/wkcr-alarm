@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>ПУЛЬТ · Dashboard Control</title>
+<meta name="theme-color" content="#c4201e"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Control"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=PT+Mono&family=PT+Sans:wght@400;700&family=PT+Serif:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+/* Soviet-editorial control surface, mobile-first */
+:root {
+  --paper:   #f3e8cd;
+  --paper-2: #e5d8b6;
+  --ink:     #0a0a0a;
+  --muted:   #7a7365;
+  --hair:    rgba(10,10,10,0.18);
+  --red:     #c4201e;
+  --ok:      #2e7d32;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+body {
+  font-family: 'PT Sans', Arial, sans-serif;
+  min-height: 100vh;
+  padding: 18px 18px 32px;
+  max-width: 640px;
+  margin: 0 auto;
+  -webkit-font-smoothing: antialiased;
+}
+header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  border-bottom: 3px solid var(--ink);
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+}
+h1 {
+  font-family: 'PT Serif', serif;
+  font-size: clamp(28px, 6vw, 42px);
+  margin: 0;
+  line-height: 1;
+  font-weight: 700;
+}
+h1 .cy { color: var(--red); margin-right: 12px; }
+header .where {
+  font-family: 'PT Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.card {
+  background: var(--paper-2);
+  border: 2px solid var(--ink);
+  padding: 16px 18px 20px;
+  margin-bottom: 14px;
+}
+.card h2 {
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  margin: 0 0 14px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Brightness slider */
+.bright-row {
+  display: flex; align-items: center; gap: 18px;
+}
+input[type="range"].bright {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: var(--ink);
+  border-radius: 0;
+  outline: none;
+  margin: 0;
+}
+input[type="range"].bright::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 32px; height: 32px;
+  background: var(--red);
+  border: 3px solid var(--paper);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 0 2px var(--ink);
+}
+input[type="range"].bright::-moz-range-thumb {
+  width: 32px; height: 32px;
+  background: var(--red);
+  border: 3px solid var(--paper);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 0 2px var(--ink);
+}
+.bright-value {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: 32px;
+  min-width: 84px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.bright-value .unit {
+  font-family: 'PT Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-left: 2px;
+}
+.bright-presets {
+  display: flex; gap: 8px; margin-top: 14px;
+  flex-wrap: wrap;
+}
+.bright-presets button {
+  flex: 1; min-width: 64px;
+  padding: 10px 8px;
+  font-family: 'PT Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: var(--paper);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.bright-presets button:active { background: var(--ink); color: var(--paper); }
+
+/* Generic buttons */
+.btn-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.btn-row.five { grid-template-columns: repeat(5, 1fr); }
+.btn-row.five button { font-size: 12px; padding: 12px 6px; }
+button.tile {
+  padding: 16px 12px;
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--paper);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  cursor: pointer;
+  line-height: 1.15;
+  transition: transform 0.1s ease;
+}
+button.tile:active { transform: translate(1px, 1px); }
+button.tile.active {
+  background: var(--red); color: var(--paper); border-color: var(--red);
+}
+button.tile .sub {
+  display: block;
+  font-family: 'PT Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  opacity: 0.7;
+  margin-top: 3px;
+}
+
+/* Toggles */
+.toggles {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.toggle {
+  padding: 14px 12px;
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--paper);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.2;
+}
+.toggle.on {
+  background: var(--red); color: var(--paper); border-color: var(--red);
+}
+.toggle::before {
+  content: "○  ";
+  font-family: 'PT Serif', serif;
+}
+.toggle.on::before { content: "●  "; }
+
+/* Status bar */
+.status {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 18px;
+  padding: 10px 14px;
+  background: var(--ink); color: var(--paper);
+  border: 2px solid var(--ink);
+  font-family: 'PT Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.status .live::before {
+  content: "● ";
+  color: var(--ok);
+  animation: pulse 1.8s steps(2, start) infinite;
+}
+@keyframes pulse { 0%,50% { opacity: 1 } 51%,100% { opacity: 0.35 } }
+.status .time { color: var(--paper); opacity: 0.85; }
+.err { background: var(--red) !important; color: var(--paper) !important; }
+
+footer {
+  margin-top: 22px;
+  text-align: center;
+  font-family: 'PT Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 12px;
+}
+footer a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--hair); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span class="cy">ПУЛЬТ</span>Control</h1>
+  <div class="where">Greenpoint Wall</div>
+</header>
+
+<!-- Brightness -->
+<div class="card">
+  <h2>Brightness</h2>
+  <div class="bright-row">
+    <input type="range" class="bright" id="brightness" min="10" max="100" step="5" value="100"/>
+    <div class="bright-value"><span id="brightnessValue">100</span><span class="unit">%</span></div>
+  </div>
+  <div class="bright-presets">
+    <button data-preset="20">20</button>
+    <button data-preset="40">40</button>
+    <button data-preset="60">60</button>
+    <button data-preset="80">80</button>
+    <button data-preset="100">100</button>
+  </div>
+</div>
+
+<!-- Rotation controls -->
+<div class="card">
+  <h2>Carousel Rotation</h2>
+  <div class="btn-row">
+    <button class="tile" id="btnAuto">Auto-rotate</button>
+    <button class="tile" id="btnPause">Pause</button>
+  </div>
+  <h2 style="margin-top: 18px;">Jump to Panel</h2>
+  <div class="btn-row five">
+    <button class="tile" data-panel="">Auto</button>
+    <button class="tile" data-panel="Nassau Av">Nassau<span class="sub">G</span></button>
+    <button class="tile" data-panel="Graham Av">Graham<span class="sub">L</span></button>
+    <button class="tile" data-panel="Bedford Av">Bedford<span class="sub">L</span></button>
+    <button class="tile" data-panel="weather">Weather<span class="sub">7 Day</span></button>
+  </div>
+</div>
+
+<!-- Display toggles -->
+<div class="card">
+  <h2>Display</h2>
+  <div class="toggles">
+    <div class="toggle" id="togSlogan">Ticker</div>
+    <div class="toggle" id="togFooter">Footer</div>
+    <div class="toggle" id="togDark">Dark</div>
+  </div>
+</div>
+
+<div class="status">
+  <span class="live"><span id="statusText">Loading…</span></span>
+  <span class="time" id="statusTime">—</span>
+</div>
+
+<footer>
+  <a href="/dashboard" target="_blank">Open dashboard</a> · syncs every 3 sec
+</footer>
+
+<script>
+const $ = s => document.querySelector(s);
+let _state = null;
+let _inFlight = false;
+
+function setStatus(msg, err=false) {
+  const el = $('#statusText');
+  el.textContent = msg;
+  $('.status').classList.toggle('err', !!err);
+  $('#statusTime').textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+}
+
+async function fetchState() {
+  try {
+    const r = await fetch('/api/settings', { cache: 'no-cache' });
+    const j = await r.json();
+    if (!j.ok) { setStatus(j.error || 'error', true); return; }
+    _state = j.data;
+    render();
+    setStatus(j.note ? 'Synced · ' + j.note : 'Synced');
+  } catch (e) {
+    setStatus(e.message || 'offline', true);
+  }
+}
+
+async function putState(patch) {
+  if (_inFlight) return;
+  _inFlight = true;
+  // Optimistic UI: merge locally so the button state updates immediately
+  if (_state) { _state = { ..._state, ...patch }; render(); }
+  try {
+    const r = await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+    const j = await r.json();
+    if (!j.ok) { setStatus(j.error || 'error', true); return; }
+    _state = j.data;
+    render();
+    setStatus('Saved');
+  } catch (e) {
+    setStatus(e.message || 'error', true);
+  } finally {
+    _inFlight = false;
+  }
+}
+
+function render() {
+  if (!_state) return;
+  // Brightness slider + value
+  $('#brightness').value = _state.brightness ?? 100;
+  $('#brightnessValue').textContent = _state.brightness ?? 100;
+  // Pause / Auto
+  $('#btnAuto').classList.toggle('active',  _state.paused === false);
+  $('#btnPause').classList.toggle('active', _state.paused === true);
+  // Panel tiles
+  document.querySelectorAll('button[data-panel]').forEach(b => {
+    const p = b.dataset.panel;
+    const current = _state.force_panel || '';
+    b.classList.toggle('active', p === current);
+  });
+  // Toggles
+  $('#togSlogan').classList.toggle('on', _state.show_slogan === true);
+  $('#togFooter').classList.toggle('on', _state.show_footer === true);
+  $('#togDark').classList.toggle('on',   _state.dark_mode   === true);
+}
+
+// Wire up controls
+$('#brightness').addEventListener('input', e => {
+  $('#brightnessValue').textContent = e.target.value;
+});
+$('#brightness').addEventListener('change', e => putState({ brightness: Number(e.target.value) }));
+document.querySelectorAll('.bright-presets button').forEach(b => {
+  b.addEventListener('click', () => putState({ brightness: Number(b.dataset.preset) }));
+});
+$('#btnAuto').addEventListener('click',  () => putState({ paused: false }));
+$('#btnPause').addEventListener('click', () => putState({ paused: true }));
+document.querySelectorAll('button[data-panel]').forEach(b => {
+  b.addEventListener('click', () => putState({ force_panel: b.dataset.panel || null }));
+});
+$('#togSlogan').addEventListener('click', () => putState({ show_slogan: !(_state?.show_slogan ?? true) }));
+$('#togFooter').addEventListener('click', () => putState({ show_footer: !(_state?.show_footer ?? true) }));
+$('#togDark').addEventListener('click',   () => putState({ dark_mode:   !(_state?.dark_mode   ?? false) }));
+
+fetchState();
+setInterval(fetchState, 5000);
+</script>
+</body>
+</html>

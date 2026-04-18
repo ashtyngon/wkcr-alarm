@@ -8,6 +8,12 @@
     "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   },
+  "kv_namespaces": [
+    {
+      "binding": "SETTINGS",
+      "id": "90149deded7542dca910987990b5ace6"
+    }
+  ],
   "observability": {
     "enabled": true
   }

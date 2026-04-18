@@ -13,6 +13,26 @@
 const DASH_LAT = 40.724;
 const DASH_LON = -73.951;
 
+// Lazy: Cloudflare Workers disallow crypto.randomUUID() at module
+// load time. We generate on first request and cache in the isolate,
+// so it stays stable within one Worker instance but regenerates on
+// a fresh deploy/cold-start. Dashboard polls /api/version for this.
+let _workerVersion = null;
+function getWorkerVersion() {
+  if (!_workerVersion) _workerVersion = crypto.randomUUID();
+  return _workerVersion;
+}
+
+// Default CMS settings when nothing has been written to KV yet.
+const DEFAULT_SETTINGS = {
+  brightness: 100,    // 10-100, applied as CSS filter on body
+  paused: false,      // true = stop carousel rotation
+  force_panel: null,  // null or one of: 'Nassau Av' | 'Graham Av' | 'Bedford Av' | 'weather'
+  show_slogan: true,
+  show_footer: true,
+  dark_mode: false,   // inverts palette (cream→ink, ink→paper)
+};
+
 // Per-line realtime GTFS-RT feed URLs (MTA NYCT).
 // https://api.mta.info/#/subwayRealTimeFeeds
 const FEEDS = {
@@ -360,21 +380,74 @@ async function handleDebug() {
 }
 
 // ─── Router ──────────────────────────────────────────────────────────
+// ─── /api/version ────────────────────────────────────────────────
+//  Small heartbeat endpoint the dashboard polls every ~30s so it
+//  can auto-reload when a new build has been deployed.
+function handleVersion() {
+  return json({ version: getWorkerVersion() }, 200, 0);
+}
+
+// ─── /api/settings ───────────────────────────────────────────────
+//  GET  — returns current CMS settings (brightness, paused, etc)
+//  POST — merges provided fields into the stored settings object
+//  Settings live in Cloudflare KV under the single key "state".
+async function handleSettings(request, env) {
+  if (!env.SETTINGS) {
+    // KV not bound yet — return defaults, reject writes politely
+    if (request.method === 'POST') {
+      return json({ ok: false, error: 'SETTINGS KV not bound' }, 501);
+    }
+    return json({ ok: true, data: DEFAULT_SETTINGS, note: 'KV not yet bound' });
+  }
+
+  if (request.method === 'GET') {
+    const stored = await env.SETTINGS.get('state', { type: 'json' });
+    return json({ ok: true, data: { ...DEFAULT_SETTINGS, ...(stored || {}) } });
+  }
+
+  if (request.method === 'POST' || request.method === 'PUT') {
+    let body;
+    try { body = await request.json(); } catch { return json({ ok: false, error: 'invalid json' }, 400); }
+    // Whitelist & coerce fields so rogue POSTs can't pollute KV
+    const current = (await env.SETTINGS.get('state', { type: 'json' })) || {};
+    const merged = {
+      ...DEFAULT_SETTINGS,
+      ...current,
+      ...(body.brightness    != null ? { brightness:    Math.max(10, Math.min(100, Number(body.brightness))) } : {}),
+      ...(body.paused        != null ? { paused:        !!body.paused      } : {}),
+      ...(body.force_panel   !== undefined ? { force_panel:   body.force_panel || null } : {}),
+      ...(body.show_slogan   != null ? { show_slogan:   !!body.show_slogan  } : {}),
+      ...(body.show_footer   != null ? { show_footer:   !!body.show_footer  } : {}),
+      ...(body.dark_mode     != null ? { dark_mode:     !!body.dark_mode    } : {}),
+    };
+    await env.SETTINGS.put('state', JSON.stringify(merged));
+    return json({ ok: true, data: merged });
+  }
+
+  return json({ ok: false, error: 'method not allowed' }, 405);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    if (url.pathname === "/api/weather") return handleWeather();
-    if (url.pathname === "/api/trains")  return handleTrains();
-    if (url.pathname === "/api/debug")   return handleDebug();
+    if (url.pathname === "/api/weather")  return handleWeather();
+    if (url.pathname === "/api/trains")   return handleTrains();
+    if (url.pathname === "/api/debug")    return handleDebug();
+    if (url.pathname === "/api/version")  return handleVersion();
+    if (url.pathname === "/api/settings") return handleSettings(request, env);
 
-    // Pretty path: /dashboard → serve /dashboard.html from assets
+    // Pretty paths
     if (url.pathname === "/dashboard") {
       const rewrite = new Request(new URL("/dashboard.html", url).toString(), request);
       return env.ASSETS.fetch(rewrite);
     }
+    if (url.pathname === "/control") {
+      const rewrite = new Request(new URL("/control.html", url).toString(), request);
+      return env.ASSETS.fetch(rewrite);
+    }
 
-    // Everything else → static assets (radio player at /, stations.json, etc)
+    // Everything else → static assets
     return env.ASSETS.fetch(request);
   },
 };
