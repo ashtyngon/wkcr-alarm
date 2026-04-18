@@ -270,8 +270,12 @@ async function extractAllArrivals() {
     };
   });
 
-  // Merge + dedupe alerts from all feeds
-  const allAlerts = results.flatMap(r => r.data.alerts);
+  // Merge + dedupe alerts from all feeds. Tag each alert with the
+  // line it came from so the dashboard can surface "G-specific
+  // disruption" when that station has no trains.
+  const allAlerts = results.flatMap(r =>
+    (r.data.alerts || []).map(a => ({ ...a, line: r.line }))
+  );
   const seenHeaders = new Set();
   const uniqueAlerts = allAlerts.filter(a => {
     if (seenHeaders.has(a.header)) return false;

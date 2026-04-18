@@ -416,6 +416,26 @@ body.dark-mode {
 }
 .st-row:last-child { border-bottom: none; }
 
+/* When both directions have no trains, the row collapses to:
+   [station block] [explanatory message spanning the middle] [walk]
+   Override the 6-col grid with a 3-col variant. */
+.st-row.st-row-empty {
+  grid-template-columns: auto 1fr auto;
+}
+.st-row.st-row-empty .station-block {
+  justify-self: start;
+}
+.st-row.st-row-empty .empty-message {
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 500;
+  font-style: italic;
+  font-size: clamp(22px, 2vw, 32px);
+  color: var(--red);
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  text-align: center;
+}
+
 /* Station block — arrows flank badge + name, pointing outward */
 .st-row .station-block {
   display: flex; align-items: center;
@@ -1743,6 +1763,33 @@ function buildTimesBlock(trains, walk, side) {
   return block;
 }
 
+// When a station has no trains in EITHER direction, build a
+// single-message row explaining why. Looks for a line-specific
+// MTA alert first; falls back to time-of-day-aware phrasing.
+function emptyStationMessage(s) {
+  const alerts = trainsData?.alerts || [];
+  const lineAlert = alerts.find(a => a.line === s.line);
+  if (lineAlert && lineAlert.header) {
+    // Prepend the line letter if the alert doesn't already name it
+    const hdr = lineAlert.header;
+    const prefix = new RegExp('\\b' + s.line + '\\b').test(hdr) ? '' : s.line + ' train: ';
+    return prefix + hdr;
+  }
+  const hour = new Date().getHours();
+  if (hour >= 1 && hour < 5) {
+    return s.line + ' train on overnight service — arrivals are spread far apart';
+  }
+  if (hour >= 0 && hour < 1) {
+    return s.line + ' train winding down for the night — next arrivals may take a while';
+  }
+  // The G is famously flaky — when the feed is quiet during daytime
+  // it's usually a real disruption the alert system hasn't caught up to
+  if (s.line === 'G') {
+    return 'G train feed is quiet right now — service may be disrupted. Check MTA.';
+  }
+  return s.line + ' train feed has no arrivals at the moment';
+}
+
 function renderStationTable() {
   const host = document.getElementById('stationTable');
   host.textContent = '';
@@ -1753,8 +1800,24 @@ function renderStationTable() {
 
   trainsData.stations.forEach(s => {
     const walk = WALK_MIN[s.name] ?? 5;
-    const row = el('div', 'st-row');
 
+    // If BOTH directions have no trains, render an explanatory
+    // row instead of a bunch of "—" placeholders.
+    const nTrains = s.directions?.N?.trains || [];
+    const sTrains = s.directions?.S?.trains || [];
+    if (nTrains.length === 0 && sTrains.length === 0) {
+      const row = el('div', 'st-row st-row-empty');
+      const sb = el('div', 'station-block');
+      sb.appendChild(el('span', 'circle line-' + s.line, s.line));
+      sb.appendChild(el('span', 'name', s.name));
+      row.appendChild(sb);
+      row.appendChild(el('div', 'empty-message', emptyStationMessage(s)));
+      row.appendChild(el('div', 'walk', walk + ' min walk'));
+      host.appendChild(row);
+      return;
+    }
+
+    const row = el('div', 'st-row');
     // Column 1: left times (N direction — Manhattan/Queens-bound)
     row.appendChild(buildTimesBlock(s.directions?.N?.trains, walk, 'left'));
     // Column 2: left terminus
@@ -2104,7 +2167,9 @@ function renderBriefingMode() {
     // Sort by urgency (soonest leave-time first) so the most
     // actionable option appears at the top of the briefing.
     candidates.sort((a, b) => a.leaveIn - b.leaveIn);
-    candidates.slice(0, 6).forEach(c => {
+    // Cap at 4 to fit comfortably on a 1080p screen — the briefing
+    // is "the most urgent few," not a complete schedule.
+    candidates.slice(0, 4).forEach(c => {
       const row = el('div', 'br-train-row');
       row.appendChild(el('div', 'circle line-' + c.line, c.line));
       row.appendChild(el('div', 'st', c.station));
