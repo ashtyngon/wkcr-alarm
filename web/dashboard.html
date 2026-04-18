@@ -204,9 +204,9 @@ body.dark-mode {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   HERO — THE next catchable train. Fills the middle. Biggest thing
-   on the screen by a wide margin. At 10 feet this should be the
-   only thing you can read.
+   HERO — station + direction visible ABOVE the verdict, at parity
+   visual weight, so the user reads them as a single compound
+   phrase: "Nassau → Manhattan in 3 minutes" without scanning.
    ══════════════════════════════════════════════════════════════ */
 .hero {
   flex: 1;
@@ -214,8 +214,8 @@ body.dark-mode {
   grid-template-rows: auto auto auto;
   align-content: center;
   justify-items: start;
-  gap: 22px;
-  padding: 26px 44px;
+  gap: 12px;
+  padding: 24px 44px;
   background: var(--paper);
   color: var(--ink);
   border: 3px solid var(--ink);
@@ -223,60 +223,147 @@ body.dark-mode {
   position: relative;
 }
 .hero.action-now  { background: var(--red); color: var(--paper); border-color: var(--red); }
-.hero.action-soon { background: var(--paper); color: var(--ink); }
-.hero.action-miss { background: var(--paper); color: var(--ink); }
 
+/* Line 1: STATION + LINE BADGE + ARROW + DIRECTION — context */
+.hero-context {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: clamp(10px, 1.2vw, 20px);
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  line-height: 1;
+  color: currentColor;
+}
+.hero-context .hstation,
+.hero-context .hdirection {
+  font-size: clamp(56px, 6vw, 104px);
+  letter-spacing: -0.015em;
+  line-height: 1;
+}
+.hero-context .hline {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.15em; height: 1.15em;
+  border-radius: 50%;
+  background: #a7a9ac; color: #fff;
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(42px, 4.6vw, 76px);
+  line-height: 1;
+}
+.hero-context .hline.line-L { background: #a7a9ac; }
+.hero-context .hline.line-G { background: #6cbe45; }
+.hero.action-now .hline { border: 3px solid var(--paper); }
+.hero-context .harrow {
+  font-family: 'PT Serif', serif; font-weight: 700;
+  font-size: clamp(54px, 5.6vw, 94px);
+  color: var(--red); line-height: 1;
+}
+.hero.action-now .hero-context .harrow { color: var(--paper); }
+
+/* Line 2: VERDICT — the action, still biggest */
 .hero .verdict {
   font-family: 'PT Serif', serif;
   font-weight: 700;
-  /* +50% over previous clamp(110, 12vw, 210) */
   font-size: clamp(165px, 18vw, 315px);
   line-height: 0.92;
   letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
   max-width: 100%;
 }
+
+/* Line 3: supporting detail — train time, walk */
 .hero .when {
-  font-family: 'PT Serif', serif;
-  font-weight: 700;
-  font-size: clamp(48px, 4.6vw, 78px);
-  line-height: 1;
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
-  color: currentColor;
-  opacity: 0.94;
-}
-.hero .where {
   font-family: 'PT Sans', sans-serif;
   font-weight: 700;
-  font-size: clamp(22px, 2.2vw, 34px);
+  font-size: clamp(28px, 2.6vw, 42px);
+  line-height: 1;
   letter-spacing: 0.02em;
-  line-height: 1.2;
   color: currentColor;
-  opacity: 0.88;
+  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
 }
-.hero .where .line-badge {
-  display: inline-block;
-  width: 1.3em; height: 1.3em;
-  border-radius: 50%;
-  text-align: center;
-  line-height: 1.3;
-  color: #fff;
-  background: #a7a9ac;
-  font-family: 'PT Serif', serif;
-  font-weight: 700;
-  margin-right: 10px;
-  font-size: 0.9em;
-  vertical-align: -0.16em;
-}
-.hero .where .line-badge.line-L { background: #a7a9ac; }
-.hero .where .line-badge.line-G { background: #6cbe45; }
 
-/* A tiny nothing-to-catch state */
 .hero.empty .verdict {
   font-size: clamp(70px, 7vw, 120px);
   color: var(--muted);
 }
+.hero.empty .hero-context { display: none; }
+
+/* ══════════════════════════════════════════════════════════════
+   ADVISORY BANNER — predictive advice. Shown between the alert
+   ribbon and the hero when we have something useful to say:
+   "Take an umbrella", "Heavy coat", "Sunscreen", etc.
+   Driven by weather + forecast synthesis, not raw data display.
+   ══════════════════════════════════════════════════════════════ */
+.advisory {
+  display: none;
+  align-items: center; gap: 20px;
+  padding: 16px 24px;
+  background: var(--paper-2);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-left: 8px solid var(--red);
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 700;
+  font-size: clamp(24px, 2.3vw, 36px);
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+}
+.advisory.visible { display: flex; }
+.advisory .adv-glyph {
+  flex: 0 0 auto;
+  font-size: 1.3em;
+  line-height: 1;
+  color: var(--red);
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+}
+.advisory .adv-text { flex: 1; min-width: 0; }
+.advisory .adv-text em {
+  font-style: normal;
+  color: var(--red);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SEVERE DISRUPTION TAKEOVER — when the L is suspended or in
+   major trouble, the hero's normal content is replaced with a
+   large alert + alternative advice.
+   ══════════════════════════════════════════════════════════════ */
+.hero.disruption {
+  background: var(--red);
+  color: var(--paper);
+  border-color: var(--red);
+}
+.hero.disruption .hero-context,
+.hero.disruption .verdict,
+.hero.disruption .when { display: none; }
+.hero.disruption .disruption-title {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(72px, 8vw, 140px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+.hero.disruption .disruption-body {
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 500;
+  font-size: clamp(22px, 2.2vw, 34px);
+  line-height: 1.3;
+  max-width: 60ch;
+  margin-top: 14px;
+}
+.hero.disruption .disruption-alt {
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 700;
+  font-size: clamp(26px, 2.6vw, 42px);
+  letter-spacing: 0.02em;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 3px solid rgba(255,255,255,0.35);
+}
+.hero:not(.disruption) .disruption-title,
+.hero:not(.disruption) .disruption-body,
+.hero:not(.disruption) .disruption-alt { display: none; }
 
 /* ══════════════════════════════════════════════════════════════
    STATION TABLE — all 3 stations, both directions, tight rows.
@@ -614,6 +701,165 @@ body.mode-poster .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
   font-variant-numeric: tabular-nums;
 }
 
+/* ── BRIEFING mode ──────────────────────────────────────────────
+   Comprehensive pre-departure summary. Everything you'd want to
+   see while putting shoes on.                                    */
+body.mode-briefing .status-bar,
+body.mode-briefing .alert-ribbon,
+body.mode-briefing .advisory,
+body.mode-briefing .hero,
+body.mode-briefing .station-table,
+body.mode-briefing .slogan-bar,
+body.mode-briefing .footer {
+  display: none;
+}
+body.mode-briefing .mode-view-briefing {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 18px;
+  padding: 26px 38px;
+  height: 100vh;
+  background: var(--paper);
+  position: relative;
+}
+body.mode-briefing .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
+.mode-view-briefing .br-greeting {
+  border-bottom: 3px solid var(--ink);
+  padding-bottom: 16px;
+  display: flex; justify-content: space-between; align-items: baseline;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.mode-view-briefing .br-greeting .hello {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(56px, 5.8vw, 104px);
+  line-height: 1;
+  letter-spacing: -0.015em;
+}
+.mode-view-briefing .br-greeting .meta {
+  font-family: 'PT Mono', monospace;
+  font-weight: 700;
+  font-size: clamp(14px, 1.3vw, 20px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.mode-view-briefing .br-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  min-height: 0;
+}
+.mode-view-briefing .br-card {
+  display: flex; flex-direction: column;
+  padding: 20px 24px;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  gap: 10px;
+  min-height: 0;
+}
+.mode-view-briefing .br-card.inv { background: var(--ink); color: var(--paper); }
+.mode-view-briefing .br-card.red { background: var(--red); color: var(--paper); }
+.mode-view-briefing .br-card h3 {
+  font-family: 'PT Mono', monospace;
+  font-weight: 700;
+  font-size: clamp(13px, 1.15vw, 16px);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: inherit;
+  opacity: 0.7;
+  margin: 0;
+}
+.mode-view-briefing .br-card .big {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(56px, 5.2vw, 92px);
+  line-height: 0.96;
+  letter-spacing: -0.015em;
+  font-variant-numeric: tabular-nums;
+}
+.mode-view-briefing .br-card .sub {
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 500;
+  font-size: clamp(18px, 1.6vw, 24px);
+  line-height: 1.3;
+  opacity: 0.88;
+}
+.mode-view-briefing .br-card .wear-list {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  margin-top: 6px;
+}
+.mode-view-briefing .br-card .wear-item {
+  padding: 8px 14px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 700;
+  font-size: clamp(14px, 1.25vw, 18px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.mode-view-briefing .br-card.inv .wear-item { background: var(--ink); color: var(--paper); border-color: var(--paper); }
+.mode-view-briefing .br-trains {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-top: 4px;
+}
+.mode-view-briefing .br-train-row {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 14px;
+  align-items: baseline;
+}
+.mode-view-briefing .br-train-row .circle {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: #a7a9ac; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'PT Serif', serif; font-weight: 700;
+  font-size: 18px; line-height: 1;
+}
+.mode-view-briefing .br-train-row .circle.line-L { background: #a7a9ac; }
+.mode-view-briefing .br-train-row .circle.line-G { background: #6cbe45; }
+.mode-view-briefing .br-train-row .st {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(22px, 2vw, 30px);
+  line-height: 1;
+}
+.mode-view-briefing .br-train-row .when {
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 500;
+  font-size: clamp(16px, 1.4vw, 22px);
+  color: currentColor;
+  opacity: 0.7;
+  letter-spacing: 0.02em;
+}
+.mode-view-briefing .br-train-row .leave {
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 700;
+  font-size: clamp(18px, 1.7vw, 26px);
+  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.mode-view-briefing .br-train-row .leave.go { color: var(--red); }
+.mode-view-briefing .br-alert {
+  padding: 10px 18px;
+  background: var(--paper-2);
+  border: 2px solid var(--ink);
+  font-family: 'PT Sans', sans-serif;
+  font-size: clamp(14px, 1.2vw, 18px);
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  font-weight: 500;
+}
+.mode-view-briefing .br-alert.has-alert {
+  background: var(--red);
+  color: var(--paper);
+  font-weight: 700;
+}
+
 /* ── WEATHER mode ──────────────────────────────────────────────
    Today big, 7-day forecast as main view                         */
 body.mode-weather .status-bar,
@@ -814,11 +1060,29 @@ body.mode-weather .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
     <span id="alertBody">—</span>
   </div>
 
+  <!-- ═════ ADVISORY (predictive advice, conditional) ═════ -->
+  <div class="advisory" id="advisory">
+    <span class="adv-glyph" id="advGlyph">☂</span>
+    <span class="adv-text" id="advText">—</span>
+  </div>
+
   <!-- ═════ HERO ═════ -->
   <section class="hero" id="hero">
+    <!-- Line 1: station + direction (high visual weight) -->
+    <div class="hero-context" id="heroContext">
+      <span class="hstation" id="hStation">—</span>
+      <span class="hline" id="hLine">G</span>
+      <span class="harrow" id="hArrow">→</span>
+      <span class="hdirection" id="hDirection">—</span>
+    </div>
+    <!-- Line 2: THE VERDICT (biggest element on screen) -->
     <div class="verdict" id="heroVerdict">…</div>
+    <!-- Line 3: supporting detail -->
     <div class="when" id="heroWhen">—</div>
-    <div class="where" id="heroWhere">—</div>
+    <!-- Disruption takeover (hidden unless .disruption) -->
+    <div class="disruption-title" id="disruptionTitle">—</div>
+    <div class="disruption-body" id="disruptionBody">—</div>
+    <div class="disruption-alt" id="disruptionAlt">—</div>
   </section>
 
   <!-- ═════ STATION TABLE ═════ -->
@@ -836,6 +1100,31 @@ body.mode-weather .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
     <span class="item" id="untilWrap"><span id="sunDirLabel">Until sunset</span> <span class="v" id="sunDaylight">—</span></span>
     <span class="item">Sunset <span class="v" id="sunset">—</span></span>
     <span class="live"><span class="dot"></span><span id="statusRight">Live</span></span>
+  </div>
+
+  <!-- ═════ BRIEFING MODE ═════ -->
+  <div class="mode-view mode-view-briefing">
+    <div class="br-greeting">
+      <div class="hello" id="brHello">Good morning</div>
+      <div class="meta" id="brMeta">Fri · Apr 17 · 7:42 AM</div>
+    </div>
+    <div class="br-body">
+      <div class="br-card inv">
+        <h3>Today's weather</h3>
+        <div class="big" id="brTemp">72°F</div>
+        <div class="sub" id="brCond">Mostly clear · Hi 78° / Lo 54°</div>
+      </div>
+      <div class="br-card red">
+        <h3>Wear</h3>
+        <div class="sub" id="brWearLead">Light jacket</div>
+        <div class="wear-list" id="brWearList"></div>
+      </div>
+      <div class="br-card" style="grid-column: 1 / -1;">
+        <h3>Next trains (Manhattan-bound)</h3>
+        <div class="br-trains" id="brTrains"></div>
+      </div>
+    </div>
+    <div class="br-alert" id="brAlert">No service alerts on the L or G. Have a good one.</div>
   </div>
 
   <!-- ═════ CLOCK MODE ═════ -->
@@ -1062,6 +1351,7 @@ async function refreshWeather() {
     if (!j.ok) throw new Error(j.error);
     weatherData = j.data;
     renderWeather();
+    renderAdvisory();
   } catch (e) {
     document.getElementById('weatherDesc').textContent = 'Offline';
   }
@@ -1123,53 +1413,167 @@ function pickHeroTrain() {
   return { status: 'ok', ...(bestN || candidates[0]) };
 }
 
+function shortDirName(label) {
+  if (!label) return '—';
+  return label.replace(/^to\s+/i, '').toUpperCase();
+}
+
 function renderHero() {
   const hero = document.getElementById('hero');
   const verdict = document.getElementById('heroVerdict');
   const when = document.getElementById('heroWhen');
-  const where = document.getElementById('heroWhere');
-  hero.classList.remove('action-now', 'action-soon', 'action-miss', 'empty');
+  const heroContext = document.getElementById('heroContext');
+  hero.classList.remove('action-now', 'action-soon', 'action-miss', 'empty', 'disruption');
+
+  // Severe L disruption takes over the hero entirely.
+  const severeAlert = findSevereAlert();
+  if (severeAlert) {
+    hero.classList.add('disruption');
+    document.getElementById('disruptionTitle').textContent = severeAlert.title;
+    document.getElementById('disruptionBody').textContent = severeAlert.body;
+    document.getElementById('disruptionAlt').textContent = severeAlert.alt;
+    return;
+  }
 
   const pick = pickHeroTrain();
   if (pick.status === 'empty') {
     hero.classList.add('empty');
     verdict.textContent = 'Loading trains…';
     when.textContent = '';
-    where.textContent = '';
+    heroContext.style.display = 'none';
     return;
   }
   if (pick.status === 'miss') {
     hero.classList.add('empty', 'action-miss');
     verdict.textContent = 'No catchable train';
-    when.textContent = 'Check back soon';
-    where.textContent = 'All upcoming arrivals are too close for the walk.';
+    when.textContent = 'All upcoming arrivals are too close for the walk — check back in a minute';
+    heroContext.style.display = 'none';
     return;
   }
 
-  // ok: pick contains a catchable train
+  heroContext.style.display = 'flex';
+
+  // Context line: NASSAU AV [G] → MANHATTAN
+  document.getElementById('hStation').textContent = pick.station.replace(/ Av$/, ' AV').toUpperCase();
+  const lineEl = document.getElementById('hLine');
+  lineEl.textContent = pick.line;
+  lineEl.classList.remove('line-L', 'line-G');
+  lineEl.classList.add('line-' + pick.line);
+  document.getElementById('hArrow').textContent = pick.dirKey === 'N' ? '→' : '↓';
+  document.getElementById('hDirection').textContent = shortDirName(pick.dirLabel);
+
   const leaveIn = pick.leaveInMin;
   if (leaveIn <= 0) {
     verdict.textContent = 'LEAVE NOW';
     hero.classList.add('action-now');
   } else if (leaveIn <= 3) {
-    verdict.textContent = 'Leave in ' + leaveIn + ' min';
+    verdict.textContent = 'LEAVE IN ' + leaveIn + ' MIN';
     hero.classList.add('action-now');
-  } else if (leaveIn <= 10) {
-    verdict.textContent = 'Leave in ' + leaveIn + ' min';
-    hero.classList.add('action-soon');
   } else {
     verdict.textContent = 'Leave in ' + leaveIn + ' min';
     hero.classList.add('action-soon');
   }
+  when.textContent = pick.walkMin + ' min walk · ' + fmtClockShort(pick.arrivalAt) + ' train';
+}
 
-  when.textContent = 'for the ' + fmtClockShort(pick.arrivalAt) + ' train';
+// ═════════════════════════════════════════════════════════════════
+// ADVISORY — predictive pre-departure advice.
+// Returns { glyph, parts: [{ bold: bool, text: str }] } or null.
+// Using a segment array (not innerHTML) keeps rendering XSS-safe.
+// ═════════════════════════════════════════════════════════════════
+function generateAdvisory() {
+  if (!weatherData) return null;
+  const cur = weatherData.current;
+  const code = cur.weather_code;
+  const temp = cur.temperature_2m;
+  const hourly = weatherData.hourly;
+  const nowMs = Date.now();
 
-  where.textContent = '';
-  const badge = el('span', 'line-badge line-' + pick.line, pick.line);
-  where.appendChild(badge);
-  where.appendChild(document.createTextNode(
-    pick.station + '  ·  ' + pick.dirLabel.toLowerCase() + ' (' + pick.terminus + ')  ·  ' + pick.walkMin + ' min walk'
-  ));
+  const mk = (glyph, bold, rest) => ({ glyph, parts: [{ bold: true, text: bold }, { bold: false, text: rest }] });
+
+  // Current severe conditions
+  if ([95,96,99].includes(code))
+    return mk('⚡', 'Thunderstorms.', ' Stay inside if you can. Unplug electronics.');
+  if ([65,82].includes(code))
+    return mk('☔', 'Heavy rain.', ' Full umbrella + waterproof jacket.');
+  if ([61,63,80,81].includes(code))
+    return mk('☂', 'Take an umbrella', ' — it\'s raining now.');
+  if ([71,73,75,77,85,86].includes(code))
+    return mk('❄', 'Snow.', ' Boots, gloves, give yourself extra time.');
+  if ([51,53,55].includes(code))
+    return mk('☂', 'Drizzle.', ' A hood or light jacket will do.');
+  if ([45,48].includes(code))
+    return mk('◌', 'Fog.', ' Low visibility — walk carefully, extra time.');
+
+  // Upcoming rain in next 6 hours
+  if (hourly?.time && hourly.weather_code && hourly.precipitation_probability) {
+    for (let i = 0; i < Math.min(12, hourly.time.length); i++) {
+      const t = new Date(hourly.time[i]);
+      if (t.getTime() < nowMs) continue;
+      const prob = hourly.precipitation_probability[i];
+      const c = hourly.weather_code[i];
+      if (prob >= 50 || [61,63,65,80,81,82].includes(c)) {
+        let h = t.getHours();
+        const ap = h >= 12 ? 'pm' : 'am';
+        h = h % 12 || 12;
+        const hoursFromNow = Math.round((t.getTime() - nowMs) / 3_600_000);
+        const whenStr = hoursFromNow <= 1 ? 'within the hour' : 'around ' + h + ap;
+        return mk('☂', 'Rain expected ' + whenStr, ' — take an umbrella.');
+      }
+    }
+  }
+
+  // Temperature extremes
+  if (temp < 20) return mk('◆', 'Bone-cold ' + Math.round(temp) + '°F.', ' Heavy coat, gloves, hat.');
+  if (temp < 35) return mk('◆', 'Cold ' + Math.round(temp) + '°F.', ' Heavy coat and warm layers.');
+  if (temp < 50 && cur.wind_speed_10m >= 15) return mk('◆', 'Cool and windy.', ' Jacket + something warm underneath.');
+  if (temp < 50) return mk('◆', 'Cool ' + Math.round(temp) + '°F.', ' A jacket is a good idea.');
+  if (temp > 92) return mk('☀', 'Hot ' + Math.round(temp) + '°F.', ' Hydrate. Sunscreen. Shade at midday.');
+  if (temp > 85) return mk('☀', 'Warm ' + Math.round(temp) + '°F.', ' Light clothes, water bottle.');
+
+  if (cur.uv_index >= 8) return mk('☀', 'Very high UV.', ' Stay in shade, SPF 30+, sunglasses.');
+  if (cur.uv_index >= 6) return mk('☀', 'High UV.', ' Sunscreen and a hat if outside over an hour.');
+
+  if (cur.wind_speed_10m >= 25) return mk('≋', 'Strong wind.', ' Secure loose items.');
+
+  return null;
+}
+function renderAdvisory() {
+  const adv = generateAdvisory();
+  const container = document.getElementById('advisory');
+  const glyph = document.getElementById('advGlyph');
+  const text = document.getElementById('advText');
+  if (!adv) { container.classList.remove('visible'); return; }
+  container.classList.add('visible');
+  glyph.textContent = adv.glyph;
+  // Clear and reconstruct safely (no innerHTML)
+  text.textContent = '';
+  for (const p of adv.parts) {
+    if (p.bold) {
+      const em = document.createElement('em');
+      em.textContent = p.text;
+      text.appendChild(em);
+    } else {
+      text.appendChild(document.createTextNode(p.text));
+    }
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════
+// SEVERE L-ALERT DETECTION
+// ═════════════════════════════════════════════════════════════════
+const SEVERE_KEYWORDS = /\b(suspend|no service|not running|bypass|reroute|shutdown|stalled|stopped)\b/i;
+function findSevereAlert() {
+  if (!trainsData || !trainsData.alerts) return null;
+  for (const a of trainsData.alerts) {
+    if (SEVERE_KEYWORDS.test(a.header || '')) {
+      const alt = /l-line|l line|\bl\b/i.test(a.header)
+        ? 'Alternative: walk to Nassau Av for the G to Court Sq, then transfer.'
+        : 'Check the MTA app for current service status.';
+      return { title: 'SERVICE DISRUPTION', body: a.header, alt };
+    }
+  }
+  return null;
 }
 
 function renderStationTable() {
@@ -1315,15 +1719,16 @@ function applySettings(s) {
   if (footer) footer.style.display = (s.show_footer === false) ? 'none' : '';
 
   // Mode switch — body class drives which layout is visible.
-  const mode = (['dashboard','clock','poster','weather'].includes(s.mode)) ? s.mode : 'dashboard';
-  ['mode-dashboard','mode-clock','mode-poster','mode-weather'].forEach(c =>
+  const mode = (['dashboard','briefing','clock','poster','weather'].includes(s.mode)) ? s.mode : 'dashboard';
+  ['mode-dashboard','mode-briefing','mode-clock','mode-poster','mode-weather'].forEach(c =>
     document.body.classList.remove(c));
   document.body.classList.add('mode-' + mode);
 
   // Mode-specific renders after class flip
-  if (mode === 'clock')   renderClockMode();
-  if (mode === 'poster')  renderPosterMode();
-  if (mode === 'weather') renderWeatherMode();
+  if (mode === 'clock')    renderClockMode();
+  if (mode === 'poster')   renderPosterMode();
+  if (mode === 'weather')  renderWeatherMode();
+  if (mode === 'briefing') renderBriefingMode();
 }
 
 // ═════════════════════════════════════════════════════════════════
@@ -1461,11 +1866,143 @@ function renderWeatherMode() {
   }
 }
 
+function renderBriefingMode() {
+  const now = new Date();
+  const h24 = now.getHours();
+  let greeting = 'Good morning';
+  if (h24 >= 12 && h24 < 17) greeting = 'Good afternoon';
+  else if (h24 >= 17 && h24 < 22) greeting = 'Good evening';
+  else if (h24 >= 22 || h24 < 5) greeting = 'Good night';
+  document.getElementById('brHello').textContent = greeting;
+
+  const weekday = now.toLocaleDateString('en-US', { weekday: 'short' });
+  const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  let h = h24; const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
+  const m = String(now.getMinutes()).padStart(2, '0');
+  document.getElementById('brMeta').textContent = weekday + ' · ' + md + ' · ' + h + ':' + m + ' ' + ap;
+
+  // Weather block
+  if (weatherData) {
+    const cur = weatherData.current;
+    const daily = weatherData.daily;
+    document.getElementById('brTemp').textContent = Math.round(cur.temperature_2m) + '°F';
+    const cond = WMO_LABEL[cur.weather_code] || 'Weather';
+    let hi = '—', lo = '—';
+    if (daily && daily.temperature_2m_max && daily.temperature_2m_min) {
+      hi = Math.round(daily.temperature_2m_max[0]);
+      lo = Math.round(daily.temperature_2m_min[0]);
+    }
+    document.getElementById('brCond').textContent = cond + ' · Hi ' + hi + '° / Lo ' + lo + '°';
+  }
+
+  // WEAR block — outfit advice
+  const wear = outfitAdvice();
+  document.getElementById('brWearLead').textContent = wear.lead;
+  const wearList = document.getElementById('brWearList');
+  wearList.textContent = '';
+  wear.items.forEach(item => {
+    wearList.appendChild(el('span', 'wear-item', item));
+  });
+
+  // TRAINS block — next 2 catchable Manhattan-bound trains across stations
+  const brTrains = document.getElementById('brTrains');
+  brTrains.textContent = '';
+  if (trainsData?.stations) {
+    const candidates = [];
+    for (const s of trainsData.stations) {
+      const walk = WALK_MIN[s.name] ?? 5;
+      const dir = s.directions?.N;
+      if (!dir?.trains) continue;
+      const catchable = dir.trains.find(m => m >= walk + 1);
+      if (catchable == null) continue;
+      candidates.push({
+        station: s.name, line: s.line,
+        walkMin: walk, catchMin: catchable,
+        leaveIn: catchable - walk,
+        arrive: new Date(Date.now() + catchable * 60_000),
+      });
+    }
+    candidates.sort((a, b) => a.leaveIn - b.leaveIn);
+    candidates.slice(0, 3).forEach(c => {
+      const row = el('div', 'br-train-row');
+      row.appendChild(el('div', 'circle line-' + c.line, c.line));
+      row.appendChild(el('div', 'st', c.station));
+      row.appendChild(el('div', 'when', c.walkMin + 'm walk · train ' + fmtClockShort(c.arrive)));
+      const leaveTxt = c.leaveIn <= 0 ? 'LEAVE NOW'
+                     : c.leaveIn <= 3 ? 'LEAVE ' + c.leaveIn + 'M'
+                     : 'Leave ' + c.leaveIn + 'm';
+      const leave = el('div', 'leave' + (c.leaveIn <= 3 ? ' go' : ''), leaveTxt);
+      row.appendChild(leave);
+      brTrains.appendChild(row);
+    });
+    if (!candidates.length) {
+      const row = el('div', 'br-train-row');
+      row.appendChild(el('div', 'st', 'No catchable trains right now'));
+      brTrains.appendChild(row);
+    }
+  }
+
+  // Alert line
+  const brAlert = document.getElementById('brAlert');
+  brAlert.classList.remove('has-alert');
+  if (trainsData?.alerts && trainsData.alerts.length) {
+    brAlert.classList.add('has-alert');
+    brAlert.textContent = '⚠ ' + trainsData.alerts[0].header;
+  } else {
+    brAlert.textContent = 'No service alerts on the L or G. Safe travels.';
+  }
+}
+
+// Outfit advice — the list of things you'd put on based on weather.
+function outfitAdvice() {
+  if (!weatherData) return { lead: '—', items: [] };
+  const cur = weatherData.current;
+  const code = cur.weather_code;
+  const temp = cur.temperature_2m;
+  const items = [];
+  let lead = '';
+
+  if (temp < 25) { lead = 'Bundle up heavily'; items.push('Heavy coat','Gloves','Hat','Scarf'); }
+  else if (temp < 40) { lead = 'Winter layers'; items.push('Heavy coat','Gloves'); }
+  else if (temp < 55) { lead = 'Cool — jacket needed'; items.push('Jacket'); }
+  else if (temp < 68) { lead = 'Mild — light layer'; items.push('Light jacket'); }
+  else if (temp < 80) { lead = 'Comfortable'; items.push('Light layer'); }
+  else if (temp < 90) { lead = 'Warm — light clothes'; items.push('T-shirt','Water'); }
+  else { lead = 'Hot — minimal + hydrate'; items.push('Light clothes','Water','Hat'); }
+
+  // Weather-based additions
+  if ([61,63,65,80,81,82,95,96,99].includes(code)) items.push('Umbrella');
+  else if ([51,53,55].includes(code)) items.push('Hood');
+  else if ([71,73,75,77,85,86].includes(code)) items.push('Boots','Gloves');
+
+  // UV
+  if (cur.uv_index >= 6) items.push('Sunscreen');
+  if (cur.uv_index >= 8) items.push('Sunglasses');
+
+  // Check for rain in next 6 hours
+  const hourly = weatherData.hourly;
+  if (hourly?.time && hourly.precipitation_probability) {
+    const nowMs = Date.now();
+    for (let i = 0; i < Math.min(12, hourly.time.length); i++) {
+      const t = new Date(hourly.time[i]).getTime();
+      if (t < nowMs) continue;
+      const prob = hourly.precipitation_probability[i];
+      if (prob >= 50 && !items.includes('Umbrella')) {
+        items.push('Umbrella');
+        break;
+      }
+    }
+  }
+
+  return { lead, items };
+}
+
 // Tick mode-specific content every second when active
 setInterval(() => {
   if (!_settings) return;
-  if (_settings.mode === 'clock') renderClockMode();
-  if (_settings.mode === 'poster') renderPosterMode();
+  if (_settings.mode === 'clock')    renderClockMode();
+  if (_settings.mode === 'poster')   renderPosterMode();
+  if (_settings.mode === 'briefing') renderBriefingMode();
 }, 1000);
 pollSettings();
 setInterval(pollSettings, 3_000);
