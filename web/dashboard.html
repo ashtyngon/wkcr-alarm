@@ -160,28 +160,29 @@ body.dark-mode {
   opacity: 0.7;
 }
 .sb-uv {
-  display: flex; align-items: baseline; gap: 10px;
-  padding: 6px 14px;
+  display: flex; align-items: baseline; gap: 14px;
+  padding: 12px 22px;
   background: var(--paper);
   color: var(--ink);
   font-family: 'PT Sans', sans-serif;
   font-weight: 700;
-  font-size: clamp(13px, 1.15vw, 16px);
-  letter-spacing: 0.1em;
+  font-size: clamp(18px, 1.6vw, 24px);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   white-space: nowrap;
+  min-width: clamp(190px, 16vw, 260px);
 }
 .sb-uv .v {
   font-family: 'PT Serif', serif;
-  font-size: clamp(22px, 2vw, 30px);
+  font-size: clamp(42px, 3.8vw, 62px);
   line-height: 1;
   letter-spacing: 0;
 }
 .sb-uv .badge {
-  padding: 2px 8px;
+  padding: 4px 12px;
   color: var(--paper);
-  font-size: 0.85em;
-  letter-spacing: 0.14em;
+  font-size: 0.75em;
+  letter-spacing: 0.16em;
 }
 .sb-uv.low   .badge { background: var(--uv-low); }
 .sb-uv.mod   .badge { background: var(--uv-mod); color: var(--ink); }
@@ -1384,7 +1385,13 @@ async function refreshWeather() {
 }
 refreshWeather();
 setInterval(refreshWeather, 10 * 60 * 1000);
-setInterval(() => { if (weatherData) renderWeather(); }, 60 * 1000);
+// Re-render weather + advisory every minute so time-aware advisories
+// (rain escalation, sunset proximity) update as time advances.
+setInterval(() => {
+  if (!weatherData) return;
+  renderWeather();
+  renderAdvisory();
+}, 60 * 1000);
 
 // ═════════════════════════════════════════════════════════════════
 // TRAINS
@@ -1506,6 +1513,16 @@ function renderHero() {
 // ADVISORY — predictive pre-departure advice.
 // Returns { glyph, parts: [{ bold: bool, text: str }] } or null.
 // Using a segment array (not innerHTML) keeps rendering XSS-safe.
+//
+// Time-aware synthesis:
+//   · Rain escalates by proximity (≤30m → "starting soon",
+//     ≤60m → "within the hour", else → "around Xpm")
+//   · Currently-raining messages include an end time when one
+//     can be predicted from the hourly forecast
+//   · Sunset awareness: ≤30m or ≤90m to sunset slots in when no
+//     severe/temp advisory would otherwise show
+//   · Past-sunset dark-walk awareness when the longest walk
+//     home (Bedford @ 20min) would happen in darkness
 // ═════════════════════════════════════════════════════════════════
 function generateAdvisory() {
   if (!weatherData) return null;
@@ -1513,25 +1530,64 @@ function generateAdvisory() {
   const code = cur.weather_code;
   const temp = cur.temperature_2m;
   const hourly = weatherData.hourly;
+  const daily = weatherData.daily;
   const nowMs = Date.now();
 
   const mk = (glyph, bold, rest) => ({ glyph, parts: [{ bold: true, text: bold }, { bold: false, text: rest }] });
 
-  // Current severe conditions
+  // Pretty-print a Date as "7:42pm" / "6:13am".
+  const fmtHM = (d) => {
+    let h = d.getHours();
+    const ap = h >= 12 ? 'pm' : 'am';
+    h = h % 12 || 12;
+    const m = String(d.getMinutes()).padStart(2, '0');
+    return h + ':' + m + ap;
+  };
+
+  // When will current rain end? Returns a pretty time string or null.
+  const findRainEnd = () => {
+    if (!hourly?.time || !hourly.precipitation_probability) return null;
+    let sawRain = false;
+    for (let i = 0; i < Math.min(24, hourly.time.length); i++) {
+      const t = new Date(hourly.time[i]);
+      if (t.getTime() < nowMs - 30 * 60_000) continue;  // skip past hours
+      const prob = hourly.precipitation_probability[i];
+      const c = hourly.weather_code[i];
+      const rainy = prob >= 40 || [51,53,55,61,63,65,80,81,82].includes(c);
+      if (rainy) { sawRain = true; continue; }
+      if (sawRain && !rainy) return fmtHM(t);
+    }
+    return null;
+  };
+
+  // Sunset math
+  const sunset = daily?.sunset?.[0] ? new Date(daily.sunset[0]) : null;
+  const minsToSunset = sunset ? Math.round((sunset.getTime() - nowMs) / 60_000) : null;
+  const sunsetStr = sunset ? fmtHM(sunset) : null;
+
+  // ── Severe current weather ──────────────────────────────────
   if ([95,96,99].includes(code))
     return mk('⚡', 'Thunderstorms.', ' Stay inside if you can. Unplug electronics.');
-  if ([65,82].includes(code))
-    return mk('☔', 'Heavy rain.', ' Full umbrella + waterproof jacket.');
-  if ([61,63,80,81].includes(code))
-    return mk('☂', 'Take an umbrella', ' — it\'s raining now.');
-  if ([71,73,75,77,85,86].includes(code))
-    return mk('❄', 'Snow.', ' Boots, gloves, give yourself extra time.');
-  if ([51,53,55].includes(code))
-    return mk('☂', 'Drizzle.', ' A hood or light jacket will do.');
+  if ([65,82].includes(code)) {
+    const end = findRainEnd();
+    return mk('☔', 'Heavy rain.', end ? ' Ending around ' + end + '. Full umbrella + waterproof jacket.' : ' Full umbrella + waterproof jacket.');
+  }
+  if ([61,63,80,81].includes(code)) {
+    const end = findRainEnd();
+    return mk('☂', 'Take an umbrella', end ? " — raining now, easing around " + end + '.' : " — it's raining now.");
+  }
+  if ([71,73,75,77,85,86].includes(code)) {
+    const end = findRainEnd();
+    return mk('❄', 'Snow.', end ? ' Ending around ' + end + '. Boots, gloves, give yourself extra time.' : ' Boots, gloves, give yourself extra time.');
+  }
+  if ([51,53,55].includes(code)) {
+    const end = findRainEnd();
+    return mk('☂', 'Drizzle.', end ? ' Easing around ' + end + '. A hood will do.' : ' A hood or light jacket will do.');
+  }
   if ([45,48].includes(code))
     return mk('◌', 'Fog.', ' Low visibility — walk carefully, extra time.');
 
-  // Upcoming rain in next 6 hours
+  // ── Upcoming rain — escalate by proximity ───────────────────
   if (hourly?.time && hourly.weather_code && hourly.precipitation_probability) {
     for (let i = 0; i < Math.min(12, hourly.time.length); i++) {
       const t = new Date(hourly.time[i]);
@@ -1539,17 +1595,19 @@ function generateAdvisory() {
       const prob = hourly.precipitation_probability[i];
       const c = hourly.weather_code[i];
       if (prob >= 50 || [61,63,65,80,81,82].includes(c)) {
-        let h = t.getHours();
-        const ap = h >= 12 ? 'pm' : 'am';
-        h = h % 12 || 12;
-        const hoursFromNow = Math.round((t.getTime() - nowMs) / 3_600_000);
-        const whenStr = hoursFromNow <= 1 ? 'within the hour' : 'around ' + h + ap;
-        return mk('☂', 'Rain expected ' + whenStr, ' — take an umbrella.');
+        const minsAway = Math.round((t.getTime() - nowMs) / 60_000);
+        if (minsAway <= 30)
+          return mk('☂', 'Rain starting soon', ' — take an umbrella now.');
+        if (minsAway <= 60)
+          return mk('☂', 'Rain within the hour', ' — take an umbrella before you go.');
+        if (minsAway <= 180)  // ≤3 hours
+          return mk('☂', 'Rain in about ' + Math.round(minsAway / 60) + ' hr', ' — an umbrella is a good idea.');
+        return mk('☂', 'Rain later at ' + fmtHM(t), ' — take an umbrella if you\'ll be out then.');
       }
     }
   }
 
-  // Temperature extremes
+  // ── Temperature extremes ────────────────────────────────────
   if (temp < 20) return mk('◆', 'Bone-cold ' + Math.round(temp) + '°F.', ' Heavy coat, gloves, hat.');
   if (temp < 35) return mk('◆', 'Cold ' + Math.round(temp) + '°F.', ' Heavy coat and warm layers.');
   if (temp < 50 && cur.wind_speed_10m >= 15) return mk('◆', 'Cool and windy.', ' Jacket + something warm underneath.');
@@ -1561,6 +1619,15 @@ function generateAdvisory() {
   if (cur.uv_index >= 6) return mk('☀', 'High UV.', ' Sunscreen and a hat if outside over an hour.');
 
   if (cur.wind_speed_10m >= 25) return mk('≋', 'Strong wind.', ' Secure loose items.');
+
+  // ── Sunset awareness ────────────────────────────────────────
+  // Only surfaces when nothing more pressing is happening.
+  if (minsToSunset !== null && minsToSunset > 0) {
+    if (minsToSunset <= 30)
+      return mk('◐', 'Sunset at ' + sunsetStr, ' — it\'ll be dark before you\'re back from a far walk.');
+    if (minsToSunset <= 90)
+      return mk('◐', 'Sunset coming — ' + sunsetStr, ' — bring a layer if you\'ll be out past then.');
+  }
 
   return null;
 }
