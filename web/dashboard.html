@@ -3,37 +3,39 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>ГРИНПОЙНТ</title>
+<title>Greenpoint</title>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="Dashboard"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="mobile-web-app-capable" content="yes"/>
 <meta name="theme-color" content="#0a0a0a"/>
+<!-- Safety-net meta refresh: the page reloads itself once per hour
+     no matter what. JS polling normally keeps it current, but if JS
+     silently dies this ensures we never show hours-stale data. -->
+<meta http-equiv="refresh" content="3600">
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,500..700,0..100;1,9..144,500..700,0..100&family=PT+Mono&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500..700&family=PT+Mono&family=PT+Sans:wght@400;700&family=PT+Serif:ital,wght@0,400;0,700;1,700&display=swap" rel="stylesheet"/>
 <style>
 /* ──────────────────────────────────────────────────────────────────
-   Wall dashboard v5 — "Direction C"
-   Soviet-editorial aesthetic, but every panel is intentionally sparse
-   so type can get huge. One station fills the whole middle; the 7-day
-   forecast lives on its own rotating screen.
+   v6 — glance-optimized dashboard. One view, hero + compact table.
+   UI/UX + IA audit produced this: answer the dominant question first
+   (the next catchable train), make it MASSIVE, push everything else
+   into a thin bar at top and a tight table below.
    ────────────────────────────────────────────────────────────────── */
 :root {
   --paper:   #f3e8cd;
   --paper-2: #e5d8b6;
   --ink:     #0a0a0a;
   --muted:   #7a7365;
-  --hair:    rgba(10,10,10,0.18);
+  --hair:    rgba(10,10,10,0.16);
   --red:     #c4201e;
   --red-2:   #8a1513;
   --ochre:   #d4a017;
-
-  --uv-low:    #2e7d32;
-  --uv-mod:    #d4a017;
-  --uv-high:   #e65100;
-  --uv-vhigh:  #c4201e;
-  --uv-extrm:  #6a1b9a;
+  --uv-low:   #2e7d32;
+  --uv-mod:   #d4a017;
+  --uv-high:  #e65100;
+  --uv-vhigh: #c4201e;
+  --uv-extrm: #6a1b9a;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
@@ -43,778 +45,444 @@ body {
   font-family: 'PT Sans', Arial, sans-serif;
   font-size: 20px;
   -webkit-font-smoothing: antialiased;
-  background-image:
-    radial-gradient(ellipse at 70% 10%, rgba(0,0,0,0.04), transparent 60%),
-    radial-gradient(ellipse at 10% 90%, rgba(196, 32, 30, 0.06), transparent 55%);
 }
-.frame {
-  display: grid;
-  grid-template-rows: auto auto auto 1fr auto auto;
-  height: 100vh;
-  padding: 18px 28px;
-  gap: 14px;
-}
-.top           { grid-row: 1; }
-.alert-ribbon  { grid-row: 2; }
-.slogan-bar    { grid-row: 3; }
-.carousel      { grid-row: 4; }
-.carousel-tabs { grid-row: 5; }
-.footer        { grid-row: 6; }
-
-/* ══════════════════════════════════════════════════════════════
-   TOP STRIP — time, current weather, UV NOW (always visible)
-   ══════════════════════════════════════════════════════════════ */
-.top {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: stretch;
-  border: 3px solid var(--ink);
-  background: var(--paper);
-}
-.time-box {
-  background: var(--red);
-  color: var(--paper);
-  padding: 10px 28px 14px;
-  display: flex; align-items: baseline; gap: 18px;
-}
-.time-box .nums {
-  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(76px, 8vw, 140px);
-  line-height: 0.92;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-}
-.time-box .ampm {
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-weight: 700;
-  font-size: clamp(22px, 2vw, 32px);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  opacity: 0.9;
-}
-.wx-box {
-  background: var(--ink);
-  color: var(--paper);
-  padding: 12px 26px;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 24px;
-  align-items: center;
-  min-width: 0;
-}
-.wx-box .temp-col { display: flex; flex-direction: column; align-items: center; }
-.wx-box .temp {
-  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(60px, 6.8vw, 110px);
-  line-height: 0.9;
-  font-variant-numeric: tabular-nums;
-  display: flex; align-items: flex-start;
-}
-.wx-box .temp .deg { color: var(--red); font-size: 0.78em; }
-.wx-box .temp-c {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: clamp(13px, 1.1vw, 16px);
-  letter-spacing: 0.06em;
-  opacity: 0.75;
-  margin-top: -6px;
-}
-.wx-box .caption { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
-.wx-box .caption .day-label {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: clamp(11px, 1vw, 14px);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--ochre);
-  font-weight: 700;
-  line-height: 1;
-}
-.wx-box .caption .label {
-  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(26px, 2.6vw, 42px);
-  line-height: 1.02;
-}
-.wx-box .caption .sub {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: clamp(12px, 1.05vw, 15px);
-  letter-spacing: 0.06em;
-  opacity: 0.8;
-}
-.wx-box .caption .advice {
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-weight: 500;
-  font-size: clamp(15px, 1.3vw, 20px);
-  line-height: 1.25;
-  opacity: 0.92;
-  max-width: 52ch;
-}
-.uv-box {
-  padding: 10px 20px;
-  min-width: 150px;
-  background: var(--paper);
-  border-left: 3px solid var(--ink);
-  display: flex; flex-direction: column; justify-content: center;
-  gap: 4px;
-  color: var(--ink);
-}
-.uv-box .k {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 12px; letter-spacing: 0.22em;
-  text-transform: uppercase; font-weight: 700; opacity: 0.7;
-}
-.uv-box .v {
-  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(40px, 3.4vw, 54px);
-  line-height: 0.95;
-  font-variant-numeric: tabular-nums;
-}
-.uv-box .l {
-  font-family: 'PT Sans', Arial, sans-serif; font-weight: 700;
-  font-size: 14px; letter-spacing: 0.14em;
-  text-transform: uppercase; padding: 3px 8px;
-  color: var(--paper); align-self: flex-start;
-}
-.uv-box.low   .l { background: var(--uv-low); }
-.uv-box.mod   .l { background: var(--uv-mod); color: var(--ink); }
-.uv-box.high  .l { background: var(--uv-high); }
-.uv-box.vhigh .l { background: var(--uv-vhigh); }
-.uv-box.extrm .l { background: var(--uv-extrm); }
-.uv-box.high, .uv-box.vhigh, .uv-box.extrm { background: var(--paper-2); }
-.uv-box .warn {
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-size: 12px; letter-spacing: 0.05em;
-  font-weight: 500; line-height: 1.25;
-  opacity: 0.8; margin-top: 2px;
-  max-width: 150px;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   ALERT RIBBON
-   ══════════════════════════════════════════════════════════════ */
-.alert-ribbon {
-  display: none;
-  align-items: center; gap: 14px;
-  padding: 10px 20px;
-  background: var(--red); color: var(--paper);
-  border: 2px solid var(--red-2);
-}
-.alert-ribbon.visible { display: flex; }
-.alert-ribbon .siren {
-  width: 24px; height: 24px; flex: 0 0 auto;
-  background: var(--paper);
-  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2 C6 2 5 8 5 14 H3 V16 H21 V14 H19 C19 8 18 2 12 2 Z M11 18 H13 V22 H11 V18 Z' fill='black'/></svg>") center / contain no-repeat;
-          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2 C6 2 5 8 5 14 H3 V16 H21 V14 H19 C19 8 18 2 12 2 Z M11 18 H13 V22 H11 V18 Z' fill='black'/></svg>") center / contain no-repeat;
-  animation: pulse 1.2s ease-in-out infinite;
-}
-@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
-.alert-ribbon .label {
-  font-family: 'PT Sans', Arial, sans-serif; font-weight: 700;
-  font-size: 16px; letter-spacing: 0.18em;
-  text-transform: uppercase; flex: 0 0 auto;
-  padding-right: 14px; border-right: 2px solid rgba(255,255,255,0.4);
-}
-.alert-ribbon .body {
-  font-family: 'PT Sans', Arial, sans-serif; font-weight: 500;
-  font-size: clamp(14px, 1.2vw, 18px);
-  line-height: 1.25; flex: 1; min-width: 0;
-  overflow: hidden; text-overflow: ellipsis;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   SLOGAN BAR — Lenin + Fraunces pull-quote
-   ══════════════════════════════════════════════════════════════ */
-.slogan-bar {
-  display: flex; align-items: center; gap: 22px;
-  padding: 16px 24px;
-  background: var(--paper); color: var(--ink);
-  border: 2px solid var(--ink);
-}
-.slogan-bar .lenin {
-  flex: 0 0 auto; width: 78px; height: 92px;
-  background-color: var(--red);
-  -webkit-mask: url('/assets/lenin.svg') no-repeat center / contain;
-          mask: url('/assets/lenin.svg') no-repeat center / contain;
-}
-.slogan-bar .star {
-  flex: 0 0 auto; width: 40px; height: 40px; color: var(--red);
-}
-.slogan-bar .slogan-text {
-  font-family: 'Fraunces', 'PT Serif', Georgia, serif;
-  font-weight: 500;
-  /* 3× the previous 17-23px range → 51-69px */
-  font-size: clamp(51px, 4.65vw, 69px);
-  font-variation-settings: "opsz" 120, "SOFT" 50;
-  line-height: 1.1;
-  color: var(--ink);
-  flex: 1; min-width: 0;
-  transition: opacity 0.4s ease;
-}
-.slogan-bar .slogan-text.fade { opacity: 0; }
-.slogan-bar .slogan-text .attr {
-  display: block;
-  margin-top: 8px;
-  font-family: 'Fraunces', 'PT Serif', Georgia, serif;
-  font-style: italic;
-  font-weight: 500;
-  font-variation-settings: "opsz" 60, "SOFT" 100;
-  color: var(--red);
-  margin-left: 0;
-  font-size: 0.42em;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   CAROUSEL — 4 panels, absolute-stacked, one visible at a time
-   ══════════════════════════════════════════════════════════════ */
-.carousel {
-  position: relative;
-  min-height: 0;
-  border: 3px solid var(--ink);
-  background: var(--paper);
-  overflow: hidden;
-}
-.panel {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.35s ease;
-  display: flex; flex-direction: column;
-  min-height: 0; overflow: hidden;
-}
-.panel.active { opacity: 1; pointer-events: auto; }
-
-/* ── Station panel (shared by 3 station panels) ─────────────── */
-.station-head {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  padding: 16px 28px;
-  gap: 22px;
-  border-bottom: 3px solid var(--ink);
-  background: var(--paper);
-}
-.station-head .circle {
-  width: 72px; height: 72px; border-radius: 50%;
-  background: #a7a9ac; color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'PT Serif', serif;
-  font-weight: 700;
-  font-size: 44px;
-  line-height: 1;
-}
-.station-head .circle.line-L { background: #a7a9ac; }
-.station-head .circle.line-G { background: #6cbe45; }
-.station-head .name {
-  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(44px, 4.6vw, 74px);
-  line-height: 1;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.station-head .walk {
-  text-align: right;
-}
-.station-head .walk .k {
-  display: block;
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 12px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--muted);
-  line-height: 1;
-  margin-bottom: 4px;
-}
-.station-head .walk .v {
-  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(34px, 3.2vw, 48px);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  color: var(--red);
-}
-
-/* Two direction blocks stacked vertically, each with 3 trains */
-.dirs {
-  flex: 1;
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  min-height: 0;
-}
-.dir {
-  display: flex; flex-direction: column;
-  padding: 18px 34px 16px;
-  min-height: 0;
-  gap: 8px;
-}
-.dir + .dir { border-top: 3px solid var(--ink); background: var(--paper-2); }
-.dir-label {
-  display: flex; align-items: baseline; gap: 14px;
-  flex-wrap: wrap;
-  padding-bottom: 10px;
-  border-bottom: 2px solid var(--hair);
-  font-family: 'PT Sans', Arial, sans-serif;
-}
-.dir-label .arrow {
-  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(26px, 2.2vw, 34px);
-  color: var(--red); line-height: 1;
-}
-.dir-label .main {
-  font-weight: 700;
-  font-size: clamp(22px, 2vw, 32px);
-  letter-spacing: 0.02em;
-  color: var(--ink);
-  text-transform: uppercase;
-}
-.dir-label .terminus {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: clamp(12px, 1vw, 15px);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
-  font-weight: 700;
-}
-
-.train-list {
-  display: flex; flex-direction: column;
-  flex: 1;
-  justify-content: space-around;
-  gap: 4px;
-}
-.train-row {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: baseline;
-  gap: 20px;
-  padding: 6px 4px;
-}
-.train-row .clock {
-  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(30px, 3vw, 46px);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.005em;
-}
-.train-row .mins {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: clamp(12px, 1vw, 15px);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.train-row .tag {
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-weight: 700;
-  font-size: clamp(18px, 1.8vw, 26px);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  text-align: right;
-  color: var(--muted);
-  white-space: nowrap;
-}
-.train-row.missed { opacity: 0.38; }
-.train-row.missed .tag { color: var(--red); font-weight: 700; opacity: 1; }
-.train-row.catch {
-  background: var(--red);
-  color: var(--paper);
-  padding: 14px 16px;
-  border-radius: 0;
-}
-.train-row.catch .clock {
-  font-size: clamp(42px, 4.2vw, 64px);
-  color: var(--paper);
-}
-.train-row.catch .mins { color: var(--paper); opacity: 0.82; }
-.train-row.catch .tag {
-  color: var(--paper);
-  font-size: clamp(22px, 2.2vw, 34px);
-  font-weight: 700;
-  opacity: 1;
-}
-
-/* ── Weather panel (current + 7-day + sun) ──────────────────── */
-.weather-panel {
-  padding: 20px 28px 20px;
-  overflow: hidden;
-  display: flex; flex-direction: column;
-  gap: 18px;
-}
-.wp-head {
-  display: flex; justify-content: space-between; align-items: baseline;
-  border-bottom: 3px solid var(--ink);
-  padding-bottom: 10px;
-}
-.wp-head .title {
-  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(38px, 3.6vw, 56px);
-  line-height: 1;
-}
-.wp-head .title .cy { color: var(--red); margin-right: 18px; }
-.wp-head .sub {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: clamp(14px, 1.2vw, 18px);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted);
-  font-weight: 700;
-}
-.wp-summary {
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-size: clamp(18px, 1.6vw, 24px);
-  line-height: 1.35;
-  color: var(--ink);
-  max-width: 68ch;
-}
-
-/* 7-day row — all days in one horizontal strip, generous cells */
-.wp-days {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 0;
-  border: 3px solid var(--ink);
-  background: var(--ink);
-  min-height: 0;
-}
-.wp-day {
-  background: var(--paper);
-  color: var(--ink);
-  padding: 14px 12px;
-  border-right: 2px solid var(--ink);
-  display: flex; flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-}
-.wp-day:last-child { border-right: none; }
-.wp-day:nth-child(even) { background: var(--paper-2); }
-.wp-day.today { background: var(--red); color: var(--paper); }
-.wp-day .dow {
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-weight: 700;
-  font-size: clamp(18px, 1.7vw, 24px);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  line-height: 1;
-}
-.wp-day .date {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: clamp(11px, 0.9vw, 13px);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  opacity: 0.65;
-  font-weight: 700;
-  line-height: 1;
-}
-.wp-day .t {
-  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(30px, 3vw, 44px);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  margin-top: 4px;
-}
-.wp-day .t .lo { opacity: 0.5; font-size: 0.62em; margin-left: 6px; }
-.wp-day .cond {
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-weight: 700;
-  font-size: clamp(13px, 1.15vw, 17px);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  line-height: 1.2;
-  margin-top: auto;
-}
-.wp-day .precip {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: clamp(12px, 1vw, 15px);
-  font-weight: 700;
-  color: var(--red);
-  letter-spacing: 0.04em;
-}
-.wp-day.today .precip,
-.wp-day:nth-child(even) .precip { color: var(--ochre); }
-
-/* Sun strip at the bottom of the weather panel */
-.wp-sun {
-  display: flex; gap: 26px; flex-wrap: wrap;
-  align-items: baseline;
-  padding: 10px 4px 0;
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: clamp(14px, 1.2vw, 18px);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.wp-sun .k { font-weight: 700; color: var(--muted); opacity: 0.65; }
-.wp-sun .v {
-  color: var(--ink); font-weight: 700;
-  margin-left: 6px;
-  font-family: 'PT Serif', 'Times New Roman', Georgia, serif;
-  text-transform: none;
-  letter-spacing: 0;
-  font-size: 1.15em;
-}
-.wp-sun .item { display: inline-flex; align-items: baseline; }
-
-/* ══════════════════════════════════════════════════════════════
-   CAROUSEL TABS
-   ══════════════════════════════════════════════════════════════ */
-.carousel-tabs {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  border: 2px solid var(--ink);
-}
-.carousel-tabs .tab {
-  padding: 10px 14px;
-  background: var(--paper);
-  color: var(--ink);
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-weight: 700;
-  font-size: clamp(13px, 1.15vw, 17px);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  text-align: center;
-  border-right: 2px solid var(--ink);
-  opacity: 0.42;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  line-height: 1.1;
-}
-.carousel-tabs .tab:last-child { border-right: none; }
-.carousel-tabs .tab .sub {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 10px;
-  letter-spacing: 0.22em;
-  opacity: 0.7;
-  font-weight: 700;
-}
-.carousel-tabs .tab.active {
-  opacity: 1;
-  background: var(--red);
-  color: var(--paper);
-}
-
-/* ══════════════════════════════════════════════════════════════
-   FOOTER — date + sun info + live
-   ══════════════════════════════════════════════════════════════ */
-.footer {
-  display: flex; align-items: stretch;
-  border: 2px solid var(--ink);
-}
-.footer .cell {
-  flex: 1;
-  padding: 10px 16px;
-  display: flex; align-items: center; gap: 12px;
-  border-right: 2px solid var(--ink);
-  min-width: 0;
-}
-.footer .cell:last-child { border-right: none; }
-.footer .cell.inv { background: var(--ink); color: var(--paper); }
-.footer .cell.red { background: var(--red); color: var(--paper); }
-.footer .cell .k {
-  font-family: 'PT Mono', ui-monospace, monospace;
-  font-size: 11px; letter-spacing: 0.22em;
-  text-transform: uppercase; opacity: 0.65; font-weight: 700;
-}
-.footer .cell .v {
-  font-family: 'PT Sans', Arial, sans-serif;
-  font-weight: 700;
-  font-size: clamp(16px, 1.5vw, 22px);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.footer .live-dot {
-  display: inline-block;
-  width: 10px; height: 10px;
-  background: var(--paper);
-  animation: blink 1.6s steps(2, start) infinite;
-}
-@keyframes blink { 0%, 50% { opacity: 1 } 51%, 100% { opacity: 0.25 } }
-
-.legacy { display: none; }
-
-/* ══════════════════════════════════════════════════════════════
-   DARK MODE — invert paper↔ink while keeping red as red.
-   Toggled from /control via CMS settings.
-   ══════════════════════════════════════════════════════════════ */
 body.dark-mode {
   --paper:   #1a1510;
   --paper-2: #2a2318;
   --ink:     #f3e8cd;
   --muted:   #8a7d68;
-  --hair:    rgba(243,232,205,0.18);
+  --hair:    rgba(243,232,205,0.16);
 }
+
+.frame {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  height: 100vh;
+  padding: 20px 28px;
+  gap: 14px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STATUS BAR — time + date + weather + UV all in one thin row.
+   Everything secondary lives here; it stays out of the hero's way.
+   ══════════════════════════════════════════════════════════════ */
+.status-bar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 28px;
+  padding: 14px 22px;
+  background: var(--ink);
+  color: var(--paper);
+  border: 2px solid var(--ink);
+}
+.sb-time {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(38px, 4vw, 64px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.sb-time .ampm {
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.4em;
+  margin-left: 8px;
+  letter-spacing: 0.12em;
+  opacity: 0.8;
+  vertical-align: 0.4em;
+}
+.sb-time .date {
+  display: inline-block;
+  font-family: 'PT Mono', monospace;
+  font-weight: 700;
+  font-size: 0.24em;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-left: 22px;
+  opacity: 0.65;
+  vertical-align: 1.6em;
+}
+.sb-weather {
+  display: flex; align-items: baseline; gap: 16px;
+  min-width: 0;
+  overflow: hidden;
+}
+.sb-weather .temp {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(36px, 3.8vw, 56px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.sb-weather .temp .deg { color: var(--red); }
+.sb-weather .cond {
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 700;
+  font-size: clamp(18px, 1.7vw, 26px);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sb-weather .feels {
+  font-family: 'PT Mono', monospace;
+  font-size: clamp(12px, 1vw, 14px);
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+}
+.sb-uv {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 6px 14px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 700;
+  font-size: clamp(13px, 1.15vw, 16px);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.sb-uv .v {
+  font-family: 'PT Serif', serif;
+  font-size: clamp(22px, 2vw, 30px);
+  line-height: 1;
+  letter-spacing: 0;
+}
+.sb-uv .badge {
+  padding: 2px 8px;
+  color: var(--paper);
+  font-size: 0.85em;
+  letter-spacing: 0.14em;
+}
+.sb-uv.low   .badge { background: var(--uv-low); }
+.sb-uv.mod   .badge { background: var(--uv-mod); color: var(--ink); }
+.sb-uv.high  .badge { background: var(--uv-high); }
+.sb-uv.vhigh .badge { background: var(--uv-vhigh); }
+.sb-uv.extrm .badge { background: var(--uv-extrm); }
+
+/* ══════════════════════════════════════════════════════════════
+   ALERT RIBBON — MTA delay, appears only when active
+   ══════════════════════════════════════════════════════════════ */
+.alert-ribbon {
+  display: none;
+  align-items: center; gap: 14px;
+  padding: 10px 18px;
+  background: var(--red); color: var(--paper);
+  border: 2px solid var(--red-2);
+  font-family: 'PT Sans', sans-serif;
+  font-size: clamp(14px, 1.3vw, 18px);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.alert-ribbon.visible { display: flex; }
+.alert-ribbon .label {
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding-right: 14px;
+  border-right: 2px solid rgba(255,255,255,0.4);
+  white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HERO — THE next catchable train. Fills the middle. Biggest thing
+   on the screen by a wide margin. At 10 feet this should be the
+   only thing you can read.
+   ══════════════════════════════════════════════════════════════ */
+.hero {
+  flex: 1;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  align-content: center;
+  justify-items: start;
+  gap: 22px;
+  padding: 26px 44px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  min-height: 0;
+  position: relative;
+}
+.hero.action-now  { background: var(--red); color: var(--paper); border-color: var(--red); }
+.hero.action-soon { background: var(--paper); color: var(--ink); }
+.hero.action-miss { background: var(--paper); color: var(--ink); }
+
+.hero .verdict {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(110px, 12vw, 210px);
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+  max-width: 100%;
+}
+.hero .when {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(48px, 4.6vw, 78px);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: currentColor;
+  opacity: 0.94;
+}
+.hero .where {
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 700;
+  font-size: clamp(22px, 2.2vw, 34px);
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  color: currentColor;
+  opacity: 0.88;
+}
+.hero .where .line-badge {
+  display: inline-block;
+  width: 1.3em; height: 1.3em;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 1.3;
+  color: #fff;
+  background: #a7a9ac;
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  margin-right: 10px;
+  font-size: 0.9em;
+  vertical-align: -0.16em;
+}
+.hero .where .line-badge.line-L { background: #a7a9ac; }
+.hero .where .line-badge.line-G { background: #6cbe45; }
+
+/* A tiny nothing-to-catch state */
+.hero.empty .verdict {
+  font-size: clamp(70px, 7vw, 120px);
+  color: var(--muted);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STATION TABLE — all 3 stations, both directions, tight rows.
+   Fallback / backup view if the hero's choice doesn't fit.
+   ══════════════════════════════════════════════════════════════ */
+.station-table {
+  display: flex; flex-direction: column;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+}
+.st-row {
+  display: grid;
+  grid-template-columns: auto auto 1fr 1fr auto;
+  align-items: center;
+  gap: 22px;
+  padding: 12px 22px;
+  border-bottom: 1px solid var(--hair);
+}
+.st-row:last-child { border-bottom: none; }
+.st-row .circle {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: #a7a9ac; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1;
+}
+.st-row .circle.line-L { background: #a7a9ac; }
+.st-row .circle.line-G { background: #6cbe45; }
+.st-row .name {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(20px, 1.9vw, 28px);
+  letter-spacing: -0.005em;
+  min-width: 140px;
+  white-space: nowrap;
+}
+.st-row .dir {
+  display: flex; align-items: baseline; gap: 10px;
+  font-family: 'PT Sans', sans-serif;
+  min-width: 0;
+}
+.st-row .dir .arrow {
+  font-family: 'PT Serif', serif;
+  color: var(--red); font-weight: 700;
+  font-size: clamp(18px, 1.6vw, 24px);
+  line-height: 1;
+}
+.st-row .dir .terminus {
+  font-family: 'PT Mono', monospace;
+  font-size: clamp(11px, 0.95vw, 13px);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  white-space: nowrap;
+  margin-right: 2px;
+}
+.st-row .dir .time {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(24px, 2.2vw, 34px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.st-row .dir .time.missed { opacity: 0.3; }
+.st-row .dir .time.catch  { color: var(--red); }
+.st-row .walk {
+  font-family: 'PT Mono', monospace;
+  font-weight: 700;
+  font-size: clamp(11px, 0.95vw, 13px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: right;
+  white-space: nowrap;
+}
+.st-row.hero-station {
+  background: rgba(196, 32, 30, 0.08);
+  border-left: 4px solid var(--red);
+  padding-left: 18px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FOOTER — sun info + live status
+   ══════════════════════════════════════════════════════════════ */
+.footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 20px;
+  background: var(--paper);
+  border: 1px solid var(--hair);
+  font-family: 'PT Mono', monospace;
+  font-size: clamp(12px, 1.05vw, 15px);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  gap: 20px;
+}
+.footer .item { display: inline-flex; align-items: baseline; gap: 6px; }
+.footer .item .v {
+  color: var(--ink);
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: 1.15em;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.footer .live { display: inline-flex; align-items: center; gap: 8px; }
+.footer .dot {
+  width: 8px; height: 8px;
+  background: var(--red);
+  animation: blink 1.6s steps(2, start) infinite;
+}
+@keyframes blink { 0%, 50% { opacity: 1 } 51%, 100% { opacity: 0.3 } }
+
+/* ══════════════════════════════════════════════════════════════
+   OPTIONAL SLOGAN TICKER — default hidden, toggled from /control
+   ══════════════════════════════════════════════════════════════ */
+.slogan-bar {
+  display: none;
+  align-items: center; gap: 18px;
+  padding: 12px 22px;
+  background: var(--paper); color: var(--ink);
+  border: 2px solid var(--ink);
+}
+body.show-slogan .slogan-bar { display: flex; }
+.slogan-bar .lenin {
+  flex: 0 0 auto; width: 54px; height: 64px;
+  background-color: var(--red);
+  -webkit-mask: url('/assets/lenin.svg') no-repeat center / contain;
+          mask: url('/assets/lenin.svg') no-repeat center / contain;
+}
+.slogan-bar .slogan-text {
+  font-family: 'Fraunces', 'PT Serif', serif;
+  font-weight: 500;
+  font-size: clamp(18px, 1.6vw, 24px);
+  font-variation-settings: "opsz" 96;
+  line-height: 1.25;
+  flex: 1; min-width: 0;
+  transition: opacity 0.4s ease;
+}
+.slogan-bar .slogan-text.fade { opacity: 0; }
+.slogan-bar .slogan-text .attr {
+  display: inline-block;
+  color: var(--red);
+  font-style: italic;
+  font-size: 0.7em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-left: 12px;
+}
+
+.legacy { display: none; }
 </style>
 </head>
 <body>
 
 <div class="frame">
 
-  <!-- ═════ TOP STRIP ═════ -->
-  <div class="top">
-    <div class="time-box">
-      <span class="nums"><span id="bigClock">—</span></span>
-      <span class="ampm" id="ampm">—</span>
+  <!-- ═════ STATUS BAR ═════ -->
+  <div class="status-bar">
+    <div class="sb-time">
+      <span id="bigClock">—</span><span class="ampm" id="ampm">—</span>
+      <span class="date" id="dateLabel">—</span>
     </div>
-    <div class="wx-box">
-      <div class="temp-col">
-        <div class="temp"><span id="tempNow">—</span><span class="deg">°</span></div>
-        <div class="temp-c" id="tempC">—</div>
-      </div>
-      <div class="caption">
-        <div class="day-label" id="wxDayLabel">NOW</div>
-        <div class="label" id="weatherDesc">Loading…</div>
-        <div class="sub" id="feelsLike">—</div>
-        <div class="advice" id="weatherAdvice">—</div>
+    <div class="sb-weather">
+      <div class="temp"><span id="tempNow">—</span><span class="deg">°</span></div>
+      <div style="display:flex;flex-direction:column;gap:3px;min-width:0;">
+        <div class="cond" id="weatherDesc">Loading…</div>
+        <div class="feels" id="feelsLike">—</div>
       </div>
     </div>
-    <div class="uv-box low" id="uvBox">
-      <span class="k">UV Now</span>
-      <span class="v" id="uvValue">—</span>
-      <span class="l" id="uvLabel">Low</span>
-      <span class="warn" id="uvWarn">—</span>
+    <div class="sb-uv low" id="uvBox">
+      UV <span class="v" id="uvValue">—</span> <span class="badge" id="uvLabel">Low</span>
     </div>
   </div>
 
-  <!-- ═════ ALERT RIBBON ═════ -->
-  <div class="alert-ribbon" id="alertRibbon">
-    <span class="siren"></span>
+  <!-- ═════ ALERT RIBBON (conditional) ═════ -->
+  <div class="alert-ribbon" id="alertRibbon" style="display:none;">
     <span class="label">L-Line Alert</span>
-    <span class="body" id="alertBody">—</span>
+    <span id="alertBody">—</span>
   </div>
 
-  <!-- ═════ SLOGAN TICKER ═════ -->
+  <!-- ═════ HERO ═════ -->
+  <section class="hero" id="hero">
+    <div class="verdict" id="heroVerdict">…</div>
+    <div class="when" id="heroWhen">—</div>
+    <div class="where" id="heroWhere">—</div>
+  </section>
+
+  <!-- ═════ STATION TABLE ═════ -->
+  <div class="station-table" id="stationTable"></div>
+
+  <!-- ═════ OPTIONAL SLOGAN TICKER (hidden unless CMS toggles it on) ═════ -->
   <div class="slogan-bar">
     <div class="lenin" role="img" aria-label="Lenin silhouette"></div>
-    <svg class="star" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <polygon fill="currentColor" points="50,5 61,39 97,39 68,60 79,94 50,73 21,94 32,60 3,39 39,39"/>
-    </svg>
     <div class="slogan-text" id="sloganText">Workers of the L-line, unite!<span class="attr">— K. Marx</span></div>
   </div>
 
-  <!-- ═════ CAROUSEL (4 panels) ═════ -->
-  <main class="carousel" id="carousel">
-    <!-- Three station panels generated identically -->
-    <div class="panel active" id="panel-Nassau Av">
-      <div class="station-head">
-        <div class="circle line-G" data-station-circle>G</div>
-        <div class="name" data-station-name>—</div>
-        <div class="walk"><span class="k">Walk</span><span class="v" data-station-walk>—</span></div>
-      </div>
-      <div class="dirs">
-        <div class="dir">
-          <div class="dir-label"><span class="arrow">←</span><span class="main" data-dir-n-label>—</span><span class="terminus" data-dir-n-term>—</span></div>
-          <div class="train-list" data-trains-n></div>
-        </div>
-        <div class="dir">
-          <div class="dir-label"><span class="main" data-dir-s-label>—</span><span class="terminus" data-dir-s-term>—</span><span class="arrow">→</span></div>
-          <div class="train-list" data-trains-s></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel" id="panel-Graham Av">
-      <div class="station-head">
-        <div class="circle line-L" data-station-circle>L</div>
-        <div class="name" data-station-name>—</div>
-        <div class="walk"><span class="k">Walk</span><span class="v" data-station-walk>—</span></div>
-      </div>
-      <div class="dirs">
-        <div class="dir">
-          <div class="dir-label"><span class="arrow">←</span><span class="main" data-dir-n-label>—</span><span class="terminus" data-dir-n-term>—</span></div>
-          <div class="train-list" data-trains-n></div>
-        </div>
-        <div class="dir">
-          <div class="dir-label"><span class="main" data-dir-s-label>—</span><span class="terminus" data-dir-s-term>—</span><span class="arrow">→</span></div>
-          <div class="train-list" data-trains-s></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel" id="panel-Bedford Av">
-      <div class="station-head">
-        <div class="circle line-L" data-station-circle>L</div>
-        <div class="name" data-station-name>—</div>
-        <div class="walk"><span class="k">Walk</span><span class="v" data-station-walk>—</span></div>
-      </div>
-      <div class="dirs">
-        <div class="dir">
-          <div class="dir-label"><span class="arrow">←</span><span class="main" data-dir-n-label>—</span><span class="terminus" data-dir-n-term>—</span></div>
-          <div class="train-list" data-trains-n></div>
-        </div>
-        <div class="dir">
-          <div class="dir-label"><span class="main" data-dir-s-label>—</span><span class="terminus" data-dir-s-term>—</span><span class="arrow">→</span></div>
-          <div class="train-list" data-trains-s></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Weather panel (combined: today's context + 7-day + sun) -->
-    <div class="panel weather-panel" id="panel-weather">
-      <div class="wp-head">
-        <div class="title"><span class="cy">ПОГОДА</span>Outlook</div>
-        <div class="sub" id="wpSubLabel">—</div>
-      </div>
-      <div class="wp-summary" id="wpSummary">—</div>
-      <div class="wp-days" id="wpDays"></div>
-      <div class="wp-sun">
-        <span class="item"><span class="k">Sunrise</span><span class="v" id="wpSunrise">—</span></span>
-        <span class="item"><span class="k">Sunset</span><span class="v" id="wpSunset">—</span></span>
-        <span class="item"><span class="k">Daylight</span><span class="v" id="wpDaylight">—</span></span>
-        <span class="item"><span class="k">Peak UV Today</span><span class="v" id="wpPeakUV">—</span></span>
-      </div>
-    </div>
-  </main>
-
-  <!-- ═════ TABS ═════ -->
-  <div class="carousel-tabs" id="carouselTabs"></div>
-
   <!-- ═════ FOOTER ═════ -->
-  <div class="footer">
-    <div class="cell">
-      <span class="k">Date</span>
-      <span class="v" id="dateLabel">—</span>
-    </div>
-    <div class="cell inv">
-      <span class="k">Sunrise</span>
-      <span class="v" id="sunrise">—</span>
-    </div>
-    <div class="cell">
-      <span class="k" id="sunDirLabel">Until Sunset</span>
-      <span class="v" id="sunDaylight">—</span>
-    </div>
-    <div class="cell inv">
-      <span class="k">Sunset</span>
-      <span class="v" id="sunset">—</span>
-    </div>
-    <div class="cell red">
-      <span class="live-dot"></span>
-      <span class="v" id="statusRight">LIVE</span>
-    </div>
+  <div class="footer" id="footerBar">
+    <span class="item">Sunrise <span class="v" id="sunrise">—</span></span>
+    <span class="item" id="untilWrap"><span id="sunDirLabel">Until sunset</span> <span class="v" id="sunDaylight">—</span></span>
+    <span class="item">Sunset <span class="v" id="sunset">—</span></span>
+    <span class="live"><span class="dot"></span><span id="statusRight">Live</span></span>
   </div>
 
 </div>
 
-<!-- legacy -->
+<!-- legacy IDs for backend compat -->
 <span id="seconds" class="legacy"></span>
 <span id="weatherIcon" class="legacy"></span>
 <span id="dateSub" class="legacy"></span>
+<span id="weatherAdvice" class="legacy"></span>
+<span id="wxDayLabel" class="legacy"></span>
+<span id="uvWarn" class="legacy"></span>
 <span id="hiTemp" class="legacy"></span>
 <span id="loTemp" class="legacy"></span>
+<span id="tempC" class="legacy"></span>
 <span id="location" class="legacy"></span>
 <span id="trainsUpdated" class="legacy"></span>
 <span id="forecastStrip" class="legacy"></span>
@@ -829,20 +497,12 @@ const WALK_MIN = {
   'Graham Av':  12,
   'Bedford Av': 20,
 };
-const STATION_ORDER = ['Nassau Av', 'Graham Av', 'Bedford Av'];
-const PANELS = [
-  { id: 'panel-Nassau Av',  type: 'station', station: 'Nassau Av',  label: 'Nassau',  sub: 'G · 1 of 4' },
-  { id: 'panel-Graham Av',  type: 'station', station: 'Graham Av',  label: 'Graham',  sub: 'L · 2 of 4' },
-  { id: 'panel-Bedford Av', type: 'station', station: 'Bedford Av', label: 'Bedford', sub: 'L · 3 of 4' },
-  { id: 'panel-weather',    type: 'weather', label: 'Weather',     sub: '7 days · 4 of 4' },
-];
-const PANEL_ROTATE_MS = 12_000;
-const SLOGAN_ROTATE_MS = 12_000;
+const STATIONS = ['Nassau Av', 'Graham Av', 'Bedford Av'];
+const SLOGAN_ROTATE_MS = 15_000;
 const ALERT_ROTATE_MS  = 12_000;
-const TRAINS_PER_DIR = 3;
 
 // ═════════════════════════════════════════════════════════════════
-// SAFE DOM
+// HELPERS
 // ═════════════════════════════════════════════════════════════════
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -850,7 +510,6 @@ function el(tag, cls, text) {
   if (text != null) e.textContent = String(text);
   return e;
 }
-function fahrToCelsius(f) { return (f - 32) * 5/9; }
 function fmtClockShort(date) {
   let h = date.getHours();
   const m = String(date.getMinutes()).padStart(2, '0');
@@ -858,13 +517,20 @@ function fmtClockShort(date) {
   h = h % 12 || 12;
   return h + ':' + m + ' ' + ap;
 }
+function fmtClockCompact(date) {
+  let h = date.getHours();
+  const m = String(date.getMinutes()).padStart(2, '0');
+  const ap = h >= 12 ? 'p' : 'a';
+  h = h % 12 || 12;
+  return h + ':' + m + ap;
+}
 function hoursMinutesBetween(a, b) {
   const totalMin = Math.abs(Math.round((b - a) / 60000));
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;
   if (h === 0) return m + ' min';
   if (m === 0) return h + ' hr';
-  return h + ' hr ' + m + ' min';
+  return h + 'h ' + m + 'm';
 }
 
 // ═════════════════════════════════════════════════════════════════
@@ -880,7 +546,6 @@ function tickClock() {
   document.getElementById('bigClock').textContent = h + ':' + mm;
   document.getElementById('ampm').textContent = ampm;
   document.getElementById('seconds').textContent = String(now.getSeconds()).padStart(2,'0');
-
   const weekday = now.toLocaleDateString('en-US', { weekday: 'short' });
   const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   document.getElementById('dateLabel').textContent = weekday + ' · ' + md;
@@ -901,172 +566,55 @@ const WMO_LABEL = {
   85:'Snow showers', 86:'Heavy snow showers',
   95:'Thunderstorm', 96:'Thunderstorm + hail', 99:'Severe storm',
 };
-function weatherSummary(code, tempF) {
-  if ([95,96,99].includes(code)) return 'Thunderstorms possible. Stay inside if you can.';
-  if ([65,82].includes(code))    return 'Heavy rain — full umbrella and jacket.';
-  if ([61,63,80,81].includes(code)) return 'Rain on and off. Grab an umbrella.';
-  if ([51,53,55].includes(code)) return 'Light drizzle. A hood should handle it.';
-  if ([71,73,75,77,85,86].includes(code)) return 'Snow. Boots and extra time.';
-  if ([45,48].includes(code))    return 'Foggy. Walk carefully.';
-  if (code === 3)                return 'Overcast but dry. A sweater is enough.';
-  if (code === 2)                return 'Partly cloudy. Mix of sun and shade.';
-  if (code === 1)                return 'Mostly sunny. Easy day to be outside.';
-  if (tempF >= 85) return 'Clear and hot. Sunscreen, hat, carry water.';
-  if (tempF >= 70) return 'Clear and comfortable. Great day to be outside.';
-  if (tempF >= 55) return 'Clear and mild. A light layer is plenty.';
-  if (tempF >= 40) return 'Clear but cool. A jacket is a good idea.';
-  return 'Clear and cold. Heavy coat and gloves.';
-}
 function uvLevel(v) {
-  if (v == null) return { key: 'low', label: 'N/A', warn: '' };
-  if (v < 3)  return { key: 'low',   label: 'Low',       warn: 'No protection needed' };
-  if (v < 6)  return { key: 'mod',   label: 'Moderate',  warn: 'Sunscreen if outside >1 hr' };
-  if (v < 8)  return { key: 'high',  label: 'High',      warn: 'Cover up · sunscreen + hat' };
-  if (v < 11) return { key: 'vhigh', label: 'Very High', warn: 'Avoid sun 10a-4p · SPF 30+' };
-  return        { key: 'extrm', label: 'Extreme',   warn: 'Stay inside if possible' };
+  if (v == null) return { key: 'low', label: 'N/A' };
+  if (v < 3)  return { key: 'low',   label: 'Low' };
+  if (v < 6)  return { key: 'mod',   label: 'Moderate' };
+  if (v < 8)  return { key: 'high',  label: 'High' };
+  if (v < 11) return { key: 'vhigh', label: 'Very High' };
+  return        { key: 'extrm', label: 'Extreme' };
 }
 
 let weatherData = null;
-function setUVNow(value, peakHint) {
-  const uv = uvLevel(value);
-  const box = document.getElementById('uvBox');
-  box.classList.remove('low','mod','high','vhigh','extrm');
-  box.classList.add(uv.key);
-  document.getElementById('uvValue').textContent = (value == null ? '—' : Math.round(value));
-  document.getElementById('uvLabel').textContent = uv.label;
-  document.getElementById('uvWarn').textContent =
-    peakHint ? uv.warn + ' · ' + peakHint : uv.warn;
-}
-function renderCurrentWeather() {
+function renderWeather() {
   if (!weatherData) return;
   const d = weatherData, cur = d.current;
   const code = cur.weather_code;
   const tempF = cur.temperature_2m;
-  const now = new Date();
-  const weekday = now.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-  const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
-  document.getElementById('wxDayLabel').textContent = 'NOW · ' + weekday + ' · ' + md;
+
   document.getElementById('tempNow').textContent = Math.round(tempF);
-  document.getElementById('tempC').textContent = Math.round(fahrToCelsius(tempF)) + '°C';
   document.getElementById('weatherDesc').textContent = WMO_LABEL[code] || 'Weather';
-
-  const parts = ['Feels ' + Math.round(cur.apparent_temperature) + '°F / ' +
-                 Math.round(fahrToCelsius(cur.apparent_temperature)) + '°C'];
+  const parts = ['Feels ' + Math.round(cur.apparent_temperature) + '°'];
   if (cur.wind_speed_10m != null) parts.push(Math.round(cur.wind_speed_10m) + ' mph wind');
-  if (cur.relative_humidity_2m != null) parts.push(cur.relative_humidity_2m + '% humidity');
+  if (cur.relative_humidity_2m != null) parts.push(cur.relative_humidity_2m + '% hum');
   document.getElementById('feelsLike').textContent = parts.join(' · ');
-  document.getElementById('weatherAdvice').textContent = weatherSummary(code, tempF);
 
-  const nowUV = cur.uv_index;
-  let peakHint = null;
-  if (d.hourly && d.hourly.uv_index && d.hourly.time) {
-    const nowMs = Date.now();
-    let futurePeakVal = -1, futurePeakHour = null;
-    for (let i = 0; i < d.hourly.time.length && i < 24; i++) {
-      const ts = new Date(d.hourly.time[i]).getTime();
-      if (ts <= nowMs) continue;
-      const v = d.hourly.uv_index[i];
-      if (v > futurePeakVal) { futurePeakVal = v; futurePeakHour = d.hourly.time[i]; }
-    }
-    if (futurePeakHour && futurePeakVal >= (nowUV || 0) + 2) {
-      const pd = new Date(futurePeakHour);
-      let ph = pd.getHours();
-      const pap = ph >= 12 ? 'pm' : 'am';
-      ph = ph % 12 || 12;
-      peakHint = 'Peaks at UV ' + Math.round(futurePeakVal) + ' ~' + ph + pap;
-    }
-  }
-  setUVNow(nowUV, peakHint);
-}
-function renderSunInfo() {
-  if (!weatherData) return;
-  const daily = weatherData.daily;
-  if (!daily || !daily.sunrise || !daily.sunset) return;
-  const sunrise = new Date(daily.sunrise[0]);
-  const sunset  = new Date(daily.sunset[0]);
-  document.getElementById('sunrise').textContent = fmtClockShort(sunrise);
-  document.getElementById('sunset').textContent  = fmtClockShort(sunset);
-  const now = new Date();
-  if (now < sunrise) {
-    document.getElementById('sunDirLabel').textContent = 'Until Sunrise';
-    document.getElementById('sunDaylight').textContent = hoursMinutesBetween(now, sunrise);
-  } else if (now < sunset) {
-    document.getElementById('sunDirLabel').textContent = 'Until Sunset';
-    document.getElementById('sunDaylight').textContent = hoursMinutesBetween(now, sunset);
-  } else {
-    const nextRise = daily.sunrise[1] ? new Date(daily.sunrise[1]) : null;
-    document.getElementById('sunDirLabel').textContent = 'Until Sunrise';
-    document.getElementById('sunDaylight').textContent = nextRise ? hoursMinutesBetween(now, nextRise) : '—';
-  }
-}
-function renderWeatherPanel() {
-  if (!weatherData) return;
-  const d = weatherData;
+  const uv = uvLevel(cur.uv_index);
+  const uvBox = document.getElementById('uvBox');
+  uvBox.classList.remove('low','mod','high','vhigh','extrm');
+  uvBox.classList.add(uv.key);
+  document.getElementById('uvValue').textContent = Math.round(cur.uv_index || 0);
+  document.getElementById('uvLabel').textContent = uv.label;
+
+  // Sun info in footer
   const daily = d.daily;
-  if (!daily || !daily.time) return;
-
-  // Summary text = weatherAdvice (reuse)
-  const tempF = d.current.temperature_2m;
-  const code = d.current.weather_code;
-  const summary = weatherSummary(code, tempF) + ' Hi ' +
-    Math.round(daily.temperature_2m_max[0]) + '°F / Lo ' +
-    Math.round(daily.temperature_2m_min[0]) + '°F today.';
-  document.getElementById('wpSummary').textContent = summary;
-
-  // Sub label in the header
-  const subLabel = new Date(daily.time[0] + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() +
-    ' – ' + new Date(daily.time[Math.min(6, daily.time.length-1)] + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
-  document.getElementById('wpSubLabel').textContent = subLabel;
-
-  // Days grid
-  const grid = document.getElementById('wpDays');
-  grid.textContent = '';
-  const count = Math.min(daily.time.length, 7);
-  for (let k = 0; k < count; k++) {
-    const date = new Date(daily.time[k] + 'T12:00:00');
-    const dow = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
-    const md  = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
-    const hi = Math.round(daily.temperature_2m_max[k]);
-    const lo = Math.round(daily.temperature_2m_min[k]);
-    const dCode = daily.weather_code[k];
-    const precip = daily.precipitation_probability_max?.[k] ?? 0;
-    const cell = el('div', 'wp-day' + (k === 0 ? ' today' : ''));
-    cell.appendChild(el('div', 'dow', (k === 0 ? 'TODAY' : dow)));
-    cell.appendChild(el('div', 'date', md));
-    const t = el('div', 't');
-    t.appendChild(el('span', 'hi', hi + '°'));
-    t.appendChild(el('span', 'lo', lo + '°'));
-    cell.appendChild(t);
-    cell.appendChild(el('div', 'cond', WMO_LABEL[dCode] || 'Weather'));
-    if (precip > 10) cell.appendChild(el('div', 'precip', precip + '% rain'));
-    grid.appendChild(cell);
-  }
-
-  // Sun strip
-  if (daily.sunrise && daily.sunset) {
+  if (daily && daily.sunrise && daily.sunset) {
     const sr = new Date(daily.sunrise[0]);
     const ss = new Date(daily.sunset[0]);
-    document.getElementById('wpSunrise').textContent = fmtClockShort(sr);
-    document.getElementById('wpSunset').textContent  = fmtClockShort(ss);
-    document.getElementById('wpDaylight').textContent = hoursMinutesBetween(sr, ss);
-  }
-  if (daily.uv_index_max) {
-    const peak = Math.round(daily.uv_index_max[0]);
-    let hAt = '', maxV = -1;
-    if (d.hourly && d.hourly.uv_index) {
-      for (let i = 0; i < Math.min(24, d.hourly.time.length); i++) {
-        const v = d.hourly.uv_index[i];
-        if (v > maxV) {
-          maxV = v;
-          const ht = new Date(d.hourly.time[i]);
-          let hh = ht.getHours();
-          const ap = hh >= 12 ? 'pm' : 'am';
-          hh = hh % 12 || 12;
-          hAt = ' ~' + hh + ap;
-        }
-      }
+    document.getElementById('sunrise').textContent = fmtClockCompact(sr);
+    document.getElementById('sunset').textContent  = fmtClockCompact(ss);
+    const now = new Date();
+    if (now < sr) {
+      document.getElementById('sunDirLabel').textContent = 'Until sunrise';
+      document.getElementById('sunDaylight').textContent = hoursMinutesBetween(now, sr);
+    } else if (now < ss) {
+      document.getElementById('sunDirLabel').textContent = 'Until sunset';
+      document.getElementById('sunDaylight').textContent = hoursMinutesBetween(now, ss);
+    } else {
+      const nextRise = daily.sunrise[1] ? new Date(daily.sunrise[1]) : null;
+      document.getElementById('sunDirLabel').textContent = 'Until sunrise';
+      document.getElementById('sunDaylight').textContent = nextRise ? hoursMinutesBetween(now, nextRise) : '—';
     }
-    document.getElementById('wpPeakUV').textContent = peak + hAt;
   }
 }
 async function refreshWeather() {
@@ -1075,208 +623,184 @@ async function refreshWeather() {
     const j = await r.json();
     if (!j.ok) throw new Error(j.error);
     weatherData = j.data;
-    renderCurrentWeather();
-    renderSunInfo();
-    renderWeatherPanel();
+    renderWeather();
   } catch (e) {
-    console.warn('weather', e);
     document.getElementById('weatherDesc').textContent = 'Offline';
   }
 }
 refreshWeather();
 setInterval(refreshWeather, 10 * 60 * 1000);
-setInterval(() => { if (weatherData) { renderCurrentWeather(); renderSunInfo(); }}, 60 * 1000);
+setInterval(() => { if (weatherData) renderWeather(); }, 60 * 1000);
 
 // ═════════════════════════════════════════════════════════════════
 // TRAINS
 // ═════════════════════════════════════════════════════════════════
 let trainsData = null;
-function buildTrainRow(mins, walk, isCatch) {
-  const arriveAt = new Date(Date.now() + mins * 60_000);
-  const leaveIn = mins - walk;
-  const row = el('div', 'train-row');
-  let tag;
-  if (isCatch) {
-    row.classList.add('catch');
-    tag = (leaveIn <= 0) ? 'LEAVE NOW' : 'LEAVE IN ' + leaveIn + ' MIN';
-  } else if (leaveIn < 1) {
-    row.classList.add('missed');
-    tag = 'Missed';
-  } else {
-    tag = 'Leave in ' + leaveIn + ' min';
+
+// Find the BEST catchable option across stations + directions, preferring:
+//   1) the direction the user most likely wants (Manhattan/Queens-bound = N)
+//   2) the soonest leave-time
+// Returns { station, line, dirKey, dirLabel, terminus, arrivalMin, leaveInMin, arrivalAt, catchable:true } or
+// { status: 'miss' } if nothing catchable, or { status: 'empty' } if no data.
+function pickHeroTrain() {
+  if (!trainsData || !trainsData.stations) return { status: 'empty' };
+
+  const candidates = [];
+  for (const s of trainsData.stations) {
+    const walk = WALK_MIN[s.name] ?? 5;
+    ['N', 'S'].forEach(dirKey => {
+      const dir = s.directions?.[dirKey];
+      const trains = dir?.trains || [];
+      const catchMin = trains.find(m => m >= walk + 1);
+      if (catchMin == null) return;
+      candidates.push({
+        station: s.name,
+        line: s.line,
+        dirKey,
+        dirLabel: dir.label,
+        terminus: dir.terminus,
+        arrivalMin: catchMin,
+        leaveInMin: catchMin - walk,
+        arrivalAt: new Date(Date.now() + catchMin * 60_000),
+        walkMin: walk,
+      });
+    });
   }
-  row.appendChild(el('span', 'clock', fmtClockShort(arriveAt)));
-  row.appendChild(el('span', 'mins', '+' + mins + ' MIN'));
-  row.appendChild(el('span', 'tag', tag));
-  return row;
+
+  if (!candidates.length) return { status: 'miss' };
+
+  // Sort: prefer Manhattan/Queens-bound (N) then by soonest leave-time
+  candidates.sort((a, b) => {
+    if (a.dirKey !== b.dirKey) return a.dirKey === 'N' ? -1 : 1;
+    return a.leaveInMin - b.leaveInMin;
+  });
+
+  // But if the soonest N is more than 15 min away AND there's a much-sooner S,
+  // pick the S (user might be going home / coming back).
+  const bestN = candidates.find(c => c.dirKey === 'N');
+  const bestS = candidates.find(c => c.dirKey === 'S');
+  if (bestN && bestS && bestN.leaveInMin > 15 && bestS.leaveInMin < bestN.leaveInMin - 5) {
+    return { status: 'ok', ...bestS };
+  }
+  return { status: 'ok', ...(bestN || candidates[0]) };
 }
-function fillDirEl(listEl, trains, walk) {
-  listEl.textContent = '';
-  const arr = (trains || []).slice(0, TRAINS_PER_DIR);
-  if (!arr.length) {
-    const empty = el('div', 'train-row');
-    empty.appendChild(el('span', 'tag', 'No trains scheduled'));
-    listEl.appendChild(empty);
+
+function renderHero() {
+  const hero = document.getElementById('hero');
+  const verdict = document.getElementById('heroVerdict');
+  const when = document.getElementById('heroWhen');
+  const where = document.getElementById('heroWhere');
+  hero.classList.remove('action-now', 'action-soon', 'action-miss', 'empty');
+
+  const pick = pickHeroTrain();
+  if (pick.status === 'empty') {
+    hero.classList.add('empty');
+    verdict.textContent = 'Loading trains…';
+    when.textContent = '';
+    where.textContent = '';
     return;
   }
-  const catchIdx = arr.findIndex(m => m >= walk + 1);
-  arr.forEach((m, i) => listEl.appendChild(buildTrainRow(m, walk, i === catchIdx)));
-  if (catchIdx === -1) {
-    const note = el('div', 'train-row missed');
-    note.appendChild(el('span', 'tag', 'All too close — check back'));
-    listEl.appendChild(note);
+  if (pick.status === 'miss') {
+    hero.classList.add('empty', 'action-miss');
+    verdict.textContent = 'No catchable train';
+    when.textContent = 'Check back soon';
+    where.textContent = 'All upcoming arrivals are too close for the walk.';
+    return;
   }
+
+  // ok: pick contains a catchable train
+  const leaveIn = pick.leaveInMin;
+  if (leaveIn <= 0) {
+    verdict.textContent = 'LEAVE NOW';
+    hero.classList.add('action-now');
+  } else if (leaveIn <= 3) {
+    verdict.textContent = 'Leave in ' + leaveIn + ' min';
+    hero.classList.add('action-now');
+  } else if (leaveIn <= 10) {
+    verdict.textContent = 'Leave in ' + leaveIn + ' min';
+    hero.classList.add('action-soon');
+  } else {
+    verdict.textContent = 'Leave in ' + leaveIn + ' min';
+    hero.classList.add('action-soon');
+  }
+
+  when.textContent = 'for the ' + fmtClockShort(pick.arrivalAt) + ' train';
+
+  where.textContent = '';
+  const badge = el('span', 'line-badge line-' + pick.line, pick.line);
+  where.appendChild(badge);
+  where.appendChild(document.createTextNode(
+    pick.station + '  ·  ' + pick.dirLabel.toLowerCase() + ' (' + pick.terminus + ')  ·  ' + pick.walkMin + ' min walk'
+  ));
 }
-function renderStationPanel(stationName) {
-  if (!trainsData) return;
-  const s = (trainsData.stations || []).find(x => x.name === stationName);
-  if (!s) return;
-  const panel = document.getElementById('panel-' + stationName);
-  if (!panel) return;
-  const walk = WALK_MIN[stationName];
-  const circle = panel.querySelector('[data-station-circle]');
-  circle.textContent = s.line;
-  circle.classList.remove('line-L', 'line-G');
-  circle.classList.add('line-' + s.line);
-  panel.querySelector('[data-station-name]').textContent = stationName;
-  panel.querySelector('[data-station-walk]').textContent = walk + ' min';
-  const dN = s.directions?.N || {}, dS = s.directions?.S || {};
-  panel.querySelector('[data-dir-n-label]').textContent = dN.label || '—';
-  panel.querySelector('[data-dir-n-term]').textContent  = (dN.terminus || '');
-  panel.querySelector('[data-dir-s-label]').textContent = dS.label || '—';
-  panel.querySelector('[data-dir-s-term]').textContent  = (dS.terminus || '');
-  fillDirEl(panel.querySelector('[data-trains-n]'), dN.trains, walk);
-  fillDirEl(panel.querySelector('[data-trains-s]'), dS.trains, walk);
+
+function renderStationTable() {
+  const host = document.getElementById('stationTable');
+  host.textContent = '';
+  if (!trainsData || !trainsData.stations) return;
+
+  const hero = pickHeroTrain();
+  const heroKey = (hero.status === 'ok') ? (hero.station + '|' + hero.dirKey) : null;
+
+  trainsData.stations.forEach(s => {
+    const walk = WALK_MIN[s.name] ?? 5;
+    const row = el('div', 'st-row');
+    row.appendChild(el('div', 'circle line-' + s.line, s.line));
+    row.appendChild(el('div', 'name', s.name));
+
+    ['N', 'S'].forEach(dirKey => {
+      const dir = s.directions?.[dirKey] || {};
+      const trains = dir.trains || [];
+      const catchMin = trains.find(m => m >= walk + 1);
+      const arrow = dirKey === 'N' ? '←' : '→';
+      const dirCol = el('div', 'dir');
+      dirCol.appendChild(el('span', 'arrow', arrow));
+      dirCol.appendChild(el('span', 'terminus', (dir.terminus || '')));
+
+      if (trains.length === 0) {
+        dirCol.appendChild(el('span', 'time missed', '—'));
+      } else {
+        const showN = 2;
+        trains.slice(0, showN).forEach((m, i) => {
+          const span = el('span', 'time', m + 'm');
+          if (m < walk + 1) span.classList.add('missed');
+          else if (m === catchMin) span.classList.add('catch');
+          if (i > 0) dirCol.appendChild(document.createTextNode(' · '));
+          dirCol.appendChild(span);
+        });
+      }
+      row.appendChild(dirCol);
+    });
+
+    const walkEl = el('div', 'walk', walk + ' min walk');
+    row.appendChild(walkEl);
+
+    if (heroKey === (s.name + '|N') || heroKey === (s.name + '|S')) {
+      row.classList.add('hero-station');
+    }
+    host.appendChild(row);
+  });
 }
+
 async function refreshTrains() {
   try {
     const r = await fetch('/api/trains');
     const j = await r.json();
     if (!j.ok) throw new Error(j.error);
     trainsData = j.data;
+    renderHero();
+    renderStationTable();
     renderAlerts(trainsData.alerts || []);
-    STATION_ORDER.forEach(renderStationPanel);
-    document.getElementById('statusRight').textContent = 'LIVE';
+    document.getElementById('statusRight').textContent = 'Live';
   } catch (e) {
-    console.warn('trains', e);
-    document.getElementById('statusRight').textContent = 'RETRY';
+    document.getElementById('statusRight').textContent = 'Retry';
   }
 }
 refreshTrains();
 setInterval(refreshTrains, 20 * 1000);
-
-// ═════════════════════════════════════════════════════════════════
-// CAROUSEL ROTATION
-// ═════════════════════════════════════════════════════════════════
-let panelIdx = 0;
-function renderCarouselTabs() {
-  const host = document.getElementById('carouselTabs');
-  host.textContent = '';
-  PANELS.forEach((p, i) => {
-    const t = el('div', 'tab' + (i === panelIdx ? ' active' : ''));
-    t.appendChild(el('div', '', p.label));
-    t.appendChild(el('div', 'sub', p.sub));
-    host.appendChild(t);
-  });
-}
-function showPanel(idx) {
-  document.querySelectorAll('.carousel > .panel').forEach(p => p.classList.remove('active'));
-  const p = PANELS[idx];
-  const target = document.getElementById(p.id);
-  if (target) target.classList.add('active');
-  if (p.type === 'station') renderStationPanel(p.station);
-  else if (p.type === 'weather') renderWeatherPanel();
-  renderCarouselTabs();
-}
-showPanel(0);
-setInterval(() => {
-  // Skip rotation when CMS says paused or forces a specific panel
-  if (_settings && _settings.paused) return;
-  if (_settings && _settings.force_panel) return;
-  panelIdx = (panelIdx + 1) % PANELS.length;
-  showPanel(panelIdx);
-}, PANEL_ROTATE_MS);
-
-// ═════════════════════════════════════════════════════════════════
-// AUTO-RELOAD — poll /api/version, reload when it changes.
-// WORKER_VERSION is regenerated on every Worker cold-start, so a new
-// deploy propagates to the wall display within ~30 seconds.
-// ═════════════════════════════════════════════════════════════════
-let _seenVersion = null;
-async function checkVersion() {
-  try {
-    const r = await fetch('/api/version', { cache: 'no-cache' });
-    const j = await r.json();
-    if (_seenVersion && j.version !== _seenVersion) {
-      console.log('Worker version changed, reloading…');
-      location.reload();
-      return;
-    }
-    _seenVersion = j.version;
-  } catch (e) { /* offline, try again next tick */ }
-}
-checkVersion();
-setInterval(checkVersion, 30_000);
-
-// ═════════════════════════════════════════════════════════════════
-// CMS SETTINGS — poll /api/settings, apply brightness/pause/etc.
-// The /control page writes to the same endpoint.
-// ═════════════════════════════════════════════════════════════════
-let _settings = null;
-async function pollSettings() {
-  try {
-    const r = await fetch('/api/settings', { cache: 'no-cache' });
-    const j = await r.json();
-    if (!j.ok) return;
-    applySettings(j.data);
-  } catch (e) { /* ignore transient failures */ }
-}
-function applySettings(s) {
-  if (!s) return;
-  const prev = _settings || {};
-  _settings = s;
-
-  // Force-reload when /control presses the "Reload Wall" button.
-  // Token is a timestamp bumped on each press; on first poll we
-  // just record whatever's there so existing deployments don't
-  // reload themselves.
-  if (prev.reload_token !== undefined &&
-      s.reload_token !== undefined &&
-      Number(s.reload_token) > Number(prev.reload_token || 0)) {
-    console.log('Reload token bumped, reloading…');
-    location.reload();
-    return;
-  }
-
-  // Brightness: CSS filter on body (non-destructive)
-  const b = Math.max(10, Math.min(100, Number(s.brightness ?? 100)));
-  document.body.style.filter = 'brightness(' + b + '%)';
-
-  // Show/hide slogan + footer
-  const sloganBar = document.querySelector('.slogan-bar');
-  if (sloganBar) sloganBar.style.display = (s.show_slogan === false) ? 'none' : '';
-  const footer = document.querySelector('.footer');
-  if (footer) footer.style.display = (s.show_footer === false) ? 'none' : '';
-
-  // Dark mode
-  document.body.classList.toggle('dark-mode', !!s.dark_mode);
-
-  // Force-panel: if CMS pins a specific panel, jump to it
-  if (s.force_panel && s.force_panel !== prev.force_panel) {
-    let targetIdx = -1;
-    if (s.force_panel === 'weather') {
-      targetIdx = PANELS.findIndex(p => p.type === 'weather');
-    } else {
-      targetIdx = PANELS.findIndex(p => p.station === s.force_panel);
-    }
-    if (targetIdx >= 0) {
-      panelIdx = targetIdx;
-      showPanel(panelIdx);
-    }
-  }
-}
-pollSettings();
-setInterval(pollSettings, 3_000);
+// Re-render hero every 30s so "leave in N min" counts down even
+// between full refreshes.
+setInterval(() => { if (trainsData) { renderHero(); renderStationTable(); } }, 30 * 1000);
 
 // ═════════════════════════════════════════════════════════════════
 // ALERTS
@@ -1285,88 +809,91 @@ let alertList = [], alertIdx = 0;
 function renderAlerts(alerts) {
   alertList = alerts || [];
   const rib = document.getElementById('alertRibbon');
-  if (!alertList.length) { rib.classList.remove('visible'); return; }
+  if (!alertList.length) { rib.classList.remove('visible'); rib.style.display='none'; return; }
   rib.classList.add('visible');
+  rib.style.display = 'flex';
   alertIdx = alertIdx % alertList.length;
   document.getElementById('alertBody').textContent = alertList[alertIdx].header;
 }
-function rotateAlert() {
+setInterval(() => {
   if (!alertList.length) return;
   alertIdx = (alertIdx + 1) % alertList.length;
   document.getElementById('alertBody').textContent = alertList[alertIdx].header;
-}
-setInterval(rotateAlert, ALERT_ROTATE_MS);
+}, ALERT_ROTATE_MS);
 
 // ═════════════════════════════════════════════════════════════════
-// SLOGAN BANK (unchanged from v4)
+// AUTO-RELOAD on new Worker version
+// ═════════════════════════════════════════════════════════════════
+let _seenVersion = null;
+async function checkVersion() {
+  try {
+    const r = await fetch('/api/version', { cache: 'no-cache' });
+    const j = await r.json();
+    if (_seenVersion && j.version !== _seenVersion) { location.reload(); return; }
+    _seenVersion = j.version;
+  } catch (e) {}
+}
+checkVersion();
+setInterval(checkVersion, 30_000);
+
+// ═════════════════════════════════════════════════════════════════
+// CMS SETTINGS
+// ═════════════════════════════════════════════════════════════════
+let _settings = null;
+async function pollSettings() {
+  try {
+    const r = await fetch('/api/settings', { cache: 'no-cache' });
+    const j = await r.json();
+    if (!j.ok) return;
+    applySettings(j.data);
+  } catch (e) {}
+}
+function applySettings(s) {
+  if (!s) return;
+  const prev = _settings || {};
+  _settings = s;
+
+  // Reload when /control bumps the token
+  if (prev.reload_token !== undefined &&
+      s.reload_token !== undefined &&
+      Number(s.reload_token) > Number(prev.reload_token || 0)) {
+    location.reload();
+    return;
+  }
+
+  const b = Math.max(10, Math.min(100, Number(s.brightness ?? 100)));
+  document.body.style.filter = 'brightness(' + b + '%)';
+
+  document.body.classList.toggle('show-slogan', !!s.show_slogan);
+
+  const footer = document.getElementById('footerBar');
+  if (footer) footer.style.display = (s.show_footer === false) ? 'none' : '';
+
+  document.body.classList.toggle('dark-mode', !!s.dark_mode);
+}
+pollSettings();
+setInterval(pollSettings, 3_000);
+
+// ═════════════════════════════════════════════════════════════════
+// SLOGAN BANK (only used when CMS enables ticker)
 // ═════════════════════════════════════════════════════════════════
 const SLOGANS = [
-  { t: "Workers of the world, unite! You have nothing to lose but your chains.", a: "K. Marx & F. Engels, Manifesto (1848)" },
-  { t: "The history of all hitherto existing society is the history of class struggles.", a: "K. Marx, Manifesto" },
-  { t: "From each according to his ability, to each according to his needs.", a: "K. Marx, 1875" },
-  { t: "The philosophers have only interpreted the world; the point is to change it.", a: "K. Marx, Theses on Feuerbach" },
-  { t: "Capital is dead labor which, vampire-like, lives only by sucking living labor.", a: "K. Marx, Das Kapital" },
-  { t: "A spectre is haunting Europe — the spectre of communism.", a: "Manifesto (1848)" },
-  { t: "There are decades where nothing happens, and there are weeks where decades happen.", a: "V. Lenin" },
-  { t: "Those who do not move do not notice their chains.", a: "R. Luxemburg" },
-  { t: "Freedom is always, and exclusively, freedom for the one who thinks differently.", a: "R. Luxemburg, 1918" },
+  { t: "Workers of the world, unite!", a: "K. Marx & F. Engels, 1848" },
+  { t: "There are decades where nothing happens, and weeks where decades happen.", a: "V. Lenin" },
   { t: "Pessimism of the intellect, optimism of the will.", a: "A. Gramsci" },
-  { t: "The old world is dying, and the new world struggles to be born: now is the time of monsters.", a: "A. Gramsci" },
-  { t: "Be realistic: demand the impossible.", a: "Paris, May 1968" },
-  { t: "We must dare to invent the future.", a: "T. Sankara" },
-  { t: "At the risk of seeming ridiculous, let me say that the true revolutionary is guided by great feelings of love.", a: "Che Guevara" },
-  { t: "Workers of the L-line, unite! But first, renegotiate the work rules.", a: "K. Marx, adapted 2025" },
-  { t: "The philosophers have only interpreted the schedule; the point is to catch the train.", a: "K. Marx, adapted" },
   { t: "A spectre is haunting Greenpoint — the G train.", a: "Manifesto, adapted" },
-  { t: "A spectre is haunting New York — it is the Environmental Impact Statement.", a: "Manifesto, adapted 2024" },
-  { t: "From each according to their MetroCard, to each according to their arrival.", a: "K. Marx, adapted" },
-  { t: "History repeats itself — first as tragedy, then as community board meeting.", a: "K. Marx, adapted" },
-  { t: "The means of production belong to the workers. The means of transportation belong to whoever can finish them in a decade.", a: "K. Marx, adapted" },
-  { t: "There are decades where no train comes; then weeks where three arrive at once.", a: "V. Lenin, adapted" },
-  { t: "Supply-side progressivism.", a: "E. Klein, New York Times, 2021" },
-  { t: "Why we can't build.", a: "E. Klein, NYT op-ed" },
-  { t: "We don't have a money problem. We have a process problem.", a: "E. Klein, adapted" },
-  { t: "A country that can't build is a country that can't govern.", a: "D. Thompson" },
-  { t: "The permit is the regulation.", a: "J. Demsas, The Atlantic" },
-  { t: "If you want affordable housing, you need more housing.", a: "J. Demsas" },
-  { t: "The environmental review is itself the environmental harm.", a: "E. Klein, adapted" },
-  { t: "We pay four times what Paris pays per mile of subway. It is not about greed — it is about process.", a: "A. Levy, Pedestrian Observations" },
-  { t: "Abundance is a value, not just an outcome.", a: "Klein & Thompson, Abundance (2025)" },
-  { t: "A progressivism that cannot build is not progressive.", a: "abundance agenda" },
-  { t: "The obstacle to the green transition is not capital — it is the community meeting.", a: "E. Levitz, adapted" },
-  { t: "The real enemy is not the capitalist. It is the discretionary review process.", a: "abundance progressive, 2025" },
-  { t: "Cost disease socialism: pay more, get less, call it solidarity.", a: "S. Hammond, adapted" },
-  { t: "NEPA review has averaged 4.5 years for major projects this decade.", a: "M. Yglesias, Slow Boring" },
-  { t: "Solidarity with the workers. Reform the work rules.", a: "DSA transit caucus, apocryphal" },
-  { t: "The unions are not the problem. They are negotiating inside a broken system.", a: "R. Barkan, adapted" },
-  { t: "There is no contradiction between labor rights and competent construction.", a: "fictional editorial" },
-  { t: "A spectre is haunting the Second Avenue Subway — it is featherbedding.", a: "transit critics, 2024" },
-  { t: "Yes, we need abundance. Also yes, it has to be publicly-owned abundance.", a: "Jacobin, paraphrased" },
-  { t: "A progressivism that only serves the builder is not progressive.", a: "labor left, 2024" },
-  { t: "The obstacle is zoning — and also capital.", a: "left abundance, 2025" },
-  { t: "Solidarity forever. Except with the block association opposing the bike lane.", a: "urbanist Twitter" },
-  { t: "Build it fast, build it cheap, build it union — pick two. Actually, pick one.", a: "NYC transit joke" },
+  { t: "Supply-side progressivism.", a: "E. Klein" },
+  { t: "The permit is the regulation.", a: "J. Demsas" },
   { t: "Freeze the rent. Free the buses. Finish the Second Avenue Subway in this century.", a: "Z. Mamdani, apocryphal" },
-  { t: "I promise three things: cheaper rent, faster trains, and a single-payer bodega system.", a: "Z. Mamdani, apocryphal" },
-  { t: "Trust the tenants. Fund the buses. Tax the yachts.", a: "Z. Mamdani, apocryphal" },
-  { t: "The L train belongs to those who ride it.", a: "Z. Mamdani, apocryphal" },
-  { t: "Rent is too damn high and the G train is too damn slow.", a: "Z. Mamdani, apocryphal" },
-  { t: "Greenpoint deserves better than an 11-year waitlist for a bike lane.", a: "Z. Mamdani, apocryphal" },
-  { t: "We will freeze the rent. We will free the buses. We will also fix the G.", a: "Z. Mamdani, apocryphal" },
-  { t: "The class struggle continues — but first, a word about potholes.", a: "Z. Mamdani, apocryphal" },
-  { t: "Seize the means of production. Start with the MTA procurement committee.", a: "Z. Mamdani, apocryphal" },
+  { t: "Solidarity with the workers. Reform the work rules.", a: "DSA transit caucus, apocryphal" },
+  { t: "A progressivism that cannot build is not progressive.", a: "abundance agenda" },
+  { t: "History repeats itself — first as tragedy, then as shuttle bus.", a: "K. Marx, adapted" },
+  { t: "Trust the MTA, but verify.", a: "V. Lenin, adapted" },
+  { t: "The unions are not the problem. They are negotiating inside a broken system.", a: "R. Barkan, adapted" },
+  { t: "The real enemy is not the capitalist. It is the discretionary review process.", a: "abundance progressive" },
   { t: "Comrades, we will not stop until every bodega has a functional slushee machine.", a: "Z. Mamdani, apocryphal" },
-  { t: "Public transit, public housing, public parks — and yes, a public option for bagels.", a: "Z. Mamdani, apocryphal" },
-  { t: "Comrade, hold the door.", a: "Greenpoint soviet" },
-  { t: "Solidarity with the B43 bus.", a: "Greenpoint soviet" },
-  { t: "Five-year plan: arrive on time.", a: "Politburo" },
-  { t: "Punctuality is the politeness of proletarians.", a: "V. Lenin, apocryphal" },
-  { t: "Weather has no politics. Umbrellas do.", a: "R. Luxemburg, adapted" },
-  { t: "Comrade, have you read your Community Board's response to the shuttle bus plan?", a: "Greenpoint soviet" },
-  { t: "The revolution will arrive on the 7:34 L — provided CBTC cuts over by 2030.", a: "Greenpoint soviet" },
-  { t: "Dialectical materialism is fine, but have you tried the permitting office at 280 Broadway?", a: "Greenpoint soviet" },
+  { t: "Build it fast, build it cheap, build it union — pick two. Actually, pick one.", a: "NYC transit joke" },
 ];
-
 let sloganIdx = Math.floor(Math.random() * SLOGANS.length);
 function rotateSlogan() {
   const node = document.getElementById('sloganText');
