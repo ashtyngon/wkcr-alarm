@@ -390,14 +390,21 @@ body.dark-mode {
   border: 3px solid var(--ink);
   justify-content: space-around;
 }
+/* Station row: 6 fixed-width columns so every row shares the same
+   column positions. Times don't drift based on terminus length,
+   left times' left edges align across rows, right times' right
+   edges align across rows. */
 .st-row {
-  /* Centered layout: left dir info | station block (with arrows) |
-     right dir info | walk. Station anchors the row; directions
-     branch outward symmetrically. */
   display: grid;
-  grid-template-columns: 1fr auto 1fr auto;
+  grid-template-columns:
+    clamp(200px, 16vw, 280px)   /* 1: left times (left-aligned) */
+    clamp(200px, 16vw, 280px)   /* 2: left terminus (right-aligned, near station) */
+    auto                         /* 3: station block (centered) */
+    clamp(200px, 16vw, 280px)   /* 4: right terminus (left-aligned, near station) */
+    clamp(200px, 16vw, 280px)   /* 5: right times (right-aligned) */
+    clamp(110px, 9vw, 160px);   /* 6: walk (right-aligned) */
   align-items: center;
-  gap: clamp(18px, 2vw, 32px);
+  gap: clamp(14px, 1.5vw, 26px);
   padding: clamp(16px, 1.8vw, 26px) clamp(22px, 2.4vw, 36px);
   border-bottom: 2px solid var(--hair);
   flex: 1;
@@ -405,12 +412,12 @@ body.dark-mode {
 }
 .st-row:last-child { border-bottom: none; }
 
-/* Station block: arrows flank the badge + name, pointing outward
-   so the eye reads "trains leave this way in both directions" */
+/* Station block — arrows flank badge + name, pointing outward */
 .st-row .station-block {
   display: flex; align-items: center;
   gap: clamp(14px, 1.4vw, 22px);
   justify-self: center;
+  white-space: nowrap;
 }
 .st-row .station-block .sb-arrow {
   font-family: 'PT Serif', serif;
@@ -442,40 +449,55 @@ body.dark-mode {
   text-transform: uppercase;
 }
 
-/* Direction blocks: one on each side of the station. Terminus sits
-   close to the station as the direction anchor; times fan outward. */
-.st-row .dir {
-  display: flex; align-items: baseline;
-  gap: clamp(12px, 1.2vw, 20px);
-  font-family: 'PT Sans', sans-serif;
-  min-width: 0;
-}
-.st-row .dir.dir-left  { justify-content: flex-end; text-align: right; }
-.st-row .dir.dir-right { justify-content: flex-start; text-align: left; }
-.st-row .dir .terminus {
-  font-family: 'PT Serif', serif;         /* serif matches time + reads big */
-  font-size: clamp(36px, 3.2vw, 56px);    /* near-parity with train time */
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--ink);                       /* was muted; now full weight */
-  font-weight: 700;
-  white-space: nowrap;
-  margin-right: 10px;
-}
-.st-row .dir .time {
+/* Times block — 2 equal sub-cells with a thin divider between them */
+.st-row .times {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
   font-family: 'PT Serif', serif;
   font-weight: 700;
   font-size: clamp(42px, 3.8vw, 66px);
   line-height: 1;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  width: 100%;
+}
+.st-row .times .time {
+  padding: 4px 14px;
+  box-sizing: border-box;
+}
+.st-row .times .time + .time {
+  border-left: 2px solid var(--hair);  /* subtle separator between trains */
+}
+.st-row .times .time.missed { opacity: 0.28; }
+.st-row .times .time.catch  { color: var(--red); }
+
+/* Left times: block aligns to the left of its column; each time
+   reads left-to-right (first digit at left) so leading characters
+   of "6m" and "2m" stack at the same x across rows. */
+.st-row .times-left  { justify-self: start; text-align: left;  }
+/* Right times: block aligns to the right; each time right-aligned
+   so the trailing "m" of every row lines up at the same x. */
+.st-row .times-right { justify-self: end;   text-align: right; }
+/* ensure the time cells themselves follow container text-align */
+.st-row .times-left  .time { text-align: left;  }
+.st-row .times-right .time { text-align: right; }
+/* Terminus — serif, uppercase, near-parity with train time.
+   Left terminus right-aligned (hugs station), right terminus
+   left-aligned (hugs station). */
+.st-row .terminus {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(36px, 3.2vw, 56px);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
   color: var(--ink);
+  white-space: nowrap;
 }
-.st-row .dir .time.missed { opacity: 0.28; }
-.st-row .dir .time.catch {
-  color: var(--red);
-  font-size: clamp(48px, 4.4vw, 78px);  /* larger — this is the actionable one */
-}
+.st-row .terminus-left  { justify-self: end;   text-align: right; }
+.st-row .terminus-right { justify-self: start; text-align: left;  }
+
 .st-row .walk {
   font-family: 'PT Sans', sans-serif;
   font-weight: 700;
@@ -485,6 +507,7 @@ body.dark-mode {
   color: var(--muted);
   text-align: right;
   white-space: nowrap;
+  justify-self: end;
 }
 .st-row.hero-station {
   background: rgba(196, 32, 30, 0.08);
@@ -1692,34 +1715,24 @@ function findSevereAlert() {
   return null;
 }
 
-// Build one side of a station row: terminus + times.
-// Left side: times first (outer edge), terminus near station.
-// Right side: terminus near station, times to outer edge.
-function buildDirBlock(dir, walk, side) {
-  const d = dir || {};
-  const trains = d.trains || [];
+// Build a 2-slot times block with consistent cell widths so times
+// align vertically across rows (left block: left-aligned; right
+// block: right-aligned). Each slot is either a real time or an
+// empty placeholder so both cells always exist.
+function buildTimesBlock(trains, walk, side) {
+  const block = el('div', 'times times-' + side);
+  trains = trains || [];
   const catchMin = trains.find(m => m >= walk + 1);
-  const block = el('div', 'dir dir-' + side);
-
-  const terminus = el('span', 'terminus', d.terminus || '—');
-  const timesBlock = el('span', 'times');
-  if (trains.length === 0) {
-    timesBlock.appendChild(el('span', 'time missed', '—'));
-  } else {
-    trains.slice(0, 2).forEach((m, i) => {
+  for (let i = 0; i < 2; i++) {
+    const m = trains[i];
+    if (m == null) {
+      block.appendChild(el('span', 'time missed', '—'));
+    } else {
       const span = el('span', 'time', m + 'm');
       if (m < walk + 1) span.classList.add('missed');
       else if (m === catchMin) span.classList.add('catch');
-      if (i > 0) timesBlock.appendChild(document.createTextNode(' · '));
-      timesBlock.appendChild(span);
-    });
-  }
-  if (side === 'left') {
-    block.appendChild(timesBlock);
-    block.appendChild(terminus);
-  } else {
-    block.appendChild(terminus);
-    block.appendChild(timesBlock);
+      block.appendChild(span);
+    }
   }
   return block;
 }
@@ -1736,21 +1749,22 @@ function renderStationTable() {
     const walk = WALK_MIN[s.name] ?? 5;
     const row = el('div', 'st-row');
 
-    // Left direction (Manhattan/Queens-bound, N)
-    row.appendChild(buildDirBlock(s.directions?.N, walk, 'left'));
-
-    // Station block in the middle: ← [badge] NAME →
+    // Column 1: left times (N direction — Manhattan/Queens-bound)
+    row.appendChild(buildTimesBlock(s.directions?.N?.trains, walk, 'left'));
+    // Column 2: left terminus
+    row.appendChild(el('div', 'terminus terminus-left', s.directions?.N?.terminus || '—'));
+    // Column 3: station block (centered, with arrows)
     const sb = el('div', 'station-block');
     sb.appendChild(el('span', 'sb-arrow', '←'));
     sb.appendChild(el('span', 'circle line-' + s.line, s.line));
     sb.appendChild(el('span', 'name', s.name));
     sb.appendChild(el('span', 'sb-arrow', '→'));
     row.appendChild(sb);
-
-    // Right direction (Canarsie/S-Brooklyn-bound, S)
-    row.appendChild(buildDirBlock(s.directions?.S, walk, 'right'));
-
-    // Walk on far right
+    // Column 4: right terminus
+    row.appendChild(el('div', 'terminus terminus-right', s.directions?.S?.terminus || '—'));
+    // Column 5: right times (S direction)
+    row.appendChild(buildTimesBlock(s.directions?.S?.trains, walk, 'right'));
+    // Column 6: walk
     row.appendChild(el('div', 'walk', walk + ' min walk'));
 
     if (heroKey === (s.name + '|N') || heroKey === (s.name + '|S')) {
