@@ -390,21 +390,26 @@ body.dark-mode {
   border: 3px solid var(--ink);
   justify-content: space-around;
 }
-/* Station row: 6 fixed-width columns so every row shares the same
-   column positions. Widths sized so "ROCKAWAY PKWY" (the longest
-   terminus) fits comfortably without overflowing into times. */
+/* Station row: 6 columns with content-driven widths.
+   `auto` columns size to the WIDEST content across all rows
+   (Grid spec § 11) — so terminus column auto-fits ROCKAWAY PKWY,
+   times column auto-fits "14m", and every row shares the same
+   widths. Station gets 1fr to fill the remaining horizontal
+   space and stay centered.
+   Generous gap (1.5–2× internal padding) gives proper visual
+   separation between the columns of data. */
 .st-row {
   display: grid;
   grid-template-columns:
-    clamp(140px, 11vw, 200px)   /* 1: left times */
-    clamp(240px, 19vw, 360px)   /* 2: left terminus (widest — fits ROCKAWAY PKWY) */
-    auto                         /* 3: station block */
-    clamp(240px, 19vw, 360px)   /* 4: right terminus */
-    clamp(140px, 11vw, 200px)   /* 5: right times */
-    clamp(100px, 8vw, 140px);   /* 6: walk */
+    auto    /* 1: left times */
+    auto    /* 2: left terminus */
+    1fr     /* 3: station block (fills remaining, centered) */
+    auto    /* 4: right terminus */
+    auto    /* 5: right times */
+    auto;   /* 6: walk */
   align-items: center;
-  gap: clamp(14px, 1.4vw, 24px);
-  padding: clamp(16px, 1.8vw, 26px) clamp(20px, 2.2vw, 32px);
+  gap: clamp(28px, 2.4vw, 52px);
+  padding: clamp(18px, 2vw, 28px) clamp(26px, 2.4vw, 40px);
   border-bottom: 2px solid var(--hair);
   flex: 1;
   min-height: 0;
@@ -448,12 +453,13 @@ body.dark-mode {
   text-transform: uppercase;
 }
 
-/* Times block — 2 equal sub-cells with a thin divider between them.
-   Font size reduced from previous so the pair fits in a ~180px
-   column without overflowing. */
+/* Times block — 2 sub-cells sized to content, with hairline divider.
+   Outer grid column is `auto` so the .times block sizes to fit its
+   widest possible content (e.g. "14m | 17m") consistently across
+   all rows. */
 .st-row .times {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: auto auto;
   gap: 0;
   font-family: 'PT Serif', serif;
   font-weight: 700;
@@ -461,11 +467,11 @@ body.dark-mode {
   line-height: 1;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  width: 100%;
 }
 .st-row .times .time {
-  padding: 4px 14px;
+  padding: 4px 18px;          /* generous internal padding for breathing room */
   box-sizing: border-box;
+  min-width: 2.6em;           /* ensure 1-digit times aren't visually cramped */
 }
 .st-row .times .time + .time {
   border-left: 2px solid var(--hair);  /* subtle separator between trains */
@@ -1179,7 +1185,7 @@ body.mode-weather .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
         <div class="wear-list" id="brWearList"></div>
       </div>
       <div class="br-card" style="grid-column: 1 / -1;">
-        <h3>Next trains (Manhattan-bound)</h3>
+        <h3>Next trains · both directions</h3>
         <div class="br-trains" id="brTrains"></div>
       </div>
     </div>
@@ -2070,30 +2076,41 @@ function renderBriefingMode() {
     wearList.appendChild(el('span', 'wear-item', item));
   });
 
-  // TRAINS block — next 2 catchable Manhattan-bound trains across stations
+  // TRAINS block — next catchable trains in BOTH directions for
+  // every station, sorted by leave-time (most-urgent first).
+  // The hero shows ONE answer; the briefing shows your full menu.
   const brTrains = document.getElementById('brTrains');
   brTrains.textContent = '';
   if (trainsData?.stations) {
     const candidates = [];
     for (const s of trainsData.stations) {
       const walk = WALK_MIN[s.name] ?? 5;
-      const dir = s.directions?.N;
-      if (!dir?.trains) continue;
-      const catchable = dir.trains.find(m => m >= walk + 1);
-      if (catchable == null) continue;
-      candidates.push({
-        station: s.name, line: s.line,
-        walkMin: walk, catchMin: catchable,
-        leaveIn: catchable - walk,
-        arrive: new Date(Date.now() + catchable * 60_000),
-      });
+      for (const dirKey of ['N', 'S']) {
+        const dir = s.directions?.[dirKey];
+        if (!dir?.trains) continue;
+        const catchable = dir.trains.find(m => m >= walk + 1);
+        if (catchable == null) continue;
+        candidates.push({
+          station: s.name, line: s.line,
+          dirKey,
+          dirLabel: dir.label || (dirKey === 'N' ? 'North' : 'South'),
+          terminus: dir.terminus || '',
+          walkMin: walk, catchMin: catchable,
+          leaveIn: catchable - walk,
+          arrive: new Date(Date.now() + catchable * 60_000),
+        });
+      }
     }
+    // Sort by urgency (soonest leave-time first) so the most
+    // actionable option appears at the top of the briefing.
     candidates.sort((a, b) => a.leaveIn - b.leaveIn);
-    candidates.slice(0, 3).forEach(c => {
+    candidates.slice(0, 6).forEach(c => {
       const row = el('div', 'br-train-row');
       row.appendChild(el('div', 'circle line-' + c.line, c.line));
       row.appendChild(el('div', 'st', c.station));
-      row.appendChild(el('div', 'when', c.walkMin + 'm walk · train ' + fmtClockShort(c.arrive)));
+      const arrow = c.dirKey === 'N' ? '←' : '→';
+      const dirText = arrow + ' ' + c.terminus + ' · ' + c.walkMin + 'm walk · train ' + fmtClockShort(c.arrive);
+      row.appendChild(el('div', 'when', dirText));
       const leaveTxt = c.leaveIn <= 0 ? 'LEAVE NOW'
                      : c.leaveIn <= 3 ? 'LEAVE ' + c.leaveIn + 'M'
                      : 'Leave ' + c.leaveIn + 'm';
