@@ -1236,6 +1236,18 @@ function applySettings(s) {
   const prev = _settings || {};
   _settings = s;
 
+  // Force-reload when /control presses the "Reload Wall" button.
+  // Token is a timestamp bumped on each press; on first poll we
+  // just record whatever's there so existing deployments don't
+  // reload themselves.
+  if (prev.reload_token !== undefined &&
+      s.reload_token !== undefined &&
+      Number(s.reload_token) > Number(prev.reload_token || 0)) {
+    console.log('Reload token bumped, reloading…');
+    location.reload();
+    return;
+  }
+
   // Brightness: CSS filter on body (non-destructive)
   const b = Math.max(10, Math.min(100, Number(s.brightness ?? 100)));
   document.body.style.filter = 'brightness(' + b + '%)';

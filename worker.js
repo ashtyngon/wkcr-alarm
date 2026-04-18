@@ -31,6 +31,7 @@ const DEFAULT_SETTINGS = {
   show_slogan: true,
   show_footer: true,
   dark_mode: false,   // inverts palette (cream→ink, ink→paper)
+  reload_token: 0,    // bumped by /control "Reload Wall" button; dashboard reloads on change
 };
 
 // Per-line realtime GTFS-RT feed URLs (MTA NYCT).
@@ -419,6 +420,8 @@ async function handleSettings(request, env) {
       ...(body.show_slogan   != null ? { show_slogan:   !!body.show_slogan  } : {}),
       ...(body.show_footer   != null ? { show_footer:   !!body.show_footer  } : {}),
       ...(body.dark_mode     != null ? { dark_mode:     !!body.dark_mode    } : {}),
+      // reload_token: accept any numeric value; typically Date.now()
+      ...(body.reload_token  != null ? { reload_token:  Number(body.reload_token) || 0 } : {}),
     };
     await env.SETTINGS.put('state', JSON.stringify(merged));
     return json({ ok: true, data: merged });
