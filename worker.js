@@ -35,7 +35,7 @@ const DEFAULT_SETTINGS = {
   mode: 'dashboard',        // 'dashboard' | 'clock' | 'poster' | 'weather'
 };
 
-const MODES = new Set(['dashboard', 'briefing', 'clock', 'poster', 'weather']);
+const MODES = new Set(['dashboard', 'briefing', 'clock', 'weather']);
 
 // Per-line realtime GTFS-RT feed URLs (MTA NYCT).
 // https://api.mta.info/#/subwayRealTimeFeeds

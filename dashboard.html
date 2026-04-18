@@ -391,16 +391,33 @@ body.dark-mode {
   justify-content: space-around;
 }
 .st-row {
+  /* Centered layout: left dir info | station block (with arrows) |
+     right dir info | walk. Station anchors the row; directions
+     branch outward symmetrically. */
   display: grid;
-  grid-template-columns: auto auto 1fr 1fr auto;
+  grid-template-columns: 1fr auto 1fr auto;
   align-items: center;
-  gap: clamp(16px, 1.8vw, 28px);
+  gap: clamp(18px, 2vw, 32px);
   padding: clamp(16px, 1.8vw, 26px) clamp(22px, 2.4vw, 36px);
   border-bottom: 2px solid var(--hair);
   flex: 1;
   min-height: 0;
 }
 .st-row:last-child { border-bottom: none; }
+
+/* Station block: arrows flank the badge + name, pointing outward
+   so the eye reads "trains leave this way in both directions" */
+.st-row .station-block {
+  display: flex; align-items: center;
+  gap: clamp(14px, 1.4vw, 22px);
+  justify-self: center;
+}
+.st-row .station-block .sb-arrow {
+  font-family: 'PT Serif', serif;
+  color: var(--red); font-weight: 700;
+  font-size: clamp(42px, 3.8vw, 66px);
+  line-height: 1;
+}
 .st-row .circle {
   width: clamp(48px, 4.2vw, 68px);
   height: clamp(48px, 4.2vw, 68px);
@@ -421,21 +438,20 @@ body.dark-mode {
   font-size: clamp(38px, 3.4vw, 58px);
   line-height: 1;
   letter-spacing: -0.005em;
-  min-width: clamp(200px, 17vw, 280px);
   white-space: nowrap;
-  text-transform: uppercase;   /* match terminus labels + hero station */
+  text-transform: uppercase;
 }
+
+/* Direction blocks: one on each side of the station. Terminus sits
+   close to the station as the direction anchor; times fan outward. */
 .st-row .dir {
-  display: flex; align-items: baseline; gap: 18px;
+  display: flex; align-items: baseline;
+  gap: clamp(12px, 1.2vw, 20px);
   font-family: 'PT Sans', sans-serif;
   min-width: 0;
 }
-.st-row .dir .arrow {
-  font-family: 'PT Serif', serif;
-  color: var(--red); font-weight: 700;
-  font-size: clamp(42px, 3.8vw, 66px);   /* parity with regular train time */
-  line-height: 1;
-}
+.st-row .dir.dir-left  { justify-content: flex-end; text-align: right; }
+.st-row .dir.dir-right { justify-content: flex-start; text-align: left; }
 .st-row .dir .terminus {
   font-family: 'PT Serif', serif;         /* serif matches time + reads big */
   font-size: clamp(36px, 3.2vw, 56px);    /* near-parity with train time */
@@ -558,9 +574,14 @@ body.show-slogan .slogan-bar { display: flex; }
 .mode-view { display: none; }
 
 /* ── CLOCK mode ─────────────────────────────────────────────────
-   Peaceful, huge clock fills screen. Thin weather line below.    */
+   Art deco analog timepiece. Live-animated sweep-second hand,
+   Roman numeral chapter ring, sunburst chapter, decorative
+   cartouches. Inspired by Grand Central's four-faced clock and
+   1930s Cartier / Patek dials.
+   ────────────────────────────────────────────────────────────── */
 body.mode-clock .status-bar,
 body.mode-clock .alert-ribbon,
+body.mode-clock .advisory,
 body.mode-clock .hero,
 body.mode-clock .station-table,
 body.mode-clock .slogan-bar,
@@ -573,160 +594,145 @@ body.mode-clock .mode-view-clock {
   align-content: center;
   justify-items: center;
   text-align: center;
-  gap: 40px;
-  padding: 40px 60px;
-  background: var(--paper);
-  border: 3px solid var(--ink);
+  gap: 14px;
+  padding: 30px 40px;
+  background:
+    radial-gradient(circle at 50% 46%, #f8eed3 0%, var(--paper) 52%, var(--paper-2) 100%);
   height: 100vh;
   position: relative;
+  overflow: hidden;
 }
 body.mode-clock .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
-.mode-view-clock .clock-huge {
-  font-family: 'PT Serif', serif;
-  font-weight: 700;
-  font-size: clamp(240px, 28vw, 520px);
-  line-height: 0.88;
-  letter-spacing: -0.045em;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink);
+
+/* The clock SVG — sized to fit available height without overflowing.
+   min() with both vmin and a vh fallback handles very wide displays. */
+.mode-view-clock .clock-face {
+  width: min(84vmin, 78vh);
+  height: min(84vmin, 78vh);
+  display: block;
+  filter: drop-shadow(0 8px 22px rgba(0,0,0,0.18));
 }
-.mode-view-clock .clock-huge .ampm {
+
+/* Bezel — concentric rings evoke art-deco step-bezels */
+.mode-view-clock .bezel-outer {
+  fill: none; stroke: var(--ink); stroke-width: 3;
+}
+.mode-view-clock .bezel-mid {
+  fill: none; stroke: var(--ink); stroke-width: 1; stroke-dasharray: 2 2;
+  opacity: 0.55;
+}
+.mode-view-clock .bezel-inner {
+  fill: none; stroke: var(--ink); stroke-width: 2;
+}
+
+/* Inner dial plate */
+.mode-view-clock .face {
+  fill: #f8efd6;
+  stroke: var(--ink);
+  stroke-width: 0.5;
+}
+
+/* Sunburst rays between hour marks — thin radial lines */
+.mode-view-clock .sunray {
+  stroke: var(--ink);
+  stroke-width: 0.6;
+  opacity: 0.15;
+}
+
+/* Hour ticks (12 per rotation) */
+.mode-view-clock .tick-hour {
+  stroke: var(--ink);
+  stroke-width: 3;
+  stroke-linecap: butt;
+}
+
+/* Minute ticks — 60, subtle */
+.mode-view-clock .tick-minute {
+  stroke: var(--ink);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+
+/* Roman numerals at 12/3/6/9 */
+.mode-view-clock .numeral {
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 18px;
+  fill: var(--ink);
+  letter-spacing: -0.02em;
+  font-feature-settings: "smcp" off;
+}
+
+/* Cartouche text (bottom and top flourishes) */
+.mode-view-clock .brand {
   font-family: 'PT Sans', sans-serif;
   font-weight: 700;
-  font-size: 0.22em;
-  letter-spacing: 0.1em;
-  vertical-align: 1.2em;
-  margin-left: 16px;
-  color: var(--red);
+  font-size: 6px;
+  letter-spacing: 0.4em;
+  fill: var(--ink);
+  opacity: 0.72;
 }
-.mode-view-clock .clock-sub {
-  font-family: 'PT Sans', sans-serif;
-  font-weight: 700;
-  font-size: clamp(24px, 2.4vw, 38px);
-  letter-spacing: 0.06em;
+.mode-view-clock .brand-red { fill: var(--red); opacity: 0.88; }
+
+/* Hands */
+.mode-view-clock .hand-hour rect {
+  fill: var(--ink);
+}
+.mode-view-clock .hand-minute rect {
+  fill: var(--ink);
+}
+.mode-view-clock .hand-second line {
+  stroke: var(--red);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+.mode-view-clock .hand-second .sec-tip {
+  fill: var(--red);
+}
+.mode-view-clock .hand-second .sec-counter {
+  fill: var(--red);
+}
+
+/* Center hub — multi-layer for metallic feel */
+.mode-view-clock .hub-black { fill: var(--ink); }
+.mode-view-clock .hub-gold {
+  fill: var(--ochre);
+  stroke: var(--ink);
+  stroke-width: 0.4;
+}
+.mode-view-clock .hub-red { fill: var(--red); }
+
+/* Subtle crystalline tint at the top — art deco domed-glass suggestion */
+.mode-view-clock .glass-reflect {
+  fill: #ffffff;
+  opacity: 0.07;
+}
+
+/* Caption below clock: digital confirmation + weather + location */
+.mode-view-clock .clock-caption {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-family: 'PT Mono', monospace;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--muted);
-  display: flex; gap: 22px; align-items: baseline;
 }
-.mode-view-clock .clock-sub .temp {
-  color: var(--ink);
+.mode-view-clock .clock-caption .digital {
   font-family: 'PT Serif', serif;
-  font-size: 1.15em;
+  font-weight: 700;
+  font-size: clamp(32px, 3.2vw, 54px);
+  color: var(--ink);
   letter-spacing: 0;
   text-transform: none;
-}
-.mode-view-clock .clock-sub .sep { color: var(--red); opacity: 0.7; }
-
-/* ── POSTER mode ────────────────────────────────────────────────
-   Propaganda-style: huge quote, Lenin, Cyrillic accents, tiny data */
-body.mode-poster .status-bar,
-body.mode-poster .alert-ribbon,
-body.mode-poster .hero,
-body.mode-poster .station-table,
-body.mode-poster .slogan-bar,
-body.mode-poster .footer {
-  display: none;
-}
-body.mode-poster .mode-view-poster {
-  display: grid;
-  grid-template-rows: auto 1fr auto auto;
-  gap: 18px;
-  padding: 28px 40px;
-  height: 100vh;
-  background: var(--paper);
-  position: relative;
-}
-body.mode-poster .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
-.mode-view-poster .poster-header {
-  display: flex; justify-content: space-between; align-items: baseline;
-  border-bottom: 4px solid var(--ink);
-  padding-bottom: 12px;
-}
-.mode-view-poster .poster-header .title {
-  font-family: 'PT Serif', serif;
-  font-weight: 700;
-  font-size: clamp(40px, 4vw, 68px);
-  line-height: 1;
-  letter-spacing: -0.01em;
-  color: var(--ink);
-}
-.mode-view-poster .poster-header .title .cy { color: var(--red); margin-right: 18px; }
-.mode-view-poster .poster-header .meta {
-  font-family: 'PT Mono', monospace;
-  font-size: clamp(14px, 1.3vw, 18px);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--muted);
-  font-weight: 700;
-}
-.mode-view-poster .poster-body {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 42px;
-  align-items: center;
-  min-height: 0;
-}
-.mode-view-poster .lenin-big {
-  width: clamp(200px, 22vw, 380px);
-  height: clamp(240px, 26vw, 450px);
-  background-color: var(--red);
-  -webkit-mask: url('/assets/lenin.svg') no-repeat center / contain;
-          mask: url('/assets/lenin.svg') no-repeat center / contain;
-  flex: 0 0 auto;
-}
-.mode-view-poster .quote-area {
-  display: flex; flex-direction: column; justify-content: center;
-  gap: 22px;
-  min-width: 0;
-}
-.mode-view-poster .poster-quote {
-  font-family: 'Fraunces', 'PT Serif', serif;
-  font-weight: 600;
-  font-size: clamp(54px, 5.5vw, 110px);
-  font-variation-settings: "opsz" 144, "SOFT" 50;
-  line-height: 1.06;
-  color: var(--ink);
-  transition: opacity 0.4s ease;
-}
-.mode-view-poster .poster-quote.fade { opacity: 0; }
-.mode-view-poster .poster-quote .attr {
-  display: block;
-  margin-top: 16px;
-  font-size: 0.36em;
-  font-style: italic;
-  color: var(--red);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.mode-view-poster .poster-foot {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 12px;
-  padding-top: 14px;
-  border-top: 3px solid var(--ink);
-}
-.mode-view-poster .poster-foot .pf-cell {
-  display: flex; flex-direction: column; gap: 4px;
-  padding: 8px 12px;
-  background: var(--paper-2);
-  border: 2px solid var(--ink);
-}
-.mode-view-poster .poster-foot .pf-cell.inv { background: var(--ink); color: var(--paper); }
-.mode-view-poster .poster-foot .pf-cell.red { background: var(--red); color: var(--paper); }
-.mode-view-poster .poster-foot .pf-cell .k {
-  font-family: 'PT Mono', monospace;
-  font-size: 11px; letter-spacing: 0.22em;
-  text-transform: uppercase;
-  font-weight: 700;
-  opacity: 0.7;
-}
-.mode-view-poster .poster-foot .pf-cell .v {
-  font-family: 'PT Serif', serif;
-  font-weight: 700;
-  font-size: clamp(20px, 1.9vw, 28px);
-  line-height: 1;
   font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-bottom: 2px;
 }
+.mode-view-clock .clock-caption .line {
+  font-weight: 700;
+  font-size: clamp(13px, 1.1vw, 16px);
+}
+.mode-view-clock .clock-caption .dot { color: var(--red); margin: 0 10px; }
 
 /* ── BRIEFING mode ──────────────────────────────────────────────
    Comprehensive pre-departure summary. Everything you'd want to
@@ -740,34 +746,37 @@ body.mode-briefing .slogan-bar,
 body.mode-briefing .footer {
   display: none;
 }
+/* Briefing mode scaled 140% larger than the v6.2 baseline, per user
+   request — as if the whole view were zoomed in. Every dimension
+   (font sizes, paddings, gaps) multiplied by ~1.4. */
 body.mode-briefing .mode-view-briefing {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: 18px;
-  padding: 26px 38px;
+  gap: 26px;
+  padding: 36px 54px;
   height: 100vh;
   background: var(--paper);
   position: relative;
 }
 body.mode-briefing .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
 .mode-view-briefing .br-greeting {
-  border-bottom: 3px solid var(--ink);
-  padding-bottom: 16px;
+  border-bottom: 4px solid var(--ink);
+  padding-bottom: 22px;
   display: flex; justify-content: space-between; align-items: baseline;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 22px;
 }
 .mode-view-briefing .br-greeting .hello {
   font-family: 'PT Serif', serif;
   font-weight: 700;
-  font-size: clamp(56px, 5.8vw, 104px);
+  font-size: clamp(78px, 8vw, 146px);
   line-height: 1;
   letter-spacing: -0.015em;
 }
 .mode-view-briefing .br-greeting .meta {
   font-family: 'PT Mono', monospace;
   font-weight: 700;
-  font-size: clamp(14px, 1.3vw, 20px);
+  font-size: clamp(20px, 1.8vw, 28px);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
@@ -775,15 +784,15 @@ body.mode-briefing .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
 .mode-view-briefing .br-body {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 28px;
   min-height: 0;
 }
 .mode-view-briefing .br-card {
   display: flex; flex-direction: column;
-  padding: 20px 24px;
-  border: 2px solid var(--ink);
+  padding: 28px 34px;
+  border: 3px solid var(--ink);
   background: var(--paper);
-  gap: 10px;
+  gap: 14px;
   min-height: 0;
 }
 .mode-view-briefing .br-card.inv { background: var(--ink); color: var(--paper); }
@@ -791,7 +800,7 @@ body.mode-briefing .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
 .mode-view-briefing .br-card h3 {
   font-family: 'PT Mono', monospace;
   font-weight: 700;
-  font-size: clamp(13px, 1.15vw, 16px);
+  font-size: clamp(18px, 1.6vw, 22px);
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: inherit;
@@ -801,7 +810,7 @@ body.mode-briefing .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
 .mode-view-briefing .br-card .big {
   font-family: 'PT Serif', serif;
   font-weight: 700;
-  font-size: clamp(56px, 5.2vw, 92px);
+  font-size: clamp(78px, 7.3vw, 130px);
   line-height: 0.96;
   letter-spacing: -0.015em;
   font-variant-numeric: tabular-nums;
@@ -809,55 +818,55 @@ body.mode-briefing .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
 .mode-view-briefing .br-card .sub {
   font-family: 'PT Sans', sans-serif;
   font-weight: 500;
-  font-size: clamp(18px, 1.6vw, 24px);
+  font-size: clamp(25px, 2.2vw, 34px);
   line-height: 1.3;
-  opacity: 0.88;
+  opacity: 0.9;
 }
 .mode-view-briefing .br-card .wear-list {
-  display: flex; gap: 10px; flex-wrap: wrap;
-  margin-top: 6px;
+  display: flex; gap: 14px; flex-wrap: wrap;
+  margin-top: 10px;
 }
 .mode-view-briefing .br-card .wear-item {
-  padding: 8px 14px;
+  padding: 11px 20px;
   background: var(--paper);
   color: var(--ink);
   border: 2px solid var(--ink);
   font-family: 'PT Sans', sans-serif;
   font-weight: 700;
-  font-size: clamp(14px, 1.25vw, 18px);
+  font-size: clamp(20px, 1.75vw, 26px);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .mode-view-briefing .br-card.inv .wear-item { background: var(--ink); color: var(--paper); border-color: var(--paper); }
 .mode-view-briefing .br-trains {
-  display: flex; flex-direction: column; gap: 8px;
-  margin-top: 4px;
+  display: flex; flex-direction: column; gap: 12px;
+  margin-top: 6px;
 }
 .mode-view-briefing .br-train-row {
   display: grid;
   grid-template-columns: auto auto 1fr auto;
-  gap: 14px;
+  gap: 20px;
   align-items: baseline;
 }
 .mode-view-briefing .br-train-row .circle {
-  width: 34px; height: 34px; border-radius: 50%;
+  width: 48px; height: 48px; border-radius: 50%;
   background: #a7a9ac; color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-family: 'PT Serif', serif; font-weight: 700;
-  font-size: 18px; line-height: 1;
+  font-size: 26px; line-height: 1;
 }
 .mode-view-briefing .br-train-row .circle.line-L { background: #a7a9ac; }
 .mode-view-briefing .br-train-row .circle.line-G { background: #6cbe45; }
 .mode-view-briefing .br-train-row .st {
   font-family: 'PT Serif', serif;
   font-weight: 700;
-  font-size: clamp(22px, 2vw, 30px);
+  font-size: clamp(31px, 2.8vw, 42px);
   line-height: 1;
 }
 .mode-view-briefing .br-train-row .when {
   font-family: 'PT Sans', sans-serif;
   font-weight: 500;
-  font-size: clamp(16px, 1.4vw, 22px);
+  font-size: clamp(22px, 2vw, 31px);
   color: currentColor;
   opacity: 0.7;
   letter-spacing: 0.02em;
@@ -865,18 +874,18 @@ body.mode-briefing .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
 .mode-view-briefing .br-train-row .leave {
   font-family: 'PT Sans', sans-serif;
   font-weight: 700;
-  font-size: clamp(18px, 1.7vw, 26px);
+  font-size: clamp(25px, 2.4vw, 36px);
   text-align: right;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 .mode-view-briefing .br-train-row .leave.go { color: var(--red); }
 .mode-view-briefing .br-alert {
-  padding: 10px 18px;
+  padding: 14px 26px;
   background: var(--paper-2);
-  border: 2px solid var(--ink);
+  border: 3px solid var(--ink);
   font-family: 'PT Sans', sans-serif;
-  font-size: clamp(14px, 1.2vw, 18px);
+  font-size: clamp(20px, 1.7vw, 26px);
   letter-spacing: 0.02em;
   color: var(--muted);
   font-weight: 500;
@@ -1154,48 +1163,62 @@ body.mode-weather .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
     <div class="br-alert" id="brAlert">No service alerts on the L or G. Have a good one.</div>
   </div>
 
-  <!-- ═════ CLOCK MODE ═════ -->
+  <!-- ═════ CLOCK MODE — art deco analog ═════ -->
   <div class="mode-view mode-view-clock">
-    <div class="clock-huge">
-      <span id="clockHugeTime">—</span><span class="ampm" id="clockHugeAmpm">—</span>
-    </div>
-    <div class="clock-sub">
-      <span id="clockHugeDate">—</span>
-      <span class="sep">·</span>
-      <span class="temp" id="clockHugeTemp">—</span>
-      <span class="sep">·</span>
-      <span id="clockHugeCond">—</span>
-    </div>
-  </div>
+    <svg class="clock-face" viewBox="-200 -200 400 400" aria-label="Analog clock">
+      <!-- Dial plate -->
+      <circle class="face" cx="0" cy="0" r="184"/>
 
-  <!-- ═════ POSTER MODE ═════ -->
-  <div class="mode-view mode-view-poster">
-    <div class="poster-header">
-      <div class="title"><span class="cy">ПРОПАГАНДА</span>Propaganda</div>
-      <div class="meta" id="posterMeta">Fri · Apr 17 · 5:33 PM</div>
-    </div>
-    <div class="poster-body">
-      <div class="lenin-big" role="img" aria-label="Lenin silhouette"></div>
-      <div class="quote-area">
-        <div class="poster-quote" id="posterQuote">Workers of the world, unite!<span class="attr">— K. Marx</span></div>
-      </div>
-    </div>
-    <div class="poster-foot">
-      <div class="pf-cell red">
-        <span class="k">Next Train</span>
-        <span class="v" id="posterNextTrain">—</span>
-      </div>
-      <div class="pf-cell inv">
-        <span class="k">Weather</span>
-        <span class="v" id="posterWeather">—</span>
-      </div>
-      <div class="pf-cell">
-        <span class="k">UV Now</span>
-        <span class="v" id="posterUV">—</span>
-      </div>
-      <div class="pf-cell">
-        <span class="k">Sunset</span>
-        <span class="v" id="posterSunset">—</span>
+      <!-- Sunburst rays -->
+      <g id="clockRays"></g>
+
+      <!-- Minute ticks (60) + hour ticks (12, heavier) -->
+      <g id="clockTicks"></g>
+
+      <!-- Roman numerals at the cardinal points (XII, III, VI, IX) -->
+      <text class="numeral" x="0"    y="-148" text-anchor="middle" dominant-baseline="central">XII</text>
+      <text class="numeral" x="148"  y="0"    text-anchor="middle" dominant-baseline="central">III</text>
+      <text class="numeral" x="0"    y="148"  text-anchor="middle" dominant-baseline="central">VI</text>
+      <text class="numeral" x="-148" y="0"    text-anchor="middle" dominant-baseline="central">IX</text>
+
+      <!-- Brand cartouches -->
+      <text class="brand" x="0" y="-110" text-anchor="middle">GREENPOINT</text>
+      <text class="brand brand-red" x="0" y="120" text-anchor="middle">BROOKLYN · NEW YORK</text>
+
+      <!-- Bezel (drawn above the dial so the rim reads as a frame) -->
+      <circle class="bezel-outer" cx="0" cy="0" r="192"/>
+      <circle class="bezel-mid"   cx="0" cy="0" r="180"/>
+      <circle class="bezel-inner" cx="0" cy="0" r="170"/>
+
+      <!-- Subtle glass highlight at the top of the crystal -->
+      <ellipse class="glass-reflect" cx="-40" cy="-120" rx="80" ry="30" transform="rotate(-20 -40 -120)"/>
+
+      <!-- HANDS (rotated via transform in JS) -->
+      <g class="hand-hour" id="handHour">
+        <rect x="-4" y="-96"  width="8"  height="112" rx="3"/>
+      </g>
+      <g class="hand-minute" id="handMinute">
+        <rect x="-2.5" y="-150" width="5" height="172" rx="2"/>
+      </g>
+      <g class="hand-second" id="handSecond">
+        <line x1="0" y1="42" x2="0" y2="-160"/>
+        <circle class="sec-tip" cx="0" cy="-146" r="5"/>
+        <circle class="sec-counter" cx="0" cy="34" r="8"/>
+      </g>
+
+      <!-- Center hub (brass + black layers) -->
+      <circle class="hub-black" cx="0" cy="0" r="11"/>
+      <circle class="hub-gold"  cx="0" cy="0" r="7"/>
+      <circle class="hub-red"   cx="0" cy="0" r="2.5"/>
+    </svg>
+
+    <!-- Caption below the clock -->
+    <div class="clock-caption">
+      <div class="digital" id="clockDigital">—</div>
+      <div class="line">
+        <span id="clockDate">—</span>
+        <span class="dot">·</span>
+        <span id="clockWx">—</span>
       </div>
     </div>
   </div>
@@ -1669,6 +1692,38 @@ function findSevereAlert() {
   return null;
 }
 
+// Build one side of a station row: terminus + times.
+// Left side: times first (outer edge), terminus near station.
+// Right side: terminus near station, times to outer edge.
+function buildDirBlock(dir, walk, side) {
+  const d = dir || {};
+  const trains = d.trains || [];
+  const catchMin = trains.find(m => m >= walk + 1);
+  const block = el('div', 'dir dir-' + side);
+
+  const terminus = el('span', 'terminus', d.terminus || '—');
+  const timesBlock = el('span', 'times');
+  if (trains.length === 0) {
+    timesBlock.appendChild(el('span', 'time missed', '—'));
+  } else {
+    trains.slice(0, 2).forEach((m, i) => {
+      const span = el('span', 'time', m + 'm');
+      if (m < walk + 1) span.classList.add('missed');
+      else if (m === catchMin) span.classList.add('catch');
+      if (i > 0) timesBlock.appendChild(document.createTextNode(' · '));
+      timesBlock.appendChild(span);
+    });
+  }
+  if (side === 'left') {
+    block.appendChild(timesBlock);
+    block.appendChild(terminus);
+  } else {
+    block.appendChild(terminus);
+    block.appendChild(timesBlock);
+  }
+  return block;
+}
+
 function renderStationTable() {
   const host = document.getElementById('stationTable');
   host.textContent = '';
@@ -1680,35 +1735,23 @@ function renderStationTable() {
   trainsData.stations.forEach(s => {
     const walk = WALK_MIN[s.name] ?? 5;
     const row = el('div', 'st-row');
-    row.appendChild(el('div', 'circle line-' + s.line, s.line));
-    row.appendChild(el('div', 'name', s.name));
 
-    ['N', 'S'].forEach(dirKey => {
-      const dir = s.directions?.[dirKey] || {};
-      const trains = dir.trains || [];
-      const catchMin = trains.find(m => m >= walk + 1);
-      const arrow = dirKey === 'N' ? '←' : '→';
-      const dirCol = el('div', 'dir');
-      dirCol.appendChild(el('span', 'arrow', arrow));
-      dirCol.appendChild(el('span', 'terminus', (dir.terminus || '')));
+    // Left direction (Manhattan/Queens-bound, N)
+    row.appendChild(buildDirBlock(s.directions?.N, walk, 'left'));
 
-      if (trains.length === 0) {
-        dirCol.appendChild(el('span', 'time missed', '—'));
-      } else {
-        const showN = 2;
-        trains.slice(0, showN).forEach((m, i) => {
-          const span = el('span', 'time', m + 'm');
-          if (m < walk + 1) span.classList.add('missed');
-          else if (m === catchMin) span.classList.add('catch');
-          if (i > 0) dirCol.appendChild(document.createTextNode(' · '));
-          dirCol.appendChild(span);
-        });
-      }
-      row.appendChild(dirCol);
-    });
+    // Station block in the middle: ← [badge] NAME →
+    const sb = el('div', 'station-block');
+    sb.appendChild(el('span', 'sb-arrow', '←'));
+    sb.appendChild(el('span', 'circle line-' + s.line, s.line));
+    sb.appendChild(el('span', 'name', s.name));
+    sb.appendChild(el('span', 'sb-arrow', '→'));
+    row.appendChild(sb);
 
-    const walkEl = el('div', 'walk', walk + ' min walk');
-    row.appendChild(walkEl);
+    // Right direction (Canarsie/S-Brooklyn-bound, S)
+    row.appendChild(buildDirBlock(s.directions?.S, walk, 'right'));
+
+    // Walk on far right
+    row.appendChild(el('div', 'walk', walk + ' min walk'));
 
     if (heroKey === (s.name + '|N') || heroKey === (s.name + '|S')) {
       row.classList.add('hero-station');
@@ -1812,98 +1855,114 @@ function applySettings(s) {
   if (footer) footer.style.display = (s.show_footer === false) ? 'none' : '';
 
   // Mode switch — body class drives which layout is visible.
-  const mode = (['dashboard','briefing','clock','poster','weather'].includes(s.mode)) ? s.mode : 'dashboard';
-  ['mode-dashboard','mode-briefing','mode-clock','mode-poster','mode-weather'].forEach(c =>
+  const mode = (['dashboard','briefing','clock','weather'].includes(s.mode)) ? s.mode : 'dashboard';
+  ['mode-dashboard','mode-briefing','mode-clock','mode-weather'].forEach(c =>
     document.body.classList.remove(c));
   document.body.classList.add('mode-' + mode);
 
   // Mode-specific renders after class flip
   if (mode === 'clock')    renderClockMode();
-  if (mode === 'poster')   renderPosterMode();
   if (mode === 'weather')  renderWeatherMode();
   if (mode === 'briefing') renderBriefingMode();
+
+  // Start/stop clock animation when entering/leaving clock mode
+  if (mode === 'clock' && !_clockRaf) tickAnalogClock();
 }
 
 // ═════════════════════════════════════════════════════════════════
 // MODE-SPECIFIC RENDERERS
 // ═════════════════════════════════════════════════════════════════
-function renderClockMode() {
-  const now = new Date();
-  let h = now.getHours();
-  const m = String(now.getMinutes()).padStart(2, '0');
-  const ap = h >= 12 ? 'PM' : 'AM';
-  h = h % 12 || 12;
-  const timeEl = document.getElementById('clockHugeTime');
-  const ampmEl = document.getElementById('clockHugeAmpm');
-  if (timeEl) timeEl.textContent = h + ':' + m;
-  if (ampmEl) ampmEl.textContent = ap;
-  const dateEl = document.getElementById('clockHugeDate');
-  if (dateEl) {
-    const weekday = now.toLocaleDateString('en-US', { weekday: 'long' });
-    const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    dateEl.textContent = weekday + ', ' + md;
+// Build the decorative chapter ring (sunrays + hour/minute ticks)
+// once when the clock mode first mounts. Pure geometry — no data.
+let _clockDecorated = false;
+function decorateClock() {
+  if (_clockDecorated) return;
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const raysHost = document.getElementById('clockRays');
+  const ticksHost = document.getElementById('clockTicks');
+  if (!raysHost || !ticksHost) return;
+
+  // Sunburst rays (between hours) — 48 rays, one every 7.5° that isn't
+  // a major hour mark.
+  for (let i = 0; i < 60; i++) {
+    if (i % 5 === 0) continue;
+    const a = (i / 60) * 2 * Math.PI - Math.PI / 2;
+    const x1 = Math.cos(a) * 120, y1 = Math.sin(a) * 120;
+    const x2 = Math.cos(a) * 164, y2 = Math.sin(a) * 164;
+    const line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('class', 'sunray');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    raysHost.appendChild(line);
   }
-  if (weatherData) {
-    const cur = weatherData.current;
-    const tempEl = document.getElementById('clockHugeTemp');
-    const condEl = document.getElementById('clockHugeCond');
-    if (tempEl) tempEl.textContent = Math.round(cur.temperature_2m) + '°';
-    if (condEl) condEl.textContent = (WMO_LABEL[cur.weather_code] || 'Weather').toLowerCase();
+
+  // Minute ticks
+  for (let i = 0; i < 60; i++) {
+    const a = (i / 60) * 2 * Math.PI - Math.PI / 2;
+    const line = document.createElementNS(svgNS, 'line');
+    const isHour = i % 5 === 0;
+    const outer = 165;
+    const inner = isHour ? 148 : 158;
+    line.setAttribute('class', isHour ? 'tick-hour' : 'tick-minute');
+    line.setAttribute('x1', Math.cos(a) * inner);
+    line.setAttribute('y1', Math.sin(a) * inner);
+    line.setAttribute('x2', Math.cos(a) * outer);
+    line.setAttribute('y2', Math.sin(a) * outer);
+    ticksHost.appendChild(line);
   }
+  _clockDecorated = true;
 }
 
-function renderPosterMode() {
+// Animate hands via requestAnimationFrame. Second hand sweeps
+// smoothly (not tick-tick); minute + hour tick in sub-seconds too
+// so the dial never looks "stuck".
+let _clockRaf = null;
+function tickAnalogClock() {
+  // Bail out if we've switched modes away from clock.
+  if (!_settings || _settings.mode !== 'clock') {
+    _clockRaf = null;
+    return;
+  }
+  decorateClock();
   const now = new Date();
-  const weekday = now.toLocaleDateString('en-US', { weekday: 'short' });
-  const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const ms = now.getMilliseconds();
+  const s = now.getSeconds() + ms / 1000;
+  const m = now.getMinutes() + s / 60;
+  const h = (now.getHours() % 12) + m / 60;
+  const secA = s * 6;
+  const minA = m * 6;
+  const hrA  = h * 30;
+  const setRot = (id, deg) => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('transform', 'rotate(' + deg.toFixed(3) + ')');
+  };
+  setRot('handSecond', secA);
+  setRot('handMinute', minA);
+  setRot('handHour',   hrA);
+
+  _clockRaf = requestAnimationFrame(tickAnalogClock);
+}
+
+// Caption (digital time + date + weather) updates once per second.
+function renderClockMode() {
+  decorateClock();
+  const now = new Date();
   let h = now.getHours();
   const m = String(now.getMinutes()).padStart(2, '0');
   const ap = h >= 12 ? 'PM' : 'AM';
   h = h % 12 || 12;
-  const metaEl = document.getElementById('posterMeta');
-  if (metaEl) metaEl.textContent = weekday + ' · ' + md + ' · ' + h + ':' + m + ' ' + ap;
-
-  // Quote (reused from slogan bank)
-  const qEl = document.getElementById('posterQuote');
-  if (qEl) {
-    const s = SLOGANS[sloganIdx] || SLOGANS[0];
-    qEl.classList.add('fade');
-    setTimeout(() => {
-      qEl.textContent = '';
-      const body = document.createElement('span');
-      body.textContent = '"' + s.t + '"';
-      qEl.appendChild(body);
-      if (s.a) {
-        const a = document.createElement('span');
-        a.className = 'attr';
-        a.textContent = '— ' + s.a;
-        qEl.appendChild(a);
-      }
-      qEl.classList.remove('fade');
-    }, 200);
-  }
-
-  // Footer facts: next train, weather, UV, sunset
-  const hero = pickHeroTrain();
-  const ntEl = document.getElementById('posterNextTrain');
-  if (ntEl) {
-    if (hero.status === 'ok') {
-      ntEl.textContent = (hero.leaveInMin <= 0 ? 'NOW' : hero.leaveInMin + ' min') + ' · ' + hero.station.replace(' Av', '');
-    } else {
-      ntEl.textContent = '—';
-    }
-  }
+  const digital = document.getElementById('clockDigital');
+  if (digital) digital.textContent = h + ':' + m + ' ' + ap;
+  const weekday = now.toLocaleDateString('en-US', { weekday: 'long' });
+  const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const dateEl = document.getElementById('clockDate');
+  if (dateEl) dateEl.textContent = weekday + ' · ' + md;
   if (weatherData) {
     const cur = weatherData.current;
-    const wEl = document.getElementById('posterWeather');
-    if (wEl) wEl.textContent = Math.round(cur.temperature_2m) + '° · ' + (WMO_LABEL[cur.weather_code] || '—').toLowerCase();
-    const uvEl = document.getElementById('posterUV');
-    if (uvEl) uvEl.textContent = Math.round(cur.uv_index || 0) + ' · ' + uvLevel(cur.uv_index).label;
-    const ssEl = document.getElementById('posterSunset');
-    if (ssEl && weatherData.daily && weatherData.daily.sunset) {
-      ssEl.textContent = fmtClockCompact(new Date(weatherData.daily.sunset[0]));
-    }
+    const wxEl = document.getElementById('clockWx');
+    if (wxEl) wxEl.textContent = Math.round(cur.temperature_2m) + '° · ' + (WMO_LABEL[cur.weather_code] || 'Weather');
   }
+  if (!_clockRaf) tickAnalogClock();
 }
 
 function renderWeatherMode() {
@@ -2094,7 +2153,6 @@ function outfitAdvice() {
 setInterval(() => {
   if (!_settings) return;
   if (_settings.mode === 'clock')    renderClockMode();
-  if (_settings.mode === 'poster')   renderPosterMode();
   if (_settings.mode === 'briefing') renderBriefingMode();
 }, 1000);
 pollSettings();
