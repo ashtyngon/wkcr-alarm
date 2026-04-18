@@ -54,6 +54,21 @@ body.dark-mode {
   --hair:    rgba(243,232,205,0.16);
 }
 
+/* ══════════════════════════════════════════════════════════════
+   DIM OVERLAY — pure-black alpha layer above everything. Gives
+   even dimming across the whole palette (old CSS-filter brightness
+   did not dim cream + red + black evenly).
+   ══════════════════════════════════════════════════════════════ */
+.dim-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 0.35s ease;
+}
+
 .frame {
   display: grid;
   grid-template-rows: auto 1fr auto auto;
@@ -214,9 +229,10 @@ body.dark-mode {
 .hero .verdict {
   font-family: 'PT Serif', serif;
   font-weight: 700;
-  font-size: clamp(110px, 12vw, 210px);
+  /* +50% over previous clamp(110, 12vw, 210) */
+  font-size: clamp(165px, 18vw, 315px);
   line-height: 0.92;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
   max-width: 100%;
 }
@@ -417,6 +433,357 @@ body.show-slogan .slogan-bar { display: flex; }
 }
 
 .legacy { display: none; }
+
+/* ══════════════════════════════════════════════════════════════
+   MODE SYSTEM — body.mode-X controls which view is visible.
+   Default mode shows everything (status bar, hero, station table,
+   footer). Alternate modes hide/restyle for different purposes.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Alternate mode views — hidden by default, shown by body.mode-X */
+.mode-view { display: none; }
+
+/* ── CLOCK mode ─────────────────────────────────────────────────
+   Peaceful, huge clock fills screen. Thin weather line below.    */
+body.mode-clock .status-bar,
+body.mode-clock .alert-ribbon,
+body.mode-clock .hero,
+body.mode-clock .station-table,
+body.mode-clock .slogan-bar,
+body.mode-clock .footer {
+  display: none;
+}
+body.mode-clock .mode-view-clock {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+  gap: 40px;
+  padding: 40px 60px;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  height: 100vh;
+  position: relative;
+}
+body.mode-clock .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
+.mode-view-clock .clock-huge {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(240px, 28vw, 520px);
+  line-height: 0.88;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.mode-view-clock .clock-huge .ampm {
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.22em;
+  letter-spacing: 0.1em;
+  vertical-align: 1.2em;
+  margin-left: 16px;
+  color: var(--red);
+}
+.mode-view-clock .clock-sub {
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 700;
+  font-size: clamp(24px, 2.4vw, 38px);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex; gap: 22px; align-items: baseline;
+}
+.mode-view-clock .clock-sub .temp {
+  color: var(--ink);
+  font-family: 'PT Serif', serif;
+  font-size: 1.15em;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.mode-view-clock .clock-sub .sep { color: var(--red); opacity: 0.7; }
+
+/* ── POSTER mode ────────────────────────────────────────────────
+   Propaganda-style: huge quote, Lenin, Cyrillic accents, tiny data */
+body.mode-poster .status-bar,
+body.mode-poster .alert-ribbon,
+body.mode-poster .hero,
+body.mode-poster .station-table,
+body.mode-poster .slogan-bar,
+body.mode-poster .footer {
+  display: none;
+}
+body.mode-poster .mode-view-poster {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 18px;
+  padding: 28px 40px;
+  height: 100vh;
+  background: var(--paper);
+  position: relative;
+}
+body.mode-poster .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
+.mode-view-poster .poster-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  border-bottom: 4px solid var(--ink);
+  padding-bottom: 12px;
+}
+.mode-view-poster .poster-header .title {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(40px, 4vw, 68px);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.mode-view-poster .poster-header .title .cy { color: var(--red); margin-right: 18px; }
+.mode-view-poster .poster-header .meta {
+  font-family: 'PT Mono', monospace;
+  font-size: clamp(14px, 1.3vw, 18px);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+}
+.mode-view-poster .poster-body {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 42px;
+  align-items: center;
+  min-height: 0;
+}
+.mode-view-poster .lenin-big {
+  width: clamp(200px, 22vw, 380px);
+  height: clamp(240px, 26vw, 450px);
+  background-color: var(--red);
+  -webkit-mask: url('/assets/lenin.svg') no-repeat center / contain;
+          mask: url('/assets/lenin.svg') no-repeat center / contain;
+  flex: 0 0 auto;
+}
+.mode-view-poster .quote-area {
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 22px;
+  min-width: 0;
+}
+.mode-view-poster .poster-quote {
+  font-family: 'Fraunces', 'PT Serif', serif;
+  font-weight: 600;
+  font-size: clamp(54px, 5.5vw, 110px);
+  font-variation-settings: "opsz" 144, "SOFT" 50;
+  line-height: 1.06;
+  color: var(--ink);
+  transition: opacity 0.4s ease;
+}
+.mode-view-poster .poster-quote.fade { opacity: 0; }
+.mode-view-poster .poster-quote .attr {
+  display: block;
+  margin-top: 16px;
+  font-size: 0.36em;
+  font-style: italic;
+  color: var(--red);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.mode-view-poster .poster-foot {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 3px solid var(--ink);
+}
+.mode-view-poster .poster-foot .pf-cell {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 8px 12px;
+  background: var(--paper-2);
+  border: 2px solid var(--ink);
+}
+.mode-view-poster .poster-foot .pf-cell.inv { background: var(--ink); color: var(--paper); }
+.mode-view-poster .poster-foot .pf-cell.red { background: var(--red); color: var(--paper); }
+.mode-view-poster .poster-foot .pf-cell .k {
+  font-family: 'PT Mono', monospace;
+  font-size: 11px; letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  opacity: 0.7;
+}
+.mode-view-poster .poster-foot .pf-cell .v {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(20px, 1.9vw, 28px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── WEATHER mode ──────────────────────────────────────────────
+   Today big, 7-day forecast as main view                         */
+body.mode-weather .status-bar,
+body.mode-weather .alert-ribbon,
+body.mode-weather .hero,
+body.mode-weather .station-table,
+body.mode-weather .slogan-bar,
+body.mode-weather .footer {
+  display: none;
+}
+body.mode-weather .mode-view-weather {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 18px;
+  padding: 26px 36px;
+  height: 100vh;
+  background: var(--paper);
+}
+body.mode-weather .frame { padding: 0; gap: 0; grid-template-rows: 1fr; }
+.mode-view-weather .w-today {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 28px;
+  align-items: center;
+  padding: 18px 24px;
+  background: var(--ink);
+  color: var(--paper);
+  border: 3px solid var(--ink);
+}
+.mode-view-weather .w-today .temp {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(92px, 10vw, 180px);
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.mode-view-weather .w-today .temp .deg { color: var(--red); }
+.mode-view-weather .w-today .caption {
+  display: flex; flex-direction: column; gap: 6px;
+  min-width: 0;
+}
+.mode-view-weather .w-today .caption .label {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(34px, 3.4vw, 56px);
+  line-height: 1;
+}
+.mode-view-weather .w-today .caption .sub {
+  font-family: 'PT Mono', monospace;
+  font-size: clamp(13px, 1.2vw, 18px);
+  letter-spacing: 0.1em;
+  opacity: 0.75;
+}
+.mode-view-weather .w-today .uv-big {
+  padding: 10px 16px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 2px solid var(--paper);
+  display: flex; flex-direction: column; gap: 4px;
+  min-width: 120px;
+}
+.mode-view-weather .w-today .uv-big .k {
+  font-family: 'PT Mono', monospace;
+  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+  font-weight: 700; opacity: 0.7;
+}
+.mode-view-weather .w-today .uv-big .v {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(38px, 3.4vw, 56px);
+  line-height: 0.95;
+}
+.mode-view-weather .w-today .uv-big .l {
+  font-family: 'PT Sans', sans-serif; font-weight: 700;
+  font-size: 13px; letter-spacing: 0.14em;
+  text-transform: uppercase; padding: 2px 6px;
+  color: var(--paper); align-self: flex-start;
+}
+.mode-view-weather .w-today .uv-big.low   .l { background: var(--uv-low); }
+.mode-view-weather .w-today .uv-big.mod   .l { background: var(--uv-mod); color: var(--ink); }
+.mode-view-weather .w-today .uv-big.high  .l { background: var(--uv-high); }
+.mode-view-weather .w-today .uv-big.vhigh .l { background: var(--uv-vhigh); }
+.mode-view-weather .w-today .uv-big.extrm .l { background: var(--uv-extrm); }
+
+.mode-view-weather .w-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+  border: 3px solid var(--ink);
+  min-height: 0;
+  background: var(--ink);
+}
+.mode-view-weather .w-day {
+  background: var(--paper);
+  color: var(--ink);
+  padding: 16px 12px;
+  border-right: 2px solid var(--ink);
+  display: flex; flex-direction: column; gap: 8px;
+  min-width: 0;
+}
+.mode-view-weather .w-day:last-child { border-right: none; }
+.mode-view-weather .w-day:nth-child(even) { background: var(--paper-2); }
+.mode-view-weather .w-day.today { background: var(--red); color: var(--paper); }
+.mode-view-weather .w-day .dow {
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 700;
+  font-size: clamp(20px, 1.8vw, 26px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.mode-view-weather .w-day .date {
+  font-family: 'PT Mono', monospace;
+  font-size: clamp(11px, 0.9vw, 13px);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  font-weight: 700;
+  line-height: 1;
+}
+.mode-view-weather .w-day .t {
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: clamp(36px, 3.4vw, 54px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  margin-top: 6px;
+}
+.mode-view-weather .w-day .t .lo { opacity: 0.5; font-size: 0.62em; margin-left: 6px; }
+.mode-view-weather .w-day .cond {
+  font-family: 'PT Sans', sans-serif;
+  font-weight: 700;
+  font-size: clamp(14px, 1.2vw, 18px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  margin-top: auto;
+}
+.mode-view-weather .w-day .precip {
+  font-family: 'PT Mono', monospace;
+  font-size: clamp(12px, 1vw, 15px);
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: 0.04em;
+}
+.mode-view-weather .w-day.today .precip,
+.mode-view-weather .w-day:nth-child(even) .precip { color: var(--ochre); }
+
+.mode-view-weather .w-sun {
+  display: flex; gap: 28px;
+  padding: 10px 20px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  font-family: 'PT Mono', monospace;
+  font-size: clamp(14px, 1.2vw, 18px);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+}
+.mode-view-weather .w-sun .v {
+  color: var(--ink);
+  font-family: 'PT Serif', serif;
+  font-weight: 700;
+  font-size: 1.15em;
+  letter-spacing: 0;
+  margin-left: 6px;
+  text-transform: none;
+}
 </style>
 </head>
 <body>
@@ -471,7 +838,78 @@ body.show-slogan .slogan-bar { display: flex; }
     <span class="live"><span class="dot"></span><span id="statusRight">Live</span></span>
   </div>
 
+  <!-- ═════ CLOCK MODE ═════ -->
+  <div class="mode-view mode-view-clock">
+    <div class="clock-huge">
+      <span id="clockHugeTime">—</span><span class="ampm" id="clockHugeAmpm">—</span>
+    </div>
+    <div class="clock-sub">
+      <span id="clockHugeDate">—</span>
+      <span class="sep">·</span>
+      <span class="temp" id="clockHugeTemp">—</span>
+      <span class="sep">·</span>
+      <span id="clockHugeCond">—</span>
+    </div>
+  </div>
+
+  <!-- ═════ POSTER MODE ═════ -->
+  <div class="mode-view mode-view-poster">
+    <div class="poster-header">
+      <div class="title"><span class="cy">ПРОПАГАНДА</span>Propaganda</div>
+      <div class="meta" id="posterMeta">Fri · Apr 17 · 5:33 PM</div>
+    </div>
+    <div class="poster-body">
+      <div class="lenin-big" role="img" aria-label="Lenin silhouette"></div>
+      <div class="quote-area">
+        <div class="poster-quote" id="posterQuote">Workers of the world, unite!<span class="attr">— K. Marx</span></div>
+      </div>
+    </div>
+    <div class="poster-foot">
+      <div class="pf-cell red">
+        <span class="k">Next Train</span>
+        <span class="v" id="posterNextTrain">—</span>
+      </div>
+      <div class="pf-cell inv">
+        <span class="k">Weather</span>
+        <span class="v" id="posterWeather">—</span>
+      </div>
+      <div class="pf-cell">
+        <span class="k">UV Now</span>
+        <span class="v" id="posterUV">—</span>
+      </div>
+      <div class="pf-cell">
+        <span class="k">Sunset</span>
+        <span class="v" id="posterSunset">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════ WEATHER MODE ═════ -->
+  <div class="mode-view mode-view-weather">
+    <div class="w-today">
+      <div class="temp"><span id="wTemp">—</span><span class="deg">°</span></div>
+      <div class="caption">
+        <div class="label" id="wCond">Loading…</div>
+        <div class="sub" id="wFeels">—</div>
+      </div>
+      <div class="uv-big low" id="wUVBox">
+        <span class="k">UV Now</span>
+        <span class="v" id="wUVValue">—</span>
+        <span class="l" id="wUVLabel">Low</span>
+      </div>
+    </div>
+    <div class="w-week" id="wWeek"></div>
+    <div class="w-sun">
+      <span>Sunrise <span class="v" id="wSunrise">—</span></span>
+      <span>Sunset <span class="v" id="wSunset">—</span></span>
+      <span>Daylight <span class="v" id="wDaylight">—</span></span>
+    </div>
+  </div>
+
 </div>
+
+<!-- Dimming overlay: black alpha layer above everything for even dimming -->
+<div class="dim-overlay" id="dimOverlay"></div>
 
 <!-- legacy IDs for backend compat -->
 <span id="seconds" class="legacy"></span>
@@ -861,16 +1299,174 @@ function applySettings(s) {
     return;
   }
 
+  // Dimming via overlay opacity — every pixel under the overlay darkens
+  // identically (pure black alpha-blend), so cream + red + black all dim
+  // at the same perceived rate. CSS-filter brightness() did not do this.
   const b = Math.max(10, Math.min(100, Number(s.brightness ?? 100)));
-  document.body.style.filter = 'brightness(' + b + '%)';
+  const overlay = document.getElementById('dimOverlay');
+  if (overlay) overlay.style.opacity = String((100 - b) / 100);
+  // Clear any legacy filter we may have left behind
+  document.body.style.filter = '';
 
   document.body.classList.toggle('show-slogan', !!s.show_slogan);
+  document.body.classList.toggle('dark-mode', !!s.dark_mode);
 
   const footer = document.getElementById('footerBar');
   if (footer) footer.style.display = (s.show_footer === false) ? 'none' : '';
 
-  document.body.classList.toggle('dark-mode', !!s.dark_mode);
+  // Mode switch — body class drives which layout is visible.
+  const mode = (['dashboard','clock','poster','weather'].includes(s.mode)) ? s.mode : 'dashboard';
+  ['mode-dashboard','mode-clock','mode-poster','mode-weather'].forEach(c =>
+    document.body.classList.remove(c));
+  document.body.classList.add('mode-' + mode);
+
+  // Mode-specific renders after class flip
+  if (mode === 'clock')   renderClockMode();
+  if (mode === 'poster')  renderPosterMode();
+  if (mode === 'weather') renderWeatherMode();
 }
+
+// ═════════════════════════════════════════════════════════════════
+// MODE-SPECIFIC RENDERERS
+// ═════════════════════════════════════════════════════════════════
+function renderClockMode() {
+  const now = new Date();
+  let h = now.getHours();
+  const m = String(now.getMinutes()).padStart(2, '0');
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  const timeEl = document.getElementById('clockHugeTime');
+  const ampmEl = document.getElementById('clockHugeAmpm');
+  if (timeEl) timeEl.textContent = h + ':' + m;
+  if (ampmEl) ampmEl.textContent = ap;
+  const dateEl = document.getElementById('clockHugeDate');
+  if (dateEl) {
+    const weekday = now.toLocaleDateString('en-US', { weekday: 'long' });
+    const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    dateEl.textContent = weekday + ', ' + md;
+  }
+  if (weatherData) {
+    const cur = weatherData.current;
+    const tempEl = document.getElementById('clockHugeTemp');
+    const condEl = document.getElementById('clockHugeCond');
+    if (tempEl) tempEl.textContent = Math.round(cur.temperature_2m) + '°';
+    if (condEl) condEl.textContent = (WMO_LABEL[cur.weather_code] || 'Weather').toLowerCase();
+  }
+}
+
+function renderPosterMode() {
+  const now = new Date();
+  const weekday = now.toLocaleDateString('en-US', { weekday: 'short' });
+  const md = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  let h = now.getHours();
+  const m = String(now.getMinutes()).padStart(2, '0');
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  const metaEl = document.getElementById('posterMeta');
+  if (metaEl) metaEl.textContent = weekday + ' · ' + md + ' · ' + h + ':' + m + ' ' + ap;
+
+  // Quote (reused from slogan bank)
+  const qEl = document.getElementById('posterQuote');
+  if (qEl) {
+    const s = SLOGANS[sloganIdx] || SLOGANS[0];
+    qEl.classList.add('fade');
+    setTimeout(() => {
+      qEl.textContent = '';
+      const body = document.createElement('span');
+      body.textContent = '"' + s.t + '"';
+      qEl.appendChild(body);
+      if (s.a) {
+        const a = document.createElement('span');
+        a.className = 'attr';
+        a.textContent = '— ' + s.a;
+        qEl.appendChild(a);
+      }
+      qEl.classList.remove('fade');
+    }, 200);
+  }
+
+  // Footer facts: next train, weather, UV, sunset
+  const hero = pickHeroTrain();
+  const ntEl = document.getElementById('posterNextTrain');
+  if (ntEl) {
+    if (hero.status === 'ok') {
+      ntEl.textContent = (hero.leaveInMin <= 0 ? 'NOW' : hero.leaveInMin + ' min') + ' · ' + hero.station.replace(' Av', '');
+    } else {
+      ntEl.textContent = '—';
+    }
+  }
+  if (weatherData) {
+    const cur = weatherData.current;
+    const wEl = document.getElementById('posterWeather');
+    if (wEl) wEl.textContent = Math.round(cur.temperature_2m) + '° · ' + (WMO_LABEL[cur.weather_code] || '—').toLowerCase();
+    const uvEl = document.getElementById('posterUV');
+    if (uvEl) uvEl.textContent = Math.round(cur.uv_index || 0) + ' · ' + uvLevel(cur.uv_index).label;
+    const ssEl = document.getElementById('posterSunset');
+    if (ssEl && weatherData.daily && weatherData.daily.sunset) {
+      ssEl.textContent = fmtClockCompact(new Date(weatherData.daily.sunset[0]));
+    }
+  }
+}
+
+function renderWeatherMode() {
+  if (!weatherData) return;
+  const d = weatherData, cur = d.current;
+
+  document.getElementById('wTemp').textContent = Math.round(cur.temperature_2m);
+  document.getElementById('wCond').textContent = WMO_LABEL[cur.weather_code] || 'Weather';
+  const parts = ['Feels ' + Math.round(cur.apparent_temperature) + '°F'];
+  if (cur.wind_speed_10m != null) parts.push(Math.round(cur.wind_speed_10m) + ' mph wind');
+  if (cur.relative_humidity_2m != null) parts.push(cur.relative_humidity_2m + '% humidity');
+  document.getElementById('wFeels').textContent = parts.join(' · ');
+
+  const uv = uvLevel(cur.uv_index);
+  const uvBox = document.getElementById('wUVBox');
+  uvBox.classList.remove('low','mod','high','vhigh','extrm');
+  uvBox.classList.add(uv.key);
+  document.getElementById('wUVValue').textContent = Math.round(cur.uv_index || 0);
+  document.getElementById('wUVLabel').textContent = uv.label;
+
+  // 7-day
+  const daily = d.daily;
+  const host = document.getElementById('wWeek');
+  host.textContent = '';
+  if (daily && daily.time) {
+    const count = Math.min(daily.time.length, 7);
+    for (let k = 0; k < count; k++) {
+      const date = new Date(daily.time[k] + 'T12:00:00');
+      const dow = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+      const md  = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+      const hi = Math.round(daily.temperature_2m_max[k]);
+      const lo = Math.round(daily.temperature_2m_min[k]);
+      const dCode = daily.weather_code[k];
+      const precip = daily.precipitation_probability_max?.[k] ?? 0;
+      const cell = el('div', 'w-day' + (k === 0 ? ' today' : ''));
+      cell.appendChild(el('div', 'dow', (k === 0 ? 'TODAY' : dow)));
+      cell.appendChild(el('div', 'date', md));
+      const t = el('div', 't');
+      t.appendChild(el('span', 'hi', hi + '°'));
+      t.appendChild(el('span', 'lo', lo + '°'));
+      cell.appendChild(t);
+      cell.appendChild(el('div', 'cond', WMO_LABEL[dCode] || 'Weather'));
+      if (precip > 10) cell.appendChild(el('div', 'precip', precip + '% rain'));
+      host.appendChild(cell);
+    }
+    if (daily.sunrise && daily.sunset) {
+      const sr = new Date(daily.sunrise[0]);
+      const ss = new Date(daily.sunset[0]);
+      document.getElementById('wSunrise').textContent = fmtClockShort(sr);
+      document.getElementById('wSunset').textContent  = fmtClockShort(ss);
+      document.getElementById('wDaylight').textContent = hoursMinutesBetween(sr, ss);
+    }
+  }
+}
+
+// Tick mode-specific content every second when active
+setInterval(() => {
+  if (!_settings) return;
+  if (_settings.mode === 'clock') renderClockMode();
+  if (_settings.mode === 'poster') renderPosterMode();
+}, 1000);
 pollSettings();
 setInterval(pollSettings, 3_000);
 

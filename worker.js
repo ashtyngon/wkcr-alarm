@@ -25,14 +25,17 @@ function getWorkerVersion() {
 
 // Default CMS settings when nothing has been written to KV yet.
 const DEFAULT_SETTINGS = {
-  brightness: 100,    // 10-100, applied as CSS filter on body
-  paused: false,      // true = stop carousel rotation
-  force_panel: null,  // null or one of: 'Nassau Av' | 'Graham Av' | 'Bedford Av' | 'weather'
-  show_slogan: true,
-  show_footer: true,
-  dark_mode: false,   // inverts palette (cream→ink, ink→paper)
-  reload_token: 0,    // bumped by /control "Reload Wall" button; dashboard reloads on change
+  brightness: 100,          // 10-100, applied as black-overlay opacity on body
+  paused: false,            // true = stop carousel rotation (legacy; unused in v6)
+  force_panel: null,        // legacy (unused in v6); kept for backward compat
+  show_slogan: false,       // show Lenin + rotating slogan ticker (default off)
+  show_footer: true,        // show sunrise/sunset/live footer
+  dark_mode: false,         // inverts palette (cream↔ink, red stays red)
+  reload_token: 0,          // bumped by /control "Reload Wall" button
+  mode: 'dashboard',        // 'dashboard' | 'clock' | 'poster' | 'weather'
 };
+
+const MODES = new Set(['dashboard', 'clock', 'poster', 'weather']);
 
 // Per-line realtime GTFS-RT feed URLs (MTA NYCT).
 // https://api.mta.info/#/subwayRealTimeFeeds
@@ -422,6 +425,8 @@ async function handleSettings(request, env) {
       ...(body.dark_mode     != null ? { dark_mode:     !!body.dark_mode    } : {}),
       // reload_token: accept any numeric value; typically Date.now()
       ...(body.reload_token  != null ? { reload_token:  Number(body.reload_token) || 0 } : {}),
+      // mode: restrict to whitelist so rogue POSTs can't break the wall
+      ...(body.mode          != null ? { mode: MODES.has(body.mode) ? body.mode : 'dashboard' } : {}),
     };
     await env.SETTINGS.put('state', JSON.stringify(merged));
     return json({ ok: true, data: merged });
