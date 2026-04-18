@@ -424,25 +424,25 @@ body.dark-mode {
   white-space: nowrap;
 }
 .st-row .dir {
-  display: flex; align-items: baseline; gap: 16px;
+  display: flex; align-items: baseline; gap: 18px;
   font-family: 'PT Sans', sans-serif;
   min-width: 0;
 }
 .st-row .dir .arrow {
   font-family: 'PT Serif', serif;
   color: var(--red); font-weight: 700;
-  font-size: clamp(34px, 3vw, 50px);
+  font-size: clamp(42px, 3.8vw, 66px);   /* parity with regular train time */
   line-height: 1;
 }
 .st-row .dir .terminus {
-  font-family: 'PT Sans', sans-serif;
-  font-size: clamp(17px, 1.5vw, 24px);
-  letter-spacing: 0.14em;
+  font-family: 'PT Serif', serif;         /* serif matches time + reads big */
+  font-size: clamp(36px, 3.2vw, 56px);    /* near-parity with train time */
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ink);                       /* was muted; now full weight */
   font-weight: 700;
   white-space: nowrap;
-  margin-right: 8px;
+  margin-right: 10px;
 }
 .st-row .dir .time {
   font-family: 'PT Serif', serif;
