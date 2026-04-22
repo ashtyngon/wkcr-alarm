@@ -232,8 +232,14 @@
 
 <div id="toast" class="toast"></div>
 
-<!-- Hidden audio element. x-webkit-airplay enables AirPlay casting on Safari/iOS. -->
-<audio id="player" crossorigin="anonymous" preload="none" x-webkit-airplay="allow"></audio>
+<!-- Hidden audio element.
+     NO crossorigin attribute: many Icecast/Shoutcast servers don't send
+     Access-Control-Allow-Origin, and crossorigin="anonymous" would force
+     CORS preflight and block otherwise-working streams. We don't use Web
+     Audio API / Canvas visualizer on this element, so plain same-policy
+     playback is fine.
+     x-webkit-airplay enables AirPlay casting on Safari/iOS. -->
+<audio id="player" preload="none" x-webkit-airplay="allow"></audio>
 
 <!-- hls.js for browsers that don't support HLS natively (Chrome, Firefox).
      Safari plays HLS directly and ignores this library. -->
@@ -302,8 +308,7 @@ const MOODS = [
   { id:'electronic',  label:'Electronic' },
   { id:'reggae',      label:'Reggae' },
   { id:'talk',        label:'Talk & News' },
-  { id:'morning',     label:'Morning' },
-];
+  { id:'morning',     label:'Morning' }];
 
 // STATION_MOODS — multi-label tags used ONLY for mood-pill filtering.
 // Must use IDs that actually exist in stations.json. FIXED from the
@@ -459,14 +464,6 @@ const STATION_MOODS = {
   dinamosmog:['electronic','chill'],
   kurdistan24:['talk','world'],
   rudaw:['talk','world'],
-  kan88:['jazz','world'],
-  kanklass:['classical'],
-  kangimmel:['world'],
-  kanreka:['world','talk'],
-  kanmoreshet:['folk','world'],
-  kantarbut:['talk'],
-  mizrahit:['world'],
-  ashams:['world','talk'],
   opus94:['classical'],
   horizonte:['jazz','world'],
   reactor:['indie'],
@@ -577,8 +574,6 @@ const STATION_MOODS = {
   dinamolocodyno:['world','eclectic'],
   dinamommradyo:['electronic'],
   iraniintl:['talk','news','world'],
-  kanbet:['talk','news'],
-  tlv103:['talk','news'],
   radiounam860:['eclectic','world'],
   radiogaucha:['talk','news'],
   abckids:['talk'],
@@ -597,7 +592,6 @@ const STATION_MOODS = {
   rpGlobal:['focus','chill','world','eclectic'],
   ntsSlowFocus:['focus','chill','eclectic'],
   ntsPoolside:['focus','chill','eclectic'],
-  ambientSleepingPill:['focus','chill'],
   positivelyPainRelief174:['focus'],
   positivelyHealing285:['focus'],
   positivelyCalming396:['focus'],
@@ -608,11 +602,6 @@ const STATION_MOODS = {
   positivelyIntuition852:['focus'],
   positivelyEnlightening936:['focus'],
   positivelyPeaceful432:['focus'],
-  radioCapriceMeditation:['focus'],
-  radioCapriceHealing:['focus'],
-  radioCapriceRelaxation:['focus'],
-  radioCapriceSacred:['focus'],
-  sevenRays:['focus'],
   whiteNoise:['focus'],
   pinkNoise:['focus'],
   brownNoise:['focus'],
@@ -623,32 +612,30 @@ const STATION_MOODS = {
 // use regional subgroups to avoid a wall of text (Nielsen Norman chunking).
 // "Opera", "Jazz", "Classical" kept at the top per the original ask.
 const GROUPS = [
-  { id:'jazz', label:'Jazz', ids:['wwoz','wbgo','swissjazz','jazzradio','tsfjazz','abcjazz','fipjazz','bossajazzbr','kan88','horizonte','drp8jazz','errklarajazz','retedue','czjazz','batuta'] },
-  { id:'classical', label:'Classical', ids:['swissclassic','nporadio4','classicfm','wqxr','ancientfm','wcpe','abcclassic','srp2','erttrito','rthk4','kbs1fm','kanklass','opus94','filarmonia','radiocultura','batutaclass','mecfm','culturasp','hpr2','fmusique','orfoe1','yleklass','drp2','klara','rai3','rai5','espace2','errklass','czgregorian','czearly','czbarok','czlive','errklara'] },
+  { id:'jazz', label:'Jazz', ids:['wwoz','wbgo','swissjazz','jazzradio','tsfjazz','abcjazz','fipjazz','bossajazzbr','horizonte','drp8jazz','errklarajazz','retedue','czjazz','batuta'] },
+  { id:'classical', label:'Classical', ids:['swissclassic','nporadio4','classicfm','wqxr','ancientfm','wcpe','abcclassic','srp2','erttrito','rthk4','kbs1fm','opus94','filarmonia','radiocultura','batutaclass','mecfm','culturasp','hpr2','fmusique','orfoe1','yleklass','drp2','klara','rai3','rai5','espace2','errklass','czgregorian','czearly','czbarok','czlive','errklara'] },
   { id:'opera', label:'Opera', ids:['operavore','fmopera','operafm','klassikopera','rthk5','czopera'] },
   { id:'focus', label:'Focus & White Noise',
     subgroups:[
       { label:'Pure noise (white / pink / brown)', ids:['whiteNoise','pinkNoise','brownNoise'] },
-      { label:'Ambient & drone', ids:['somaDeepSpaceOne','somaSpaceStation','somaMissionControl','somaCliqhop','somaSynphaera','somaLush','somaTheTrip','ambientSleepingPill','somagroove','somadrone','ntsraga'] },
+      { label:'Ambient & drone', ids:['somaDeepSpaceOne','somaSpaceStation','somaMissionControl','somaCliqhop','somaSynphaera','somaLush','somaTheTrip','somagroove','somadrone','ntsraga'] },
       { label:'Solfeggio & frequency tuning', ids:["positivelyPainRelief174", "positivelyHealing285", "positivelyCalming396", "positivelyUplifting417", "positivelyRejuvenate528", "positivelyCompassion639", "positivelyDetox741", "positivelyIntuition852", "positivelyEnlightening936", "positivelyPeaceful432"] },
-      { label:'Meditation & sacred', ids:["radioCapriceMeditation", "radioCapriceHealing", "radioCapriceRelaxation", "radioCapriceSacred", "sevenRays", "czgregorian"] },
-      { label:'Curated flow mixtapes', ids:['rpMellow','rpGlobal','ntsSlowFocus','ntsPoolside'] },
-    ] },
+      { label:'Meditation & sacred', ids:['czgregorian','czearly','czbarok'] },
+      { label:'Curated flow mixtapes', ids:['rpMellow','rpGlobal','ntsSlowFocus','ntsPoolside'] }] },
   { id:'folk', label:'Folk & Traditional',
     subgroups:[
       { label:'European folk', ids:['dankoradio','brheimat','rnag','somathistle','bnrhoro','czfolk','abccountry'] },
-      { label:'Middle East & North African folk', ids:['trtturku','trtnagme','radyosiran','yabamazigh','yabchaabi','tlemcen','tiziouzou','mostarab','trtkurdi','alaturka','kanmoreshet'] },
+      { label:'Middle East & North African folk', ids:['trtturku','trtnagme','radyosiran','yabamazigh','yabchaabi','tlemcen','tiziouzou','mostarab','trtkurdi','alaturka'] },
       { label:'Asian traditional', ids:['gugakfm','airraagam','airmaitree','airdharamshala','cnr8','cnr11','cnr13','cnr17','cnr16','nhkr1','klasik','asyik','waiiban','waibidayuh','pblahore','pbpeshawar','czorient','aircuttack','mcotchiangmai','voh610','pbislamabad','rriambon','rribandung'] },
       { label:'Latin American folk', ids:['folklorica','tgw','amazonia','emisorasur'] },
       { label:'Fado & Tango', ids:['fado','fadocoimbra','la2x4'] },
       { label:'Indigenous', ids:['kooriradio','niufm','waatea','tehiku','nv1','hpr1'] },
       { label:'Island & Maloya', ids:['pikan'] },
-      { label:'Ethnographic', ids:['ocora'] },
-    ] },
+      { label:'Ethnographic', ids:['ocora'] }] },
   { id:'world', label:'World & Diaspora',
     subgroups:[
       { label:'Africa', ids:['ukhozi','umhlobo','motsweding','thobela','lesedi','phalaphala','ligwalagwala','metrofmza','peacefm','joyfm','classiclagos','wazobia','sudfm','kledu','okapi','topcongo','kbctaifa','citizen','cloudsfm','zifm','sheger','citifm','zikfm','rfmsn','crtv','tbctaifa','rsg'] },
-      { label:'Middle East & Levant', ids:['turkishlove','iranintl','radiojan','radioliban','radiolibre','sawtghad','chaine3','alarabiya','kurdistan24','rudaw','kangimmel','kanreka','mizrahit','ashams','sawtleb','zitouna','alifalif','iraniintl'] },
+      { label:'Middle East & Levant', ids:['turkishlove','iranintl','radiojan','radioliban','radiolibre','sawtghad','chaine3','alarabiya','kurdistan24','rudaw','sawtleb','zitouna','alifalif','iraniintl'] },
       { label:'Mediterranean', ids:['ertdeftero','ertkosmos'] },
       { label:'South Asia', ids:['airvividh','airfmgold','airrainbow','airkozhikode','somagoa','ntsraga'] },
       { label:'East Asia', ids:['cnr3','rthk2','cnr1','asiafm'] },
@@ -656,16 +643,14 @@ const GROUPS = [
       { label:'Latin America', ids:['radionalcol','radiouchile','radiouruguay','somabossa'] },
       { label:'Caribbean', ids:['vibect'] },
       { label:'Iberian & Latin', ids:['rne3'] },
-      { label:'Global mix', ids:['fipfolk','rpworld','czworld','babelfm'] },
-    ] },
+      { label:'Global mix', ids:['fipfolk','rpworld','czworld','babelfm'] }] },
   { id:'curator', label:'Curator & Eclectic', ids:['nts1','nts2','wfmu','dublab','eclectic24','wwfm','cbcmusic','resonancefm','cashmerefm','thelot','couleur3','dinamocaffe','radiounam','uspfm','triplerr','ckua','wmbr','kalx','kcsb','novaparis','cosmo','tilos','kioskradio','raheem','dinamolocodyno','radiounam860'] },
   { id:'indie', label:'Indie & Alternative', ids:['kexp','bytefm','fluxfm','fipnouv','fiprock','cityfm89','kafa','dinamolegacy','reactor','radionica','triplej','doublej','bkkfm'] },
   { id:'french', label:'French Radio', ids:['fip','fipgroove','icichanson','czchanson'] },
   { id:'chill', label:'Chill & Ambient', ids:['somagroove','somadrone','cool93','alphafm','lmmoz','dinamofluent'] },
   { id:'reggae', label:'Reggae & Dub', ids:['iriefm','fipreggae'] },
   { id:'electronic', label:'Electronic', ids:['sunshinelive','fipelectro','somadefcon','dinamosmog','dinamodeep','dinamommradyo'] },
-  { id:'talk', label:'Talk & News', ids:['wnyc','nhkworld','ajarabic','ajenglish','kantarbut','triplernation','cbconetor','finter','dlfkultur','brilafm','safm','rthk1','rthk3','nasional','rrikbrn','radiomars','alaraby','trthaber','kanbet','tlv103','radiogaucha','abckids','cbconevan','rbcradio'] },
-];
+  { id:'talk', label:'Talk & News', ids:['wnyc','nhkworld','ajarabic','ajenglish','triplernation','cbconetor','finter','dlfkultur','brilafm','safm','rthk1','rthk3','nasional','rrikbrn','radiomars','alaraby','trthaber','radiogaucha','abckids','cbconevan','rbcradio'] }];
 const STATION_COLORS = {
   jazz:['#c8475d','#362459'], classical:['#544178','#006161'], opera:['#8a1632','#332300'],
   folk:['#765600','#006161'], world:['#006262','#332300'],     eclectic:['#69558d','#eaaf00'],
