@@ -1225,6 +1225,11 @@ function clearSearch() {
 $('stationSearch').addEventListener('input', onSearch);
 $('searchClear').addEventListener('click', clearSearch);
 
+// --- Cast state (declared early so volume control can reference it
+//     without hitting a temporal-dead-zone error when initVolume runs). ---
+let castAvailable = false;
+let castSession = null;
+
 // --- Volume control ---
 // Web Audio HTMLMediaElement has its own .volume (0-1). We persist it and
 // keep the cast session's volume in sync so moving the slider affects
@@ -1247,8 +1252,9 @@ function applyVolume(v, { persist = true } = {}) {
   $('volumeIcon').querySelector('.material-symbols-outlined').textContent = volumeIconFor(v);
   if (v > 0) _lastVolume = v;
   if (persist) localStorage.setItem(LS_VOLUME, String(v));
-  // Mirror to cast session if connected
-  if (typeof castSession !== 'undefined' && castSession) {
+  // Mirror to cast session if connected. castSession is declared above this
+  // function so referencing it here is TDZ-safe.
+  if (castSession) {
     try { castSession.setVolume(v / 100); } catch (e) { /* best effort */ }
   }
 }
@@ -1272,13 +1278,8 @@ function initVolume() {
 initVolume();
 
 // --- Google Cast (Chromium browsers) ---
-// The Cast SDK fires this global when ready. The callback MUST be assigned
-// before the SDK finishes loading; otherwise the availability event is
-// missed and the button stays hidden. Even with the script tag above, we
-// also poll for 10s after DOM-ready as a belt-and-suspenders fallback for
-// cases where the SDK initialized before our inline JS executed.
-let castAvailable = false;
-let castSession = null;
+// castAvailable + castSession are declared at the top of this script so
+// volume control can reference them without TDZ issues.
 
 window.__castOnReady = function(isAvailable) {
   if (!isAvailable) {
