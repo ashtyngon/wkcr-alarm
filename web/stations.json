@@ -1,110 +1,326 @@
 [
   {
+    "id": "natureRadioRain",
+    "name": "Nature Radio \u00b7 Rain",
+    "genre": "Focus \u00b7 rain ambience \u00b7 24/7",
+    "url": "https://maggie.torontocast.com:2020/stream/natureradiorain"
+  },
+  {
+    "id": "natureRadioSleep",
+    "name": "Nature Radio \u00b7 Sleep",
+    "genre": "Focus \u00b7 ocean / forest / pad",
+    "url": "https://az1.mediacp.eu/listen/natureradiosleep/radio.mp3"
+  },
+  {
+    "id": "ambientSleepingPill",
+    "name": "Ambient Sleeping Pill",
+    "genre": "Focus \u00b7 beatless drone ambient",
+    "url": "https://radio.stereoscenic.com/asp-h"
+  },
+  {
+    "id": "ambientModern",
+    "name": "Ambient Modern",
+    "genre": "Focus \u00b7 modern ambient \u00b7 Stars-of-the-Lid style",
+    "url": "https://radio.stereoscenic.com/ags-h"
+  },
+  {
+    "id": "somaN5md",
+    "name": "SomaFM \u00b7 n5MD",
+    "genre": "Focus \u00b7 emotional IDM / modern classical",
+    "url": "https://ice2.somafm.com/n5md-128-mp3"
+  },
+  {
+    "id": "somaDigitalis",
+    "name": "SomaFM \u00b7 Digitalis",
+    "genre": "Focus \u00b7 indie post-rock (loose)",
+    "url": "https://ice2.somafm.com/digitalis-128-mp3"
+  },
+  {
+    "id": "whisperingsSoloPiano",
+    "name": "Whisperings \u00b7 Solo Piano",
+    "genre": "Focus \u00b7 solo piano 24/7",
+    "url": "https://pianosolo.streamguys1.com/live"
+  },
+  {
+    "id": "epicPianoChillout",
+    "name": "Epic Piano \u00b7 Chillout",
+    "genre": "Focus \u00b7 Einaudi / Nils Frahm style",
+    "url": "https://stream.epic-piano.com/chillout-piano"
+  },
+  {
+    "id": "epicClassicalStudy",
+    "name": "Epic Classical \u00b7 Study",
+    "genre": "Focus \u00b7 baroque for concentration",
+    "url": "https://stream.epic-classical.com/classical-study"
+  },
+  {
+    "id": "ambientFm",
+    "name": "Ambient.FM",
+    "genre": "Focus \u00b7 human-curated ambient",
+    "url": "https://ambient.fm/live/"
+  },
+  {
+    "id": "somaFluid",
+    "name": "SomaFM \u00b7 Fluid",
+    "genre": "Focus \u00b7 instrumental hip-hop / future soul",
+    "url": "https://ice2.somafm.com/fluid-128-mp3"
+  },
+  {
+    "id": "somaSecretAgent",
+    "name": "SomaFM \u00b7 Secret Agent",
+    "genre": "Focus \u00b7 downtempo lounge / spy groove",
+    "url": "https://ice2.somafm.com/secretagent-128-mp3"
+  },
+  {
+    "id": "somaBeatBlender",
+    "name": "SomaFM \u00b7 Beat Blender",
+    "genre": "Focus \u00b7 deep house \u00d7 downtempo",
+    "url": "https://ice2.somafm.com/beatblender-128-mp3"
+  },
+  {
+    "id": "somaDubStep",
+    "name": "SomaFM \u00b7 Dub Step Beyond",
+    "genre": "Focus \u00b7 dub / deep bass",
+    "url": "https://ice2.somafm.com/dubstep-128-mp3"
+  },
+  {
+    "id": "reyfmLofi",
+    "name": "REYFM \u00b7 Lofi",
+    "genre": "Focus \u00b7 24/7 lo-fi beats",
+    "url": "https://listen.reyfm.de/lofi_320kbps.mp3"
+  },
+  {
+    "id": "lautFmLofi",
+    "name": "laut.fm \u00b7 Lofi",
+    "genre": "Focus \u00b7 lo-fi hip-hop 24/7",
+    "url": "https://stream.laut.fm/lofi"
+  },
+  {
+    "id": "chillstepCalmFlow",
+    "name": "24Dubstep \u00b7 CalmFlow",
+    "genre": "Focus \u00b7 chillstep / ambient / lo-fi",
+    "url": "https://stream.24dubstep.pl/listen/chillstep/mp3_normal"
+  },
+  {
+    "id": "modularStation",
+    "name": "Modular Station",
+    "genre": "Focus \u00b7 modular synth / ambient electronic",
+    "url": "https://broadcast.modular-station.com/radio/8000/radio.aac"
+  },
+  {
+    "id": "ntsFourToFloor",
+    "name": "NTS \u00b7 4 to the Floor",
+    "genre": "Focus \u00b7 house / techno \u00b7 mixtape",
+    "url": "https://stream-mixtape-geo.ntslive.net/mixtape5"
+  },
+  {
+    "id": "ntsLabyrinth",
+    "name": "NTS \u00b7 Labyrinth",
+    "genre": "Focus \u00b7 experimental electronic",
+    "url": "https://stream-mixtape-geo.ntslive.net/mixtape31"
+  },
+  {
+    "id": "kniteforce",
+    "name": "Kniteforce Radio",
+    "genre": "Focus \u00b7 breakbeat / jungle",
+    "url": "https://kniteforce.out.airtime.pro/kniteforce_a"
+  },
+  {
+    "id": "rainwaveOcremix",
+    "name": "Rainwave \u00b7 OC ReMix",
+    "genre": "Focus \u00b7 video-game remixes 24/7",
+    "url": "https://relay.rainwave.cc/ocremix.mp3"
+  },
+  {
+    "id": "rainwaveAll",
+    "name": "Rainwave \u00b7 All",
+    "genre": "Focus \u00b7 all VGM mixed",
+    "url": "https://relay.rainwave.cc/all.mp3"
+  },
+  {
+    "id": "rainwaveGame",
+    "name": "Rainwave \u00b7 Game",
+    "genre": "Focus \u00b7 original game soundtracks",
+    "url": "https://relay.rainwave.cc/game.mp3"
+  },
+  {
+    "id": "rainwaveChiptune",
+    "name": "Rainwave \u00b7 Chiptunes",
+    "genre": "Focus \u00b7 bleepy 8-bit",
+    "url": "https://relay.rainwave.cc/chiptune.mp3"
+  },
+  {
+    "id": "rainwaveCovers",
+    "name": "Rainwave \u00b7 Covers",
+    "genre": "Focus \u00b7 VGM orchestral covers",
+    "url": "https://relay.rainwave.cc/covers.mp3"
+  },
+  {
+    "id": "gamesboroRadio",
+    "name": "Gamesboro Radio",
+    "genre": "Focus \u00b7 Sega / Nintendo / PS / Xbox",
+    "url": "https://radio.gamesboro.org/listen/gamesboro_radio/radio.mp3"
+  },
+  {
+    "id": "radioParalax",
+    "name": "Radio PARALAX",
+    "genre": "Focus \u00b7 chiptune & VGM remixes",
+    "url": "https://ssl.radio-paralax.de:8443/stream"
+  },
+  {
+    "id": "freeCodeCampRadio",
+    "name": "freeCodeCamp \u00b7 Code Radio",
+    "genre": "Focus \u00b7 instrumental coding soundtrack",
+    "url": "https://coderadio-admin-v2.freecodecamp.org/listen/coderadio/radio.mp3"
+  },
+  {
+    "id": "lautFmAnime",
+    "name": "laut.fm \u00b7 Anime",
+    "genre": "Focus \u00b7 anime OSTs / J-instrumental",
+    "url": "https://stream.laut.fm/anime"
+  },
+  {
+    "id": "lautFmGamemusic",
+    "name": "laut.fm \u00b7 Gamemusic",
+    "genre": "Focus \u00b7 mixed video-game music",
+    "url": "https://stream.laut.fm/gamemusic"
+  },
+  {
+    "id": "radioMantra",
+    "name": "Radio Mantra",
+    "genre": "Focus \u00b7 mantra / meditative",
+    "url": "https://c22.radioboss.fm:8291/stream"
+  },
+  {
+    "id": "ntsFieldRecordings",
+    "name": "NTS \u00b7 Field Recordings",
+    "genre": "Focus \u00b7 nature recordings mixtape",
+    "url": "https://stream-mixtape-geo.ntslive.net/mixtape23"
+  },
+  {
+    "id": "ntsExpansions",
+    "name": "NTS \u00b7 Expansions",
+    "genre": "Focus \u00b7 spiritual jazz mixtape",
+    "url": "https://stream-mixtape-geo.ntslive.net/mixtape3"
+  },
+  {
+    "id": "ntsSheetMusic",
+    "name": "NTS \u00b7 Sheet Music",
+    "genre": "Focus \u00b7 classical & contemporary comp",
+    "url": "https://stream-mixtape-geo.ntslive.net/mixtape35"
+  },
+  {
+    "id": "somaSf1033",
+    "name": "SomaFM \u00b7 SF 10-33",
+    "genre": "Focus \u00b7 ambient + SF scanner",
+    "url": "https://ice2.somafm.com/sf1033-128-mp3"
+  },
+  {
     "id": "positivelyPainRelief174",
-    "name": "Positively 174 Hz Pain Relief",
-    "genre": "Focus \u2014 Solfeggio 174 Hz",
+    "name": "Solfeggio 174 Hz",
+    "genre": "Focus \u00b7 solfeggio tuning",
     "url": "https://streaming.positivity.radio/pr/painrelief/icecast.audio"
   },
   {
     "id": "positivelyHealing285",
-    "name": "Positively 285 Hz Healing",
-    "genre": "Focus \u2014 Solfeggio 285 Hz",
+    "name": "Solfeggio 285 Hz",
+    "genre": "Focus \u00b7 solfeggio tuning",
     "url": "https://streaming.positivity.radio/pr/healing/icecast.audio"
   },
   {
     "id": "positivelyCalming396",
-    "name": "Positively 396 Hz Calming (root)",
-    "genre": "Focus \u2014 Solfeggio 396 Hz",
+    "name": "Solfeggio 396 Hz \u00b7 root",
+    "genre": "Focus \u00b7 solfeggio tuning",
     "url": "https://streaming.positivity.radio/pr/calming/icecast.audio"
   },
   {
     "id": "positivelyUplifting417",
-    "name": "Positively 417 Hz Uplifting",
-    "genre": "Focus \u2014 Solfeggio 417 Hz",
+    "name": "Solfeggio 417 Hz",
+    "genre": "Focus \u00b7 solfeggio tuning",
     "url": "https://streaming.positivity.radio/pr/uplifting/icecast.audio"
   },
   {
     "id": "positivelyRejuvenate528",
-    "name": "Positively 528 Hz Rejuvenate (love)",
-    "genre": "Focus \u2014 Solfeggio 528 Hz",
+    "name": "Solfeggio 528 Hz \u00b7 love",
+    "genre": "Focus \u00b7 solfeggio tuning",
     "url": "https://nl4.mystreaming.net/pr/rejuvenate/icecast.audio"
   },
   {
     "id": "positivelyCompassion639",
-    "name": "Positively 639 Hz Compassion",
-    "genre": "Focus \u2014 Solfeggio 639 Hz",
+    "name": "Solfeggio 639 Hz",
+    "genre": "Focus \u00b7 solfeggio tuning",
     "url": "https://nl4.mystreaming.net/pr/compassion/icecast.audio"
   },
   {
     "id": "positivelyDetox741",
-    "name": "Positively 741 Hz Detox",
-    "genre": "Focus \u2014 Solfeggio 741 Hz",
+    "name": "Solfeggio 741 Hz",
+    "genre": "Focus \u00b7 solfeggio tuning",
     "url": "https://streaming.positivity.radio/pr/detox/icecast.audio"
   },
   {
     "id": "positivelyIntuition852",
-    "name": "Positively 852 Hz Intuition",
-    "genre": "Focus \u2014 Solfeggio 852 Hz",
+    "name": "Solfeggio 852 Hz",
+    "genre": "Focus \u00b7 solfeggio tuning",
     "url": "https://nl4.mystreaming.net/pr/intuition/icecast.audio"
   },
   {
     "id": "positivelyEnlightening936",
-    "name": "Positively 936 Hz Enlightening",
-    "genre": "Focus \u2014 Solfeggio 936 Hz",
+    "name": "Solfeggio 936 Hz",
+    "genre": "Focus \u00b7 solfeggio tuning",
     "url": "https://nl4.mystreaming.net/pr/enlightening/icecast.audio"
   },
   {
     "id": "positivelyPeaceful432",
-    "name": "Positively 432 Hz Peaceful",
-    "genre": "Focus \u2014 432 Hz tuning",
+    "name": "432 Hz Tuning",
+    "genre": "Focus \u00b7 alternative concert pitch",
     "url": "https://nl4.mystreaming.net/pr/posipeaceful/icecast.audio"
   },
   {
     "id": "whiteNoise",
     "name": "White Noise",
-    "genre": "Focus \u2014 pure white noise, broadband static (loops)",
+    "genre": "Focus \u00b7 broadband static",
     "url": "/assets/noise/white.mp3"
   },
   {
     "id": "pinkNoise",
     "name": "Pink Noise",
-    "genre": "Focus \u2014 pink noise, balanced spectrum (loops)",
+    "genre": "Focus \u00b7 balanced 1/f spectrum",
     "url": "/assets/noise/pink.mp3"
   },
   {
     "id": "brownNoise",
     "name": "Brown Noise",
-    "genre": "Focus \u2014 brown noise, deep rumble (ADHD favorite)",
+    "genre": "Focus \u00b7 deep rumble \u00b7 ADHD favorite",
     "url": "/assets/noise/brown.mp3"
   },
   {
     "id": "swissjazz",
     "name": "Radio Swiss Jazz",
-    "genre": "Pure jazz, no talk \u2014 Switzerland",
+    "genre": "Jazz \u00b7 no talk \u00b7 Switzerland",
     "url": "https://stream.srg-ssr.ch/m/rsj/mp3_128"
   },
   {
     "id": "abcjazz",
     "name": "ABC Jazz",
-    "genre": "Jazz \u2014 ABC Australia, Melbourne",
+    "genre": "Jazz \u00b7 Australia",
     "url": "https://live-radio01.mediahubaustralia.com/JAZW/mp3/"
   },
   {
     "id": "fipjazz",
     "name": "FIP Jazz",
-    "genre": "Jazz \u2014 Radio France",
+    "genre": "Jazz \u00b7 Radio France",
     "url": "https://icecast.radiofrance.fr/fipjazz-hifi.aac"
   },
   {
     "id": "swissclassic",
     "name": "Radio Swiss Classic",
-    "genre": "Pure classical, no talk \u2014 Switzerland",
+    "genre": "Classical \u00b7 no talk \u00b7 Switzerland",
     "url": "https://stream.srg-ssr.ch/m/rsc_de/mp3_128"
   },
   {
     "id": "wqxr",
-    "name": "WQXR",
-    "genre": "Classical \u2014 New York City",
+    "name": "WQXR \u00b7 New York",
+    "genre": "Classical \u00b7 New York City",
     "url": "https://stream.wqxr.org/wqxr"
   },
   {
@@ -116,559 +332,553 @@
   {
     "id": "wcpe",
     "name": "WCPE Classical",
-    "genre": "24/7 classical, no commercials \u2014 NC",
+    "genre": "Classical \u00b7 24/7 \u00b7 North Carolina",
     "url": "https://audio-mp3.ibiblio.org:443/wcpe.mp3"
   },
   {
     "id": "abcclassic",
     "name": "ABC Classic",
-    "genre": "Classical \u2014 ABC Australia, Melbourne",
+    "genre": "Classical \u00b7 Australia",
     "url": "https://live-radio01.mediahubaustralia.com/2FMW/mp3/"
   },
   {
     "id": "fmopera",
     "name": "France Musique Op\u00e9ra",
-    "genre": "French opera & vocal \u2014 Radio France",
+    "genre": "Opera \u00b7 France",
     "url": "https://icecast.radiofrance.fr/francemusiqueopera-hifi.aac"
   },
   {
     "id": "somagoa",
-    "name": "SomaFM Suburbs of Goa",
-    "genre": "Desi-influenced world beats & tabla",
+    "name": "SomaFM \u00b7 Suburbs of Goa",
+    "genre": "Desi-influenced world \u00b7 tabla",
     "url": "https://ice2.somafm.com/suburbsofgoa-128-mp3"
   },
   {
     "id": "ntsraga",
-    "name": "NTS Slow Focus",
-    "genre": "Raga, ambient & deep listening \u2014 London",
+    "name": "NTS \u00b7 Slow Focus (Raga)",
+    "genre": "Raga \u00b7 ambient \u00b7 London",
     "url": "https://stream-mixtape-geo.ntslive.net/mixtape"
   },
   {
     "id": "somabossa",
-    "name": "SomaFM Bossa Beyond",
-    "genre": "Bossa nova, samba & MPB \u2014 24/7",
+    "name": "SomaFM \u00b7 Bossa Beyond",
+    "genre": "Bossa nova \u00b7 samba \u00b7 MPB",
     "url": "https://ice2.somafm.com/bossa-128-mp3"
   },
   {
     "id": "somathistle",
-    "name": "SomaFM Thistle",
-    "genre": "Celtic & Scottish \u2014 fiddle, pipes, harp",
+    "name": "SomaFM \u00b7 Thistle",
+    "genre": "Celtic \u00b7 Scottish \u00b7 fiddle/pipes",
     "url": "https://ice2.somafm.com/thistle-128-mp3"
   },
   {
     "id": "fip",
     "name": "FIP",
-    "genre": "Eclectic, Jazz, World \u2014 Radio France, Paris",
+    "genre": "Eclectic \u00b7 jazz \u00b7 world \u00b7 Paris",
     "url": "https://icecast.radiofrance.fr/fip-hifi.aac"
   },
   {
     "id": "kexp",
-    "name": "KEXP 90.3",
-    "genre": "Indie & Eclectic \u2014 Seattle",
+    "name": "KEXP \u00b7 Seattle",
+    "genre": "Indie \u00b7 eclectic \u00b7 90.3",
     "url": "https://kexp.streamguys1.com/kexp160.aac"
   },
   {
     "id": "nts1",
     "name": "NTS 1",
-    "genre": "Underground & Global \u2014 London",
+    "genre": "Underground \u00b7 global \u00b7 London",
     "url": "https://stream-relay-geo.ntslive.net/stream"
   },
   {
     "id": "nts2",
     "name": "NTS 2",
-    "genre": "Underground & Global \u2014 London",
+    "genre": "Underground \u00b7 global \u00b7 London",
     "url": "https://stream-relay-geo.ntslive.net/stream2"
   },
   {
     "id": "fipnouv",
     "name": "FIP Nouveaut\u00e9s",
-    "genre": "New releases & discoveries \u2014 Radio France",
+    "genre": "New releases \u00b7 Radio France",
     "url": "https://icecast.radiofrance.fr/fipnouveautes-hifi.aac"
   },
   {
     "id": "fipfolk",
     "name": "FIP Monde",
-    "genre": "World folk & roots \u2014 Radio France",
+    "genre": "World folk & roots \u00b7 Radio France",
     "url": "https://icecast.radiofrance.fr/fipworld-hifi.aac"
   },
   {
     "id": "rpworld",
-    "name": "Radio Paradise World",
-    "genre": "World, folk & roots mix",
+    "name": "Radio Paradise \u00b7 World",
+    "genre": "World \u00b7 folk \u00b7 roots",
     "url": "https://stream.radioparadise.com/world-etc-192"
   },
   {
     "id": "fipreggae",
     "name": "FIP Reggae",
-    "genre": "Reggae & dub \u2014 Radio France",
+    "genre": "Reggae \u00b7 dub \u00b7 Radio France",
     "url": "https://icecast.radiofrance.fr/fipreggae-hifi.aac"
   },
   {
     "id": "fipgroove",
     "name": "FIP Groove",
-    "genre": "Funk, soul & groove \u2014 Radio France",
+    "genre": "Funk \u00b7 soul \u00b7 groove \u00b7 Radio France",
     "url": "https://icecast.radiofrance.fr/fipgroove-hifi.aac"
   },
   {
     "id": "couleur3",
-    "name": "Couleur 3",
-    "genre": "Eclectic alternative \u2014 Swiss public radio",
+    "name": "Couleur 3 \u00b7 Switzerland",
+    "genre": "Eclectic alternative \u00b7 public",
     "url": "https://stream.srg-ssr.ch/m/couleur3/mp3_128"
   },
   {
     "id": "dublab",
-    "name": "Dublab",
-    "genre": "Experimental & underground \u2014 Los Angeles",
+    "name": "Dublab \u00b7 Los Angeles",
+    "genre": "Experimental \u00b7 underground",
     "url": "https://dublab.out.airtime.pro/dublab_a"
   },
   {
     "id": "resonancefm",
-    "name": "Resonance 104.4",
-    "genre": "Arts & experimental \u2014 London",
+    "name": "Resonance FM \u00b7 London",
+    "genre": "Arts \u00b7 experimental",
     "url": "https://stream.resonance.fm/resonance"
   },
   {
     "id": "cashmerefm",
-    "name": "Cashmere Radio",
-    "genre": "Underground & community \u2014 Berlin",
+    "name": "Cashmere Radio \u00b7 Berlin",
+    "genre": "Underground \u00b7 community",
     "url": "https://cashmereradio.out.airtime.pro/cashmereradio_a"
   },
   {
     "id": "fiprock",
     "name": "FIP Rock",
-    "genre": "Rock & indie \u2014 Radio France",
+    "genre": "Rock \u00b7 indie \u00b7 Radio France",
     "url": "https://icecast.radiofrance.fr/fiprock-hifi.aac"
   },
   {
     "id": "fipelectro",
     "name": "FIP Electro",
-    "genre": "Electronic \u2014 Radio France",
+    "genre": "Electronic \u00b7 Radio France",
     "url": "https://icecast.radiofrance.fr/fipelectro-hifi.aac"
   },
   {
     "id": "somadefcon",
-    "name": "SomaFM DEF CON",
+    "name": "SomaFM \u00b7 DEF CON",
     "genre": "Hacker-themed electronica",
     "url": "https://ice2.somafm.com/defcon-128-mp3"
   },
   {
     "id": "somagroove",
-    "name": "SomaFM Groove Salad",
-    "genre": "Ambient & downtempo",
+    "name": "SomaFM \u00b7 Groove Salad",
+    "genre": "Ambient \u00b7 downtempo \u00b7 San Francisco",
     "url": "https://ice2.somafm.com/groovesalad-128-mp3"
   },
   {
     "id": "somadrone",
-    "name": "SomaFM Drone Zone",
-    "genre": "Atmospheric ambient",
+    "name": "SomaFM \u00b7 Drone Zone",
+    "genre": "Ambient \u00b7 atmospheric \u00b7 San Francisco",
     "url": "https://ice2.somafm.com/dronezone-128-mp3"
   },
   {
     "id": "wnyc",
-    "name": "WNYC 93.9",
-    "genre": "NPR & public radio \u2014 New York City",
+    "name": "WNYC \u00b7 New York",
+    "genre": "NPR \u00b7 public \u00b7 93.9 FM",
     "url": "https://fm939.wnyc.org/wnycfm"
   },
   {
     "id": "wwoz",
-    "name": "WWOZ 90.7",
-    "genre": "Jazz, heritage & Creole \u2014 New Orleans",
+    "name": "WWOZ \u00b7 New Orleans",
+    "genre": "Jazz \u00b7 heritage \u00b7 New Orleans",
     "url": "https://wwoz-sc.streamguys1.com/wwoz-hi.mp3"
   },
   {
     "id": "wbgo",
-    "name": "WBGO",
-    "genre": "Public jazz radio \u2014 Newark, NJ",
+    "name": "WBGO \u00b7 Newark",
+    "genre": "Jazz \u00b7 public \u00b7 Newark, NJ",
     "url": "https://ais-sa8.cdnstream1.com/3629_128.mp3"
   },
   {
     "id": "wfmu",
-    "name": "WFMU",
-    "genre": "Freeform independent radio \u2014 Jersey City, NJ",
+    "name": "WFMU \u00b7 Jersey City",
+    "genre": "Freeform independent",
     "url": "https://stream0.wfmu.org/freeform-extrahigh-primary.aac"
   },
   {
     "id": "eclectic24",
-    "name": "KCRW Eclectic24",
-    "genre": "24/7 DJ-curated eclectic \u2014 Los Angeles",
+    "name": "KCRW \u00b7 Eclectic24",
+    "genre": "DJ-curated 24/7 \u00b7 LA",
     "url": "https://streams.kcrw.com/e24_mp3"
   },
   {
     "id": "wwfm",
     "name": "Worldwide FM",
-    "genre": "Global eclectic, Gilles Peterson \u2014 London",
+    "genre": "Global eclectic \u00b7 Gilles Peterson \u00b7 London",
     "url": "https://worldwide-fm.radiocult.fm/stream"
   },
   {
     "id": "cbcmusic",
-    "name": "CBC Music Radio 2",
-    "genre": "Canadian public eclectic \u2014 Toronto",
+    "name": "CBC Music \u00b7 Canada",
+    "genre": "Public eclectic \u00b7 Toronto",
     "url": "https://cbcradiolive.akamaized.net/hls/live/2041057/ES_R2ETR/master.m3u8"
   },
   {
     "id": "gugakfm",
     "name": "KBS Gugak FM",
-    "genre": "Korean traditional court & folk \u2014 Seoul",
+    "genre": "Korean traditional \u00b7 Seoul",
     "url": "https://mgugaklive.nowcdn.co.kr/gugakradio/gugakradio.stream/playlist.m3u8"
   },
   {
     "id": "brheimat",
     "name": "BR Heimat",
-    "genre": "Bavarian Alpine folk \u2014 Munich",
+    "genre": "Alpine folk \u00b7 Bavaria, Germany",
     "url": "https://dispatcher.rndfnk.com/br/brheimat/live/mp3/128/stream.mp3"
   },
   {
     "id": "folklorica",
     "name": "Nacional Folkl\u00f3rica",
-    "genre": "Argentine folk \u2014 Buenos Aires",
+    "genre": "Argentine folk \u00b7 Buenos Aires",
     "url": "https://sa.mp3.icecast.magma.edge-access.net/sc_rad38"
   },
   {
     "id": "rnag",
     "name": "Raidi\u00f3 na Gaeltachta",
-    "genre": "Irish Gaelic & trad \u2014 Ireland",
+    "genre": "Irish Gaelic \u00b7 traditional \u00b7 Ireland",
     "url": "https://liveaudio.rte.ie/hls-radio/rnag/chunklist.m3u8"
   },
   {
     "id": "srp2",
     "name": "Sveriges Radio P2",
-    "genre": "Swedish classical & folk \u2014 Stockholm",
+    "genre": "Classical \u00b7 folk \u00b7 Sweden",
     "url": "https://edge1.sr.se/p2-aac-320"
   },
   {
     "id": "la2x4",
-    "name": "La 2x4 FM 92.7",
-    "genre": "Tango 24/7 \u2014 Buenos Aires",
+    "name": "La 2x4 \u00b7 Buenos Aires",
+    "genre": "Tango \u00b7 24/7 \u00b7 Argentina",
     "url": "https://media.radios.ar:9270/"
   },
   {
     "id": "fado",
     "name": "Antena 1 Fado",
-    "genre": "Portuguese fado 24/7 \u2014 Lisbon",
+    "genre": "Portuguese fado \u00b7 24/7",
     "url": "https://streaming-live.rtp.pt/liveradio/antena1fado80a/playlist.m3u8"
   },
   {
     "id": "ocora",
-    "name": "Ocora Couleurs du Monde",
-    "genre": "Ethnographic & traditional music \u2014 Radio France",
+    "name": "Ocora \u00b7 Couleurs du Monde",
+    "genre": "Ethnographic \u00b7 Radio France",
     "url": "https://icecast.radiofrance.fr/francemusiqueocoramonde-hifi.aac"
   },
   {
     "id": "trtturku",
     "name": "TRT T\u00fcrk\u00fc",
-    "genre": "Turkish folk 24/7 \u2014 Ankara",
+    "genre": "Turkish folk \u00b7 24/7",
     "url": "https://rd-trtturku.medya.trt.com.tr/master_128.m3u8"
   },
   {
     "id": "trtnagme",
     "name": "TRT Na\u011fme",
-    "genre": "Turkish classical (sanat) \u2014 Ankara",
+    "genre": "Turkish classical \u00b7 sanat",
     "url": "https://rd-trtnagme.medya.trt.com.tr/master.m3u8"
   },
   {
     "id": "rne3",
-    "name": "Radio 3 RNE",
-    "genre": "Alternative & world \u2014 Madrid",
+    "name": "Radio 3 \u00b7 RNE",
+    "genre": "Alternative \u00b7 world \u00b7 Madrid",
     "url": "https://rtvelivestream.rtve.es/rtvesec/rne/rne_r3_main.m3u8"
   },
   {
     "id": "operavore",
     "name": "WQXR Operavore",
-    "genre": "Opera 24/7 \u2014 New York",
+    "genre": "Opera \u00b7 24/7 \u00b7 New York",
     "url": "https://stream.wqxr.org/operavore-tunein"
   },
   {
     "id": "airraagam",
     "name": "AIR Raagam",
-    "genre": "Indian classical 24/7",
+    "genre": "Indian classical \u00b7 24/7",
     "url": "https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudioragam/hlspbaudioragam_Auto.m3u8"
   },
   {
     "id": "airmaitree",
     "name": "AIR Maitree",
-    "genre": "Baul & Rabindra \u2014 Kolkata",
+    "genre": "Baul \u00b7 Rabindra \u00b7 Kolkata",
     "url": "https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudio245/hlspbaudio24564kbps.m3u8"
   },
   {
     "id": "airkozhikode",
     "name": "AIR Kozhikode",
-    "genre": "Malayalam & Mappila",
+    "genre": "Malayalam \u00b7 Mappila \u00b7 India",
     "url": "https://air.pc.cdn.bitgravity.com/air/live/pbaudio082/playlist.m3u8"
-  },
-  {
-    "id": "airdharamshala",
-    "name": "AIR Dharamshala",
-    "genre": "Himachali & Tibetan region",
-    "url": "https://air.pc.cdn.bitgravity.com/air/live/pbaudio165/playlist.m3u8"
   },
   {
     "id": "cnr3",
     "name": "CNR-3 Music",
-    "genre": "Chinese music \u2014 Beijing",
+    "genre": "Chinese music \u00b7 Beijing",
     "url": "https://satellitepull.cnr.cn/live/wxyyzs/playlist.m3u8"
   },
   {
     "id": "cnr8",
     "name": "CNR-8 Ethnic",
-    "genre": "Mongolian/Korean/ethnic",
+    "genre": "Mongolian \u00b7 Korean \u00b7 ethnic China",
     "url": "https://satellitepull.cnr.cn/live/wxmzzs/playlist.m3u8"
   },
   {
     "id": "cnr11",
     "name": "CNR-11 Tibetan",
-    "genre": "Tibetan language radio",
+    "genre": "Tibetan language \u00b7 China",
     "url": "https://satellitepull.cnr.cn/live/wxzygb/playlist.m3u8"
   },
   {
     "id": "cnr13",
     "name": "CNR-13 Uyghur",
-    "genre": "Uyghur language radio",
+    "genre": "Uyghur language \u00b7 China",
     "url": "https://satellitepull.cnr.cn/live/wxwygb/playlist.m3u8"
   },
   {
     "id": "cnr17",
     "name": "CNR-17 Kazakh",
-    "genre": "Kazakh language radio",
+    "genre": "Kazakh language \u00b7 China",
     "url": "https://satellitepull.cnr.cn/live/wxhygb/playlist.m3u8"
   },
   {
     "id": "cnr16",
     "name": "CNR-16 Village",
-    "genre": "Rural & folk music",
+    "genre": "Rural + folk \u00b7 China",
     "url": "https://satellitepull.cnr.cn/live/wxxczs/playlist.m3u8"
   },
   {
     "id": "rthk4",
     "name": "RTHK Radio 4",
-    "genre": "Western + Chinese classical, Sunday Opera",
+    "genre": "Classical \u00b7 western + Chinese \u00b7 Hong Kong",
     "url": "https://rthkradio4-live.akamaized.net/hls/live/2040080/radio4/master.m3u8"
   },
   {
     "id": "rthk5",
     "name": "RTHK Radio 5",
-    "genre": "Cantonese opera dedicated!",
+    "genre": "Cantonese opera \u00b7 Hong Kong",
     "url": "https://rthkradio5-live.akamaized.net/hls/live/2040081/radio5/master.m3u8"
   },
   {
     "id": "nhkr1",
     "name": "NHK Radio 1",
-    "genre": "Japanese public (h\u014dgaku, gagaku)",
+    "genre": "Japanese public \u00b7 h\u014dgaku",
     "url": "https://masterpl.hls.nhkworld.jp/hls/r1/live/master.m3u8"
   },
   {
     "id": "nhkworld",
     "name": "NHK World",
-    "genre": "English international",
+    "genre": "English international \u00b7 Japan",
     "url": "https://master.nhkworld.jp/nhkworld-radio/playlist/rs2/live.m3u8"
   },
   {
     "id": "kbs1fm",
-    "name": "KBS 1FM Classic",
-    "genre": "Korean classical \u2014 Seoul",
+    "name": "KBS 1FM",
+    "genre": "Classical \u00b7 Seoul, Korea",
     "url": "https://radio.bsod.kr/stream/?stn=kbs&ch=1fm"
   },
   {
     "id": "pblahore",
-    "name": "Radio Pakistan Lahore",
-    "genre": "Punjabi & ghazal",
+    "name": "Radio Pakistan \u00b7 Lahore",
+    "genre": "Punjabi \u00b7 ghazal \u00b7 Pakistan",
     "url": "https://whmsonic.radio.gov.pk:8026/relay"
   },
   {
     "id": "pbpeshawar",
-    "name": "Radio Pakistan Peshawar",
-    "genre": "Pashto",
+    "name": "Radio Pakistan \u00b7 Peshawar",
+    "genre": "Pashto \u00b7 Pakistan",
     "url": "https://whmsonic.radio.gov.pk:8072/relay"
   },
   {
     "id": "chaine3",
     "name": "Alg\u00e9rie Cha\u00eene 3",
-    "genre": "French RTA \u2014 Algiers",
+    "genre": "French \u00b7 RTA \u00b7 Algiers",
     "url": "https://radiochaine3.ice.infomaniak.ch/chaine3.mp3"
   },
   {
     "id": "tlemcen",
     "name": "Radio Tlemcen",
-    "genre": "Regional RTA \u2014 Tlemcen",
+    "genre": "Regional \u00b7 Tlemcen, Algeria",
     "url": "https://radiotlemcen.ice.infomaniak.ch/tlemcen.mp3"
   },
   {
     "id": "tiziouzou",
     "name": "Radio Tizi Ouzou",
-    "genre": "Kabyle/Berber \u2014 oldest Amazigh station",
+    "genre": "Kabyle \u00b7 Berber \u00b7 Algeria",
     "url": "https://radiotiziouzou.ice.infomaniak.ch/tiziouzou.mp3"
   },
   {
     "id": "ajarabic",
     "name": "Al Jazeera Arabic",
-    "genre": "News audio \u2014 Doha",
+    "genre": "News \u00b7 Arabic \u00b7 Doha",
     "url": "https://live-hls-audio-web-aja.getaj.net/VOICE-AJA/01.m3u8"
   },
   {
     "id": "ajenglish",
     "name": "Al Jazeera English",
-    "genre": "News audio \u2014 Doha",
+    "genre": "News \u00b7 English \u00b7 Doha",
     "url": "https://live-hls-audio-web-aje.getaj.net/VOICE-AJE/01.m3u8"
   },
   {
     "id": "trtkurdi",
     "name": "TRT Radyo Kurd\u00ee",
-    "genre": "Kurdish (Kurmanji/Zaza)",
+    "genre": "Kurdish \u00b7 Kurmanji / Zaza",
     "url": "https://radio-trtradyo6.medya.trt.com.tr/master.m3u8"
   },
   {
     "id": "opus94",
     "name": "IMER Opus 94",
-    "genre": "Mexican classical",
+    "genre": "Classical \u00b7 Mexico City",
     "url": "https://s2.mexside.net/8016/stream"
   },
   {
     "id": "horizonte",
     "name": "IMER Horizonte",
-    "genre": "Mexican jazz & world",
+    "genre": "Jazz \u00b7 world \u00b7 Mexico City",
     "url": "https://s2.mexside.net/8014/stream"
   },
   {
     "id": "reactor",
     "name": "IMER Reactor",
-    "genre": "Mexican indie & alternative",
+    "genre": "Indie \u00b7 alternative \u00b7 Mexico",
     "url": "https://s2.mexside.net/8002/stream"
   },
   {
     "id": "radiounam",
-    "name": "Radio UNAM 96.1",
-    "genre": "Cultural university \u2014 CDMX",
+    "name": "Radio UNAM \u00b7 96.1 FM",
+    "genre": "Cultural university \u00b7 CDMX",
     "url": "https://tv.radiohosting.online:9484/stream"
   },
   {
     "id": "tgw",
-    "name": "TGW La Voz de Guatemala",
-    "genre": "National public, marimba",
+    "name": "TGW \u00b7 Voice of Guatemala",
+    "genre": "Marimba \u00b7 national \u00b7 Guatemala",
     "url": "https://stream.radiotgw.gob.gt/8002/stream"
   },
   {
     "id": "radionalcol",
     "name": "Radio Nacional Colombia",
-    "genre": "Cultural, regional, indigenous",
+    "genre": "Cultural \u00b7 regional \u00b7 indigenous",
     "url": "https://streaming.rtvc.gov.co/Radio_Radionacional/Radionacional.stream/playlist.m3u8"
   },
   {
     "id": "radionica",
     "name": "Se\u00f1al Radi\u00f3nica",
-    "genre": "Colombian indie/alternative",
+    "genre": "Colombian indie \u00b7 alternative",
     "url": "https://streaming.rtvc.gov.co/Radio_Radionica/Radionica.stream/playlist.m3u8"
   },
   {
     "id": "filarmonia",
     "name": "Radio Filarmon\u00eda",
-    "genre": "Peruvian classical \u2014 Lima",
+    "genre": "Classical \u00b7 Lima, Peru",
     "url": "https://c22.radioboss.fm:18100/live"
   },
   {
     "id": "radiouchile",
     "name": "Radio Universidad de Chile",
-    "genre": "Nueva Canci\u00f3n heritage",
+    "genre": "Nueva Canci\u00f3n \u00b7 heritage",
     "url": "https://sonic-us.arkeo.cl/8186/stream"
   },
   {
     "id": "radiocultura",
-    "name": "Radio Cultura Buenos Aires",
-    "genre": "Argentine classical/cultural",
+    "name": "Radio Cultura \u00b7 Buenos Aires",
+    "genre": "Classical \u00b7 cultural \u00b7 Argentina",
     "url": "https://streaming.escuchanosonline.com:7035/stream"
   },
   {
     "id": "radiouruguay",
-    "name": "Radio Uruguay SODRE",
-    "genre": "National public \u2014 Montevideo",
+    "name": "Radio Uruguay \u00b7 SODRE",
+    "genre": "National public \u00b7 Montevideo",
     "url": "https://radios.iwstreaming.uy/8036/stream"
   },
   {
     "id": "emisorasur",
-    "name": "SODRE Emisora del Sur",
-    "genre": "Candombe, murga, tango",
+    "name": "SODRE \u00b7 Emisora del Sur",
+    "genre": "Candombe \u00b7 murga \u00b7 tango \u00b7 Uruguay",
     "url": "https://radios.iwstreaming.uy/8034/stream"
   },
   {
     "id": "babelfm",
-    "name": "Babel FM SODRE",
-    "genre": "World music \u2014 Uruguay",
+    "name": "Babel FM \u00b7 SODRE",
+    "genre": "World music \u00b7 Uruguay",
     "url": "https://radios.iwstreaming.uy/8030/stream"
   },
   {
     "id": "batuta",
-    "name": "R\u00e1dio Batuta MPB",
-    "genre": "IMS MPB, samba, choro",
+    "name": "R\u00e1dio Batuta \u00b7 MPB",
+    "genre": "MPB \u00b7 samba \u00b7 choro \u00b7 Brazil",
     "url": "https://radioims.out.airtime.pro:8443/radioims_a"
   },
   {
     "id": "batutaclass",
     "name": "R\u00e1dio Batuta Cl\u00e1ssicos",
-    "genre": "IMS classical archive",
+    "genre": "Classical \u00b7 archive \u00b7 Brazil",
     "url": "https://classicoims.out.airtime.pro:8443/classicoims_a"
   },
   {
     "id": "mecfm",
     "name": "R\u00e1dio MEC FM",
-    "genre": "Brazilian classical/cultural",
+    "genre": "Classical \u00b7 cultural \u00b7 Brazil",
     "url": "https://radiomecfm-stream.ebc.com.br/ebc/radiomecfm/playlist.m3u8"
   },
   {
     "id": "amazonia",
     "name": "R\u00e1dio Nacional Amaz\u00f4nia",
-    "genre": "Northern Brazil, indigenous",
+    "genre": "Indigenous \u00b7 Northern Brazil",
     "url": "https://radionacionalamazonia-stream.ebc.com.br/ebc/radionacionalamazonia/playlist.m3u8"
   },
   {
     "id": "culturasp",
-    "name": "Cultura FM S\u00e3o Paulo",
-    "genre": "Brazilian classical/cultural",
+    "name": "Cultura FM \u00b7 S\u00e3o Paulo",
+    "genre": "Classical \u00b7 cultural \u00b7 Brazil",
     "url": "https://player-culturafm.stream.uol.com.br/live/culturafm.m3u8"
   },
   {
     "id": "uspfm",
     "name": "R\u00e1dio USP FM",
-    "genre": "University cultural \u2014 SP",
+    "genre": "University cultural \u00b7 S\u00e3o Paulo",
     "url": "https://flow.emm.usp.br:8008/radiousp-rp-64.mp3"
   },
   {
     "id": "kooriradio",
     "name": "Koori Radio",
-    "genre": "Sydney First Nations",
+    "genre": "First Nations \u00b7 Sydney",
     "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/2LND.mp3"
   },
   {
     "id": "triplernation",
     "name": "ABC Radio National",
-    "genre": "Australian culture/talk",
+    "genre": "Australian culture \u00b7 talk",
     "url": "https://mediaserviceslive.akamaized.net/hls/live/2038316/radionational/index.m3u8"
   },
   {
     "id": "triplej",
     "name": "ABC Triple J",
-    "genre": "Youth/alt music",
+    "genre": "Youth \u00b7 alt \u00b7 Australia",
     "url": "https://mediaserviceslive.akamaized.net/hls/live/2038316/triplej/index.m3u8"
   },
   {
     "id": "doublej",
     "name": "ABC Double J",
-    "genre": "Grown-up alt rock",
+    "genre": "Grown-up alt rock \u00b7 Australia",
     "url": "https://mediaserviceslive.akamaized.net/hls/live/2038316/doublej/index.m3u8"
   },
   {
     "id": "abccountry",
     "name": "ABC Country",
-    "genre": "Australian country & folk",
+    "genre": "Country \u00b7 folk \u00b7 Australia",
     "url": "https://mediaserviceslive.akamaized.net/hls/live/2038316/country/index.m3u8"
   },
   {
     "id": "triplerr",
-    "name": "Triple R 102.7",
-    "genre": "Melbourne community eclectic",
+    "name": "Triple R \u00b7 Melbourne",
+    "genre": "Community eclectic",
     "url": "https://ondemand.rrr.org.au/getstream?id=wshq"
   },
   {
     "id": "tehiku",
     "name": "Te Hiku Media",
-    "genre": "Iwi te reo M\u0101ori \u2014 Kaitaia",
+    "genre": "Iwi \u00b7 te reo M\u0101ori \u00b7 NZ",
     "url": "https://wowza.iwi.radio/icecast-to-hls/ngrp:TeHikuMedia.stream_all/playlist.m3u8"
   },
   {
@@ -679,338 +889,338 @@
   },
   {
     "id": "hpr1",
-    "name": "HPR-1 Hawaii",
-    "genre": "Hawaiian public, slack-key Sundays",
+    "name": "HPR-1 \u00b7 Hawaii",
+    "genre": "Hawaiian public \u00b7 slack-key",
     "url": "https://khpr-ice.streamguys1.com/khpr2.mp3"
   },
   {
     "id": "hpr2",
-    "name": "HPR-2 Hawaii",
-    "genre": "Hawaiian public classical",
+    "name": "HPR-2 \u00b7 Hawaii",
+    "genre": "Classical \u00b7 Hawaii",
     "url": "https://khpr-ice.streamguys1.com/kipo2.mp3"
   },
   {
     "id": "ckua",
-    "name": "CKUA Radio",
-    "genre": "Alberta's eclectic public radio",
+    "name": "CKUA \u00b7 Alberta",
+    "genre": "Eclectic public \u00b7 Canada",
     "url": "https://ais-sa1.streamon.fm/7000_48k.aac/playlist.m3u8"
   },
   {
     "id": "cbconetor",
-    "name": "CBC Radio One Toronto",
-    "genre": "Canadian news/talk",
+    "name": "CBC Radio One \u00b7 Toronto",
+    "genre": "News \u00b7 talk \u00b7 Canada",
     "url": "https://cbcradiolive.akamaized.net/hls/live/2041036/ES_R1ETR/master.m3u8"
   },
   {
     "id": "wmbr",
-    "name": "WMBR",
-    "genre": "MIT community eclectic",
+    "name": "WMBR \u00b7 MIT",
+    "genre": "College radio \u00b7 Cambridge, MA",
     "url": "https://wmbr.org:8002/hi"
   },
   {
     "id": "kalx",
-    "name": "KALX Berkeley",
-    "genre": "UC Berkeley college radio",
+    "name": "KALX \u00b7 UC Berkeley",
+    "genre": "College radio \u00b7 Berkeley",
     "url": "https://stream.kalx.berkeley.edu:8443/kalx-128.mp3"
   },
   {
     "id": "kcsb",
-    "name": "KCSB Santa Barbara",
-    "genre": "UCSB college radio",
+    "name": "KCSB \u00b7 UC Santa Barbara",
+    "genre": "College radio",
     "url": "https://stream.revma.ihrhls.com/zc185"
   },
   {
     "id": "finter",
     "name": "France Inter",
-    "genre": "Public culture/news/music",
+    "genre": "News \u00b7 culture \u00b7 music \u00b7 France",
     "url": "https://icecast.radiofrance.fr/franceinter-midfi.mp3"
   },
   {
     "id": "fmusique",
     "name": "France Musique",
-    "genre": "Classical, jazz, contemporary",
+    "genre": "Classical \u00b7 jazz \u00b7 France",
     "url": "https://icecast.radiofrance.fr/francemusique-midfi.mp3"
   },
   {
     "id": "cosmo",
     "name": "WDR Cosmo",
-    "genre": "9-language world/diaspora \u2014 Cologne",
+    "genre": "9-language world \u00b7 diaspora \u00b7 Cologne",
     "url": "https://wdr-cosmo-live.icecast.wdr.de/wdr/cosmo/live/mp3/128/stream.mp3"
   },
   {
     "id": "dlfkultur",
     "name": "Deutschlandfunk Kultur",
-    "genre": "German public culture",
+    "genre": "Culture \u00b7 talk \u00b7 Germany",
     "url": "https://st02.sslstream.dlf.de/dlf/02/128/mp3/stream.mp3?aggregator=web"
   },
   {
     "id": "yleklass",
     "name": "YLE Klassinen",
-    "genre": "Finnish public classical",
+    "genre": "Classical \u00b7 Finland",
     "url": "https://icecast.live.yle.fi/radio/YleKlassinen/icecast.audio"
   },
   {
     "id": "drp2",
     "name": "DR P2",
-    "genre": "Danish public classical",
+    "genre": "Classical \u00b7 Denmark",
     "url": "https://live-icy.gss.dr.dk/A/A05H.mp3"
   },
   {
     "id": "drp8jazz",
     "name": "DR P8 Jazz",
-    "genre": "Danish public jazz",
+    "genre": "Jazz \u00b7 Denmark",
     "url": "https://live-icy.gss.dr.dk/A/A22H.mp3"
   },
   {
     "id": "klara",
-    "name": "Klara VRT",
-    "genre": "Flemish classical/world",
+    "name": "Klara \u00b7 VRT",
+    "genre": "Classical \u00b7 world \u00b7 Belgium",
     "url": "https://quantumcast.vrtcdn.be/klara/mp3-128"
   },
   {
     "id": "espace2",
     "name": "RTS Espace 2",
-    "genre": "Swiss French classical/culture",
+    "genre": "Classical \u00b7 culture \u00b7 Swiss French",
     "url": "https://stream.srg-ssr.ch/m/espace-2/mp3_128"
   },
   {
     "id": "retedue",
     "name": "RSI Rete Due",
-    "genre": "Swiss Italian culture",
+    "genre": "Classical \u00b7 culture \u00b7 Swiss Italian",
     "url": "https://stream.srg-ssr.ch/m/rsp/mp3_128"
   },
   {
     "id": "bnrhoro",
-    "name": "BNR Radio Horo",
-    "genre": "Bulgarian folk 24/7 \u2014 Sofia",
+    "name": "BNR \u00b7 Radio Horo",
+    "genre": "Bulgarian folk \u00b7 24/7",
     "url": "https://lb-hls.cdn.bg/2032/fls/RadioHoro.stream/playlist.m3u8"
   },
   {
     "id": "errklass",
     "name": "ERR Klassikaraadio",
-    "genre": "Estonian public classical",
+    "genre": "Classical \u00b7 Estonia",
     "url": "https://icecast.err.ee/klassikaraadio.mp3"
   },
   {
     "id": "errklarajazz",
     "name": "ERR Klara Jazz",
-    "genre": "Estonian public jazz",
+    "genre": "Jazz \u00b7 Estonia",
     "url": "https://icecast.err.ee/klarajazz.mp3"
   },
   {
     "id": "tilos",
-    "name": "Tilos R\u00e1di\u00f3",
-    "genre": "Budapest independent community",
+    "name": "Tilos R\u00e1di\u00f3 \u00b7 Budapest",
+    "genre": "Independent community",
     "url": "https://stream.tilos.hu/tilos"
   },
   {
     "id": "kioskradio",
-    "name": "Kiosk Radio",
-    "genre": "Curated, Nyege Nyege partner \u2014 Brussels",
+    "name": "Kiosk Radio \u00b7 Brussels",
+    "genre": "Curated \u00b7 Nyege Nyege partner",
     "url": "https://kioskradiobxl.out.airtime.pro/kioskradiobxl_a"
   },
   {
     "id": "raheem",
-    "name": "Radio Raheem",
-    "genre": "Independent culture \u2014 Milan",
+    "name": "Radio Raheem \u00b7 Milan",
+    "genre": "Independent culture",
     "url": "https://radioraheem.out.airtime.pro/radioraheem_a"
   },
   {
     "id": "czlive",
-    "name": "Concertzender Live",
-    "genre": "Classical/jazz/world main stream",
+    "name": "Concertzender \u00b7 Live",
+    "genre": "Classical \u00b7 jazz \u00b7 world \u00b7 Netherlands",
     "url": "https://streams.greenhost.nl:8006/live"
   },
   {
     "id": "czworld",
-    "name": "Concertzender Wereldmuziek",
-    "genre": "World music \u2014 Utrecht",
+    "name": "Concertzender \u00b7 World",
+    "genre": "World music \u00b7 Netherlands",
     "url": "https://streams.greenhost.nl:8006/wereldmuziek"
   },
   {
     "id": "czfolk",
-    "name": "Concertzender Folk it!",
-    "genre": "Folk \u2014 Utrecht",
+    "name": "Concertzender \u00b7 Folk",
+    "genre": "Folk \u00b7 Netherlands",
     "url": "https://streams.greenhost.nl:8006/folkit"
   },
   {
     "id": "czorient",
-    "name": "Concertzender Ori\u00ebnt Express",
-    "genre": "Middle Eastern/Asian",
+    "name": "Concertzender \u00b7 Orient Express",
+    "genre": "Middle Eastern / Asian",
     "url": "https://streams.greenhost.nl:8006/orientexpress"
   },
   {
     "id": "czchanson",
-    "name": "Concertzender Chanson",
-    "genre": "French chanson",
+    "name": "Concertzender \u00b7 Chanson",
+    "genre": "French chanson \u00b7 Netherlands",
     "url": "https://streams.greenhost.nl:8006/chanson"
   },
   {
     "id": "czgregorian",
-    "name": "Concertzender Gregoriaans",
-    "genre": "Gregorian chant",
+    "name": "Concertzender \u00b7 Gregorian",
+    "genre": "Gregorian chant \u00b7 Netherlands",
     "url": "https://streams.greenhost.nl:8006/gregoriaans"
   },
   {
     "id": "czearly",
-    "name": "Concertzender Oude Muziek",
-    "genre": "Early music",
+    "name": "Concertzender \u00b7 Early Music",
+    "genre": "Early music \u00b7 Netherlands",
     "url": "https://streams.greenhost.nl:8006/oudemuziek"
   },
   {
     "id": "czopera",
-    "name": "Concertzender Opera",
-    "genre": "Opera",
+    "name": "Concertzender \u00b7 Opera",
+    "genre": "Opera \u00b7 Netherlands",
     "url": "https://streams.greenhost.nl:8006/opera"
   },
   {
     "id": "czbarok",
-    "name": "Concertzender Barok",
-    "genre": "Baroque",
+    "name": "Concertzender \u00b7 Baroque",
+    "genre": "Baroque \u00b7 Netherlands",
     "url": "https://streams.greenhost.nl:8006/barok"
   },
   {
     "id": "czjazz",
     "name": "Concertzender Jazz",
-    "genre": "World of Jazz",
+    "genre": "Jazz \u00b7 archival \u00b7 Netherlands",
     "url": "https://streams.greenhost.nl:8006/jazz"
   },
   {
     "id": "aircuttack",
     "name": "AIR Cuttack",
-    "genre": "Odia folk/classical",
+    "genre": "Odia folk + classical \u00b7 India",
     "url": "https://air.pc.cdn.bitgravity.com/air/live/pbaudio137/playlist.m3u8"
   },
   {
     "id": "rthk1",
     "name": "RTHK Radio 1",
-    "genre": "Cantonese talk/news \u2014 Hong Kong",
+    "genre": "Cantonese talk \u00b7 news \u00b7 Hong Kong",
     "url": "https://rthkradio1-live.akamaized.net/hls/live/2035313/radio1/master.m3u8"
   },
   {
     "id": "rthk2",
     "name": "RTHK Radio 2",
-    "genre": "Cantopop & youth \u2014 Hong Kong",
+    "genre": "Cantopop \u00b7 youth \u00b7 Hong Kong",
     "url": "https://rthkradio2-live.akamaized.net/hls/live/2040078/radio2/index_64_a.m3u8"
   },
   {
     "id": "rthk3",
     "name": "RTHK Radio 3",
-    "genre": "English service \u2014 Hong Kong",
+    "genre": "English service \u00b7 Hong Kong",
     "url": "https://rthkradio3-live.akamaized.net/hls/live/2040079/radio3/master.m3u8"
   },
   {
     "id": "cnr1",
     "name": "CNR-1 National",
-    "genre": "China national news/culture",
+    "genre": "China national \u00b7 news \u00b7 culture",
     "url": "https://satellitepull.cnr.cn/live/wxzgzs/playlist.m3u8"
   },
   {
     "id": "pbislamabad",
-    "name": "Radio Pakistan Islamabad",
-    "genre": "PBC national",
+    "name": "Radio Pakistan \u00b7 Islamabad",
+    "genre": "National \u00b7 Pakistan",
     "url": "https://whmsonic.radio.gov.pk:7003/stream"
   },
   {
     "id": "zitouna",
     "name": "Radio Zitouna FM",
-    "genre": "Quranic/Islamic \u2014 Tunis",
+    "genre": "Qur'anic \u00b7 Islamic \u00b7 Tunis",
     "url": "https://radio.radiotunisienne.tn/radiozaitouna"
   },
   {
     "id": "trthaber",
     "name": "TRT Radyo Haber",
-    "genre": "Turkish news",
+    "genre": "News \u00b7 Turkey",
     "url": "https://rd-trtradyohaber.medya.trt.com.tr/master.m3u8"
   },
   {
     "id": "radiounam860",
-    "name": "Radio UNAM 860 AM",
-    "genre": "Cultural university \u2014 CDMX",
+    "name": "Radio UNAM \u00b7 860 AM",
+    "genre": "Cultural university \u00b7 CDMX",
     "url": "https://tv.radiohosting.online:9486/stream"
   },
   {
     "id": "abckids",
     "name": "ABC Kids Listen",
-    "genre": "Kids stories & songs \u2014 Australia",
+    "genre": "Kids stories \u00b7 songs \u00b7 Australia",
     "url": "https://mediaserviceslive.akamaized.net/hls/live/2038316/kids/index.m3u8"
   },
   {
     "id": "cbconevan",
-    "name": "CBC Radio One Vancouver",
-    "genre": "Canadian news/talk",
+    "name": "CBC Radio One \u00b7 Vancouver",
+    "genre": "News \u00b7 talk \u00b7 Canada",
     "url": "https://cbcradiolive.akamaized.net/hls/live/2041050/ES_R1PVC/master.m3u8"
   },
   {
     "id": "errklara",
     "name": "ERR Klara Klassika",
-    "genre": "Estonian classical thematic",
+    "genre": "Classical \u00b7 thematic \u00b7 Estonia",
     "url": "https://icecast.err.ee/klaraklassika.mp3"
   },
   {
     "id": "somaDeepSpaceOne",
-    "name": "SomaFM Deep Space One",
-    "genre": "Focus \u2014 deep ambient, space music",
+    "name": "SomaFM \u00b7 Deep Space One",
+    "genre": "Focus \u00b7 deep ambient \u00b7 space",
     "url": "https://ice2.somafm.com/deepspaceone-128-mp3"
   },
   {
     "id": "somaSpaceStation",
-    "name": "SomaFM Space Station Soma",
-    "genre": "Focus \u2014 spacey downtempo, tribal ambient",
+    "name": "SomaFM \u00b7 Space Station Soma",
+    "genre": "Focus \u00b7 downtempo \u00b7 tribal ambient",
     "url": "https://ice2.somafm.com/spacestation-128-mp3"
   },
   {
     "id": "somaMissionControl",
-    "name": "SomaFM Mission Control",
-    "genre": "Focus \u2014 NASA chatter + ambient beds",
+    "name": "SomaFM \u00b7 Mission Control",
+    "genre": "Focus \u00b7 NASA radio + ambient",
     "url": "https://ice2.somafm.com/missioncontrol-128-mp3"
   },
   {
     "id": "somaCliqhop",
-    "name": "SomaFM Cliqhop IDM",
-    "genre": "Focus \u2014 instrumental IDM, glitch background",
+    "name": "SomaFM \u00b7 Cliqhop IDM",
+    "genre": "Focus \u00b7 instrumental IDM",
     "url": "https://ice2.somafm.com/cliqhop-128-mp3"
   },
   {
     "id": "somaSynphaera",
-    "name": "SomaFM Synphaera",
-    "genre": "Focus \u2014 modern electronic ambient with melody",
+    "name": "SomaFM \u00b7 Synphaera",
+    "genre": "Focus \u00b7 melodic electronic ambient",
     "url": "https://ice2.somafm.com/synphaera-128-mp3"
   },
   {
     "id": "somaLush",
-    "name": "SomaFM Lush",
-    "genre": "Focus \u2014 sensuous vocal ambient",
+    "name": "SomaFM \u00b7 Lush",
+    "genre": "Focus \u00b7 vocal ambient",
     "url": "https://ice2.somafm.com/lush-128-mp3"
   },
   {
     "id": "somaTheTrip",
-    "name": "SomaFM The Trip",
-    "genre": "Focus \u2014 progressive / trance flow",
+    "name": "SomaFM \u00b7 The Trip",
+    "genre": "Focus \u00b7 progressive trance",
     "url": "https://ice2.somafm.com/bagel-128-mp3"
   },
   {
     "id": "rpMellow",
-    "name": "Radio Paradise Mellow",
-    "genre": "Focus \u2014 mellow eclectic, flow work",
+    "name": "Radio Paradise \u00b7 Mellow",
+    "genre": "Focus \u00b7 mellow eclectic",
     "url": "https://stream.radioparadise.com/mellow-192"
   },
   {
     "id": "rpGlobal",
-    "name": "Radio Paradise Global",
-    "genre": "Focus \u2014 global eclectic, ambient-with-melody",
+    "name": "Radio Paradise \u00b7 Global",
+    "genre": "Focus \u00b7 global eclectic",
     "url": "https://stream.radioparadise.com/global-192"
   },
   {
     "id": "ntsSlowFocus",
-    "name": "NTS Slow Focus Mixtape",
-    "genre": "Focus \u2014 slow ambient, deep work",
+    "name": "NTS \u00b7 Slow Focus Mixtape",
+    "genre": "Focus \u00b7 slow ambient",
     "url": "https://stream-mixtape-geo.ntslive.net/mixtape"
   },
   {
     "id": "ntsPoolside",
-    "name": "NTS Poolside Mixtape",
-    "genre": "Focus \u2014 instrumental downtempo",
+    "name": "NTS \u00b7 Poolside Mixtape",
+    "genre": "Focus \u00b7 instrumental downtempo",
     "url": "https://stream-mixtape-geo.ntslive.net/mixtape2"
   }
 ]

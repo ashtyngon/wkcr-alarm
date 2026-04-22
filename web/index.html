@@ -119,7 +119,7 @@
   <h1 class="font-headline font-bold text-xl tracking-tight text-on-surface">Sensory Radio</h1>
   <div class="w-16 flex justify-end">
     <button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary-dim transition-colors" onclick="toggleSleepTimer()" title="Sleep timer" aria-label="Sleep timer">
-      <span class="material-symbols-outlined text-xl" id="timerIcon">bedtime</span>
+      <span class="material-symbols-outlined text-xl" id="timerIcon">timer</span>
     </button>
   </div>
 </header>
@@ -164,7 +164,7 @@
     <!-- Sleep timer badge (hidden by default) -->
     <div class="flex justify-center mt-4" id="sleepTimerBadge" style="display:none;">
       <div class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-tertiary/15 border border-tertiary/30 rounded-full">
-        <span class="material-symbols-outlined text-tertiary-fixed-dim text-sm" style="font-variation-settings:'FILL' 1">bedtime</span>
+        <span class="material-symbols-outlined text-tertiary-fixed-dim text-sm" style="font-variation-settings:'FILL' 1">timer</span>
         <span class="font-label text-xs text-tertiary-fixed-dim" id="sleepTimerText">Sleep in 30m</span>
         <button onclick="cancelSleepTimer()" class="ml-1 text-tertiary-fixed-dim/60 hover:text-tertiary-fixed-dim">
           <span class="material-symbols-outlined text-sm">close</span>
@@ -417,7 +417,6 @@ const STATION_MOODS = {
   airrainbow:['world','folk'],
   airmaitree:['folk','world'],
   airkozhikode:['world','folk'],
-  airdharamshala:['world','folk'],
   cnr3:['world'],
   cnr8:['folk','world'],
   cnr11:['folk','world'],
@@ -602,6 +601,43 @@ const STATION_MOODS = {
   positivelyIntuition852:['focus'],
   positivelyEnlightening936:['focus'],
   positivelyPeaceful432:['focus'],
+  // Expanded focus streams (research-driven)
+  natureRadioRain:["focus", "chill"],
+  natureRadioSleep:["focus", "chill"],
+  ambientSleepingPill:["focus", "chill"],
+  ambientModern:["focus", "chill"],
+  somaN5md:["focus", "chill", "classical"],
+  somaDigitalis:["focus", "indie"],
+  whisperingsSoloPiano:["focus", "classical", "chill"],
+  epicPianoChillout:["focus", "classical", "chill"],
+  epicClassicalStudy:["focus", "classical", "chill"],
+  ambientFm:["focus", "chill"],
+  somaFluid:["focus", "chill", "electronic"],
+  somaSecretAgent:["focus", "chill"],
+  somaBeatBlender:["focus", "electronic", "chill"],
+  somaDubStep:["focus", "electronic"],
+  reyfmLofi:["focus", "chill"],
+  lautFmLofi:["focus", "chill"],
+  chillstepCalmFlow:["focus", "electronic", "chill"],
+  modularStation:["focus", "electronic"],
+  ntsFourToFloor:["focus", "electronic"],
+  ntsLabyrinth:["focus", "electronic"],
+  kniteforce:["focus", "electronic"],
+  rainwaveOcremix:["focus", "eclectic"],
+  rainwaveAll:["focus", "eclectic"],
+  rainwaveGame:["focus", "eclectic"],
+  rainwaveChiptune:["focus", "eclectic"],
+  rainwaveCovers:["focus", "eclectic", "classical"],
+  gamesboroRadio:["focus", "eclectic"],
+  radioParalax:["focus", "eclectic"],
+  freeCodeCampRadio:["focus", "chill", "eclectic"],
+  lautFmAnime:["focus", "eclectic"],
+  lautFmGamemusic:["focus", "eclectic"],
+  radioMantra:["focus", "chill", "world"],
+  ntsFieldRecordings:["focus", "chill"],
+  ntsExpansions:["focus", "jazz", "chill"],
+  ntsSheetMusic:["focus", "classical"],
+  somaSf1033:["focus", "chill"],
   whiteNoise:['focus'],
   pinkNoise:['focus'],
   brownNoise:['focus'],
@@ -617,16 +653,21 @@ const GROUPS = [
   { id:'opera', label:'Opera', ids:['operavore','fmopera','operafm','klassikopera','rthk5','czopera'] },
   { id:'focus', label:'Focus & White Noise',
     subgroups:[
-      { label:'Pure noise (white / pink / brown)', ids:['whiteNoise','pinkNoise','brownNoise'] },
-      { label:'Ambient & drone', ids:['somaDeepSpaceOne','somaSpaceStation','somaMissionControl','somaCliqhop','somaSynphaera','somaLush','somaTheTrip','somagroove','somadrone','ntsraga'] },
-      { label:'Solfeggio & frequency tuning', ids:["positivelyPainRelief174", "positivelyHealing285", "positivelyCalming396", "positivelyUplifting417", "positivelyRejuvenate528", "positivelyCompassion639", "positivelyDetox741", "positivelyIntuition852", "positivelyEnlightening936", "positivelyPeaceful432"] },
-      { label:'Meditation & sacred', ids:['czgregorian','czearly','czbarok'] },
-      { label:'Curated flow mixtapes', ids:['rpMellow','rpGlobal','ntsSlowFocus','ntsPoolside'] }] },
+      { label:"Silence-alike \u00b7 pure noise", ids:["whiteNoise", "pinkNoise", "brownNoise"] },
+      { label:"Nature \u00b7 rain, forest, ocean", ids:["natureRadioRain", "natureRadioSleep", "somaSf1033"] },
+      { label:"Deep work \u00b7 drone & dark ambient", ids:["ambientSleepingPill", "ambientModern", "ambientFm", "somaDeepSpaceOne", "somadrone", "somaMissionControl", "somaSpaceStation", "somaSynphaera", "somaN5md"] },
+      { label:"Flow \u00b7 piano, strings, post-rock", ids:["whisperingsSoloPiano", "epicPianoChillout", "epicClassicalStudy", "czgregorian", "czearly", "czbarok", "somaDigitalis", "somaLush"] },
+      { label:"Energized \u00b7 lo-fi & downtempo", ids:["somagroove", "somaFluid", "somaSecretAgent", "somaBeatBlender", "reyfmLofi", "lautFmLofi", "chillstepCalmFlow", "rpMellow", "rpGlobal", "ntsSlowFocus", "ntsPoolside", "ntsraga"] },
+      { label:"Creative \u00b7 IDM, techno, modular", ids:["somaCliqhop", "somaTheTrip", "somaDubStep", "modularStation", "ntsFourToFloor", "ntsLabyrinth", "kniteforce"] },
+      { label:"ADHD paradox \u00b7 video-game music & chiptune", ids:["rainwaveOcremix", "rainwaveAll", "rainwaveGame", "rainwaveChiptune", "rainwaveCovers", "gamesboroRadio", "radioParalax", "freeCodeCampRadio", "lautFmAnime", "lautFmGamemusic"] },
+      { label:"Trance & repetition \u00b7 mantra, field, ritual", ids:["radioMantra", "ntsFieldRecordings", "ntsExpansions", "ntsSheetMusic"] },
+      { label:"Brain entrainment \u00b7 solfeggio & tuning", ids:["positivelyPainRelief174", "positivelyHealing285", "positivelyCalming396", "positivelyUplifting417", "positivelyRejuvenate528", "positivelyCompassion639", "positivelyDetox741", "positivelyIntuition852", "positivelyEnlightening936", "positivelyPeaceful432"] }
+    ] },
   { id:'folk', label:'Folk & Traditional',
     subgroups:[
       { label:'European folk', ids:['dankoradio','brheimat','rnag','somathistle','bnrhoro','czfolk','abccountry'] },
       { label:'Middle East & North African folk', ids:['trtturku','trtnagme','radyosiran','yabamazigh','yabchaabi','tlemcen','tiziouzou','mostarab','trtkurdi','alaturka'] },
-      { label:'Asian traditional', ids:['gugakfm','airraagam','airmaitree','airdharamshala','cnr8','cnr11','cnr13','cnr17','cnr16','nhkr1','klasik','asyik','waiiban','waibidayuh','pblahore','pbpeshawar','czorient','aircuttack','mcotchiangmai','voh610','pbislamabad','rriambon','rribandung'] },
+      { label:'Asian traditional', ids:['gugakfm','airraagam','airmaitree','cnr8','cnr11','cnr13','cnr17','cnr16','nhkr1','klasik','asyik','waiiban','waibidayuh','pblahore','pbpeshawar','czorient','aircuttack','mcotchiangmai','voh610','pbislamabad','rriambon','rribandung'] },
       { label:'Latin American folk', ids:['folklorica','tgw','amazonia','emisorasur'] },
       { label:'Fado & Tango', ids:['fado','fadocoimbra','la2x4'] },
       { label:'Indigenous', ids:['kooriradio','niufm','waatea','tehiku','nv1','hpr1'] },
@@ -1376,7 +1417,10 @@ function castLoadMedia() {
 // --- Init ---
 async function load() {
   try {
-    const r = await fetch('./stations.json');
+    // cache: 'no-cache' forces a conditional revalidation against the
+    // server so new stations propagate on deploy instead of being held
+    // by the browser / CDN edge cache.
+    const r = await fetch('./stations.json', { cache: 'no-cache' });
     stations = await r.json();
   } catch (e) {
     console.error('Failed to load stations.json:', e);
