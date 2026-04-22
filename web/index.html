@@ -254,6 +254,7 @@ const MOODS = [
   { id:'eclectic',    label:'Curated' },
   { id:'indie',       label:'Indie' },
   { id:'chill',       label:'Chill' },
+  { id:'focus',       label:'Focus' },
   { id:'electronic',  label:'Electronic' },
   { id:'reggae',      label:'Reggae' },
   { id:'talk',        label:'Talk & News' },
@@ -308,7 +309,7 @@ const STATION_MOODS = {
   ertdeftero:['world','folk'],
   ertkosmos:['world'],
   somagoa:['world','chill'],
-  ntsraga:['world','chill'],
+  ntsraga:['focus','world','chill'],
   somabossa:['world','chill'],
   sheger:['world','jazz'],
   rne3:['world','indie'],
@@ -333,8 +334,8 @@ const STATION_MOODS = {
   fip:['eclectic','chill'],
   fipgroove:['eclectic'],
   icichanson:['indie','chill'],
-  somagroove:['chill'],
-  somadrone:['chill'],
+  somagroove:['focus','chill'],
+  somadrone:['focus','chill'],
   iriefm:['reggae','chill'],
   fipreggae:['reggae','chill'],
   sunshinelive:['electronic'],
@@ -540,6 +541,19 @@ const STATION_MOODS = {
   cbconevan:['talk','news'],
   errklara:['classical'],
   rbcradio:['talk','news'],
+  // Focus category — verified ad-free work/concentration streams
+  somaDeepSpaceOne:['focus','chill'],
+  somaSpaceStation:['focus','chill'],
+  somaMissionControl:['focus','chill'],
+  somaCliqhop:['focus','electronic','chill'],
+  somaSynphaera:['focus','chill','electronic'],
+  somaLush:['focus','chill'],
+  somaTheTrip:['focus','electronic','chill'],
+  rpMellow:['focus','chill','eclectic'],
+  rpGlobal:['focus','chill','world','eclectic'],
+  ntsSlowFocus:['focus','chill','eclectic'],
+  ntsPoolside:['focus','chill','eclectic'],
+  ambientSleepingPill:['focus','chill'],
 };
 
 // GROUPS — visual sections in the station list, shown in this order.
@@ -550,6 +564,7 @@ const GROUPS = [
   { id:'jazz', label:'Jazz', ids:['wwoz','wbgo','swissjazz','jazzradio','tsfjazz','abcjazz','fipjazz','bossajazzbr','kan88','horizonte','drp8jazz','errklarajazz','retedue','czjazz','batuta'] },
   { id:'classical', label:'Classical', ids:['swissclassic','nporadio4','classicfm','wqxr','ancientfm','wcpe','abcclassic','srp2','erttrito','rthk4','kbs1fm','kanklass','opus94','filarmonia','radiocultura','batutaclass','mecfm','culturasp','hpr2','fmusique','orfoe1','yleklass','drp2','klara','rai3','rai5','espace2','errklass','czgregorian','czearly','czbarok','czlive','errklara'] },
   { id:'opera', label:'Opera', ids:['operavore','fmopera','operafm','klassikopera','rthk5','czopera'] },
+  { id:'focus', label:'Focus & White Noise', ids:['somaDeepSpaceOne','somaSpaceStation','somaMissionControl','somaCliqhop','somaSynphaera','somaLush','somaTheTrip','rpMellow','rpGlobal','ntsSlowFocus','ntsPoolside','ambientSleepingPill','somagroove','somadrone','ntsraga','czgregorian'] },
   { id:'folk', label:'Folk & Traditional',
     subgroups:[
       { label:'European folk', ids:['dankoradio','brheimat','rnag','somathistle','bnrhoro','czfolk','abccountry'] },
@@ -587,12 +602,14 @@ const STATION_COLORS = {
   folk:['#765600','#006161'], world:['#006262','#332300'],     eclectic:['#69558d','#eaaf00'],
   indie:['#69558d','#c8475d'], chill:['#006161','#544178'],    morning:['#fbbc00','#69558d'],
   electronic:['#4b386e','#c8475d'], reggae:['#006141','#eaaf00'],
+  focus:['#1a2340','#4b386e'],
   talk:['#464850','#544178'], news:['#464850','#544178'],
 };
 const STATION_ICONS = {
   jazz:'music_note', classical:'piano', opera:'mic', world:'public', folk:'forest',
   eclectic:'graphic_eq', indie:'headphones', chill:'spa', morning:'wb_sunny',
   electronic:'graphic_eq', reggae:'self_improvement',
+  focus:'self_improvement',
   talk:'campaign', news:'campaign',
 };
 function getStationVisual(s) {
