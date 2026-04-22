@@ -247,6 +247,7 @@ const MOODS = [
   { id:'all',         label:'All' },
   { id:'favorites',   label:'★ Favorites' },
   { id:'classical',   label:'Classical' },
+  { id:'focus',       label:'Focus' },
   { id:'opera',       label:'Opera' },
   { id:'jazz',        label:'Jazz' },
   { id:'folk',        label:'Folk' },
@@ -254,7 +255,6 @@ const MOODS = [
   { id:'eclectic',    label:'Curated' },
   { id:'indie',       label:'Indie' },
   { id:'chill',       label:'Chill' },
-  { id:'focus',       label:'Focus' },
   { id:'electronic',  label:'Electronic' },
   { id:'reggae',      label:'Reggae' },
   { id:'talk',        label:'Talk & News' },
@@ -554,6 +554,9 @@ const STATION_MOODS = {
   ntsSlowFocus:['focus','chill','eclectic'],
   ntsPoolside:['focus','chill','eclectic'],
   ambientSleepingPill:['focus','chill'],
+  whiteNoise:['focus'],
+  pinkNoise:['focus'],
+  brownNoise:['focus'],
 };
 
 // GROUPS — visual sections in the station list, shown in this order.
@@ -564,7 +567,7 @@ const GROUPS = [
   { id:'jazz', label:'Jazz', ids:['wwoz','wbgo','swissjazz','jazzradio','tsfjazz','abcjazz','fipjazz','bossajazzbr','kan88','horizonte','drp8jazz','errklarajazz','retedue','czjazz','batuta'] },
   { id:'classical', label:'Classical', ids:['swissclassic','nporadio4','classicfm','wqxr','ancientfm','wcpe','abcclassic','srp2','erttrito','rthk4','kbs1fm','kanklass','opus94','filarmonia','radiocultura','batutaclass','mecfm','culturasp','hpr2','fmusique','orfoe1','yleklass','drp2','klara','rai3','rai5','espace2','errklass','czgregorian','czearly','czbarok','czlive','errklara'] },
   { id:'opera', label:'Opera', ids:['operavore','fmopera','operafm','klassikopera','rthk5','czopera'] },
-  { id:'focus', label:'Focus & White Noise', ids:['somaDeepSpaceOne','somaSpaceStation','somaMissionControl','somaCliqhop','somaSynphaera','somaLush','somaTheTrip','rpMellow','rpGlobal','ntsSlowFocus','ntsPoolside','ambientSleepingPill','somagroove','somadrone','ntsraga','czgregorian'] },
+  { id:'focus', label:'Focus & White Noise', ids:['whiteNoise','pinkNoise','brownNoise','somaDeepSpaceOne','somaSpaceStation','somaMissionControl','somaCliqhop','somaSynphaera','somaLush','somaTheTrip','rpMellow','rpGlobal','ntsSlowFocus','ntsPoolside','ambientSleepingPill','somagroove','somadrone','ntsraga','czgregorian'] },
   { id:'folk', label:'Folk & Traditional',
     subgroups:[
       { label:'European folk', ids:['dankoradio','brheimat','rnag','somathistle','bnrhoro','czfolk','abccountry'] },
@@ -894,6 +897,10 @@ function _isHls(url) {
 // on failure. Returns a function that reports errors by calling onError.
 function _loadStream(player, url, onError) {
   _destroyHls();
+  // White/pink/brown noise MP3s are short (30 min) static files hosted
+  // in /assets/noise/ — loop them seamlessly so they act like an endless
+  // stream for focus work. Live streams always stay loop=false.
+  player.loop = /\/assets\/noise\//.test(url);
   if (_isHls(url)) {
     if (player.canPlayType('application/vnd.apple.mpegurl')) {
       player.src = url;

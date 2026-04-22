@@ -1,5 +1,23 @@
 [
   {
+    "id": "whiteNoise",
+    "name": "White Noise",
+    "genre": "Focus \u2014 pure white noise, broadband static (loops)",
+    "url": "/assets/noise/white.mp3"
+  },
+  {
+    "id": "pinkNoise",
+    "name": "Pink Noise",
+    "genre": "Focus \u2014 pink noise, balanced spectrum (loops)",
+    "url": "/assets/noise/pink.mp3"
+  },
+  {
+    "id": "brownNoise",
+    "name": "Brown Noise",
+    "genre": "Focus \u2014 brown noise, deep rumble (ADHD favorite)",
+    "url": "/assets/noise/brown.mp3"
+  },
+  {
     "id": "swissjazz",
     "name": "Radio Swiss Jazz",
     "genre": "Pure jazz, no talk \u2014 Switzerland",
