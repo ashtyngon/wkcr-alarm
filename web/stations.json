@@ -1,5 +1,95 @@
 [
   {
+    "id": "positivelyPainRelief174",
+    "name": "Positively 174 Hz Pain Relief",
+    "genre": "Focus \u2014 Solfeggio 174 Hz",
+    "url": "https://streaming.positivity.radio/pr/painrelief/icecast.audio"
+  },
+  {
+    "id": "positivelyHealing285",
+    "name": "Positively 285 Hz Healing",
+    "genre": "Focus \u2014 Solfeggio 285 Hz",
+    "url": "https://streaming.positivity.radio/pr/healing/icecast.audio"
+  },
+  {
+    "id": "positivelyCalming396",
+    "name": "Positively 396 Hz Calming (root)",
+    "genre": "Focus \u2014 Solfeggio 396 Hz",
+    "url": "https://streaming.positivity.radio/pr/calming/icecast.audio"
+  },
+  {
+    "id": "positivelyUplifting417",
+    "name": "Positively 417 Hz Uplifting",
+    "genre": "Focus \u2014 Solfeggio 417 Hz",
+    "url": "https://streaming.positivity.radio/pr/uplifting/icecast.audio"
+  },
+  {
+    "id": "positivelyRejuvenate528",
+    "name": "Positively 528 Hz Rejuvenate (love)",
+    "genre": "Focus \u2014 Solfeggio 528 Hz",
+    "url": "https://nl4.mystreaming.net/pr/rejuvenate/icecast.audio"
+  },
+  {
+    "id": "positivelyCompassion639",
+    "name": "Positively 639 Hz Compassion",
+    "genre": "Focus \u2014 Solfeggio 639 Hz",
+    "url": "https://nl4.mystreaming.net/pr/compassion/icecast.audio"
+  },
+  {
+    "id": "positivelyDetox741",
+    "name": "Positively 741 Hz Detox",
+    "genre": "Focus \u2014 Solfeggio 741 Hz",
+    "url": "https://streaming.positivity.radio/pr/detox/icecast.audio"
+  },
+  {
+    "id": "positivelyIntuition852",
+    "name": "Positively 852 Hz Intuition",
+    "genre": "Focus \u2014 Solfeggio 852 Hz",
+    "url": "https://nl4.mystreaming.net/pr/intuition/icecast.audio"
+  },
+  {
+    "id": "positivelyEnlightening936",
+    "name": "Positively 936 Hz Enlightening",
+    "genre": "Focus \u2014 Solfeggio 936 Hz",
+    "url": "https://nl4.mystreaming.net/pr/enlightening/icecast.audio"
+  },
+  {
+    "id": "positivelyPeaceful432",
+    "name": "Positively 432 Hz Peaceful",
+    "genre": "Focus \u2014 432 Hz tuning",
+    "url": "https://nl4.mystreaming.net/pr/posipeaceful/icecast.audio"
+  },
+  {
+    "id": "radioCapriceMeditation",
+    "name": "Radio Caprice Meditation",
+    "genre": "Focus \u2014 Meditation music",
+    "url": "http://79.120.77.11:8002/meditation"
+  },
+  {
+    "id": "radioCapriceHealing",
+    "name": "Radio Caprice Healing",
+    "genre": "Focus \u2014 Healing / new age",
+    "url": "http://213.141.131.10:8002/healing"
+  },
+  {
+    "id": "radioCapriceRelaxation",
+    "name": "Radio Caprice Relaxation",
+    "genre": "Focus \u2014 Relaxation music",
+    "url": "http://79.120.39.202:8002/relaxation"
+  },
+  {
+    "id": "radioCapriceSacred",
+    "name": "Radio Caprice Sacred",
+    "genre": "Focus \u2014 Sacred / chant",
+    "url": "http://213.141.131.10:8002/sacred"
+  },
+  {
+    "id": "sevenRays",
+    "name": "7 Rays Radio",
+    "genre": "Focus \u2014 New age / healing \u2014 laut.fm",
+    "url": "https://7rays.stream.laut.fm/7rays"
+  },
+  {
     "id": "whiteNoise",
     "name": "White Noise",
     "genre": "Focus \u2014 pure white noise, broadband static (loops)",

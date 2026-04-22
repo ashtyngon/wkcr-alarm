@@ -68,6 +68,19 @@
     transition: opacity .25s;
   }
   .toast.show { opacity: 1; }
+  /* Volume slider — minimal cross-browser styling */
+  #volumeSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: rgb(225,207,255); cursor: pointer;
+    box-shadow: 0 0 12px rgba(225,207,255,0.35);
+  }
+  #volumeSlider::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: rgb(225,207,255); cursor: pointer; border: none;
+    box-shadow: 0 0 12px rgba(225,207,255,0.35);
+  }
+  #volumeSlider:focus { outline: none; }
   /* Safe areas */
   @supports (padding-top: env(safe-area-inset-top)) {
     header { padding-top: calc(env(safe-area-inset-top) + 12px); }
@@ -132,6 +145,20 @@
         aria-label="Play/Pause">
         <span class="material-symbols-outlined text-primary text-4xl" id="heroPlayIcon" style="font-variation-settings:'FILL' 1">play_arrow</span>
       </button>
+    </div>
+
+    <!-- Volume slider — persisted to localStorage, syncs with cast session -->
+    <div class="flex items-center gap-3 mt-6 mx-auto max-w-[320px] px-6">
+      <button id="volumeIcon" onclick="toggleMute()"
+        class="text-on-surface-variant/70 hover:text-primary-dim transition-colors w-8 h-8 flex items-center justify-center flex-shrink-0"
+        title="Mute" aria-label="Mute / unmute">
+        <span class="material-symbols-outlined text-xl">volume_up</span>
+      </button>
+      <input id="volumeSlider" type="range" min="0" max="100" step="1" value="70"
+        class="flex-1 h-1 bg-on-surface-variant/20 rounded-full appearance-none accent-primary"
+        aria-label="Volume"/>
+      <span id="volumeValue"
+        class="font-label text-[10px] tracking-[0.15em] text-on-surface-variant/50 w-6 text-right tabular-nums">70</span>
     </div>
 
     <!-- Sleep timer badge (hidden by default) -->
@@ -212,8 +239,25 @@
      Safari plays HLS directly and ignores this library. -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
 
-<!-- Google Cast SDK (Chrome only) -->
-<script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+<!-- Google Cast SDK (Chromium-based browsers).
+     Register a capture-callback BEFORE the SDK loads so the availability
+     event is never missed if the SDK is faster than our inline JS below. -->
+<script>
+  (function () {
+    window.__castReadyQueue = { available: null };
+    window['__onGCastApiAvailable'] = function (isAvailable) {
+      // If main init has registered its real handler, hand off. Otherwise
+      // stash the availability flag for initCastWhenReady() to pick up.
+      if (typeof window.__castOnReady === 'function') {
+        window.__castOnReady(isAvailable);
+      } else {
+        window.__castReadyQueue.available = isAvailable;
+      }
+    };
+  })();
+</script>
+<script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
+        onerror="console.warn('Cast SDK blocked or unreachable — did an ad-blocker block gstatic.com?')"></script>
 
 <script>
 // ================================================================
@@ -554,6 +598,21 @@ const STATION_MOODS = {
   ntsSlowFocus:['focus','chill','eclectic'],
   ntsPoolside:['focus','chill','eclectic'],
   ambientSleepingPill:['focus','chill'],
+  positivelyPainRelief174:['focus'],
+  positivelyHealing285:['focus'],
+  positivelyCalming396:['focus'],
+  positivelyUplifting417:['focus'],
+  positivelyRejuvenate528:['focus'],
+  positivelyCompassion639:['focus'],
+  positivelyDetox741:['focus'],
+  positivelyIntuition852:['focus'],
+  positivelyEnlightening936:['focus'],
+  positivelyPeaceful432:['focus'],
+  radioCapriceMeditation:['focus'],
+  radioCapriceHealing:['focus'],
+  radioCapriceRelaxation:['focus'],
+  radioCapriceSacred:['focus'],
+  sevenRays:['focus'],
   whiteNoise:['focus'],
   pinkNoise:['focus'],
   brownNoise:['focus'],
@@ -567,7 +626,14 @@ const GROUPS = [
   { id:'jazz', label:'Jazz', ids:['wwoz','wbgo','swissjazz','jazzradio','tsfjazz','abcjazz','fipjazz','bossajazzbr','kan88','horizonte','drp8jazz','errklarajazz','retedue','czjazz','batuta'] },
   { id:'classical', label:'Classical', ids:['swissclassic','nporadio4','classicfm','wqxr','ancientfm','wcpe','abcclassic','srp2','erttrito','rthk4','kbs1fm','kanklass','opus94','filarmonia','radiocultura','batutaclass','mecfm','culturasp','hpr2','fmusique','orfoe1','yleklass','drp2','klara','rai3','rai5','espace2','errklass','czgregorian','czearly','czbarok','czlive','errklara'] },
   { id:'opera', label:'Opera', ids:['operavore','fmopera','operafm','klassikopera','rthk5','czopera'] },
-  { id:'focus', label:'Focus & White Noise', ids:['whiteNoise','pinkNoise','brownNoise','somaDeepSpaceOne','somaSpaceStation','somaMissionControl','somaCliqhop','somaSynphaera','somaLush','somaTheTrip','rpMellow','rpGlobal','ntsSlowFocus','ntsPoolside','ambientSleepingPill','somagroove','somadrone','ntsraga','czgregorian'] },
+  { id:'focus', label:'Focus & White Noise',
+    subgroups:[
+      { label:'Pure noise (white / pink / brown)', ids:['whiteNoise','pinkNoise','brownNoise'] },
+      { label:'Ambient & drone', ids:['somaDeepSpaceOne','somaSpaceStation','somaMissionControl','somaCliqhop','somaSynphaera','somaLush','somaTheTrip','ambientSleepingPill','somagroove','somadrone','ntsraga'] },
+      { label:'Solfeggio & frequency tuning', ids:["positivelyPainRelief174", "positivelyHealing285", "positivelyCalming396", "positivelyUplifting417", "positivelyRejuvenate528", "positivelyCompassion639", "positivelyDetox741", "positivelyIntuition852", "positivelyEnlightening936", "positivelyPeaceful432"] },
+      { label:'Meditation & sacred', ids:["radioCapriceMeditation", "radioCapriceHealing", "radioCapriceRelaxation", "radioCapriceSacred", "sevenRays", "czgregorian"] },
+      { label:'Curated flow mixtapes', ids:['rpMellow','rpGlobal','ntsSlowFocus','ntsPoolside'] },
+    ] },
   { id:'folk', label:'Folk & Traditional',
     subgroups:[
       { label:'European folk', ids:['dankoradio','brheimat','rnag','somathistle','bnrhoro','czfolk','abccountry'] },
@@ -1159,15 +1225,66 @@ function clearSearch() {
 $('stationSearch').addEventListener('input', onSearch);
 $('searchClear').addEventListener('click', clearSearch);
 
-// --- Google Cast (Chrome only) ---
-// The Cast SDK fires this global when ready. If the user is in Chrome with
-// Cast support, we show a cast button and wire it up. Other browsers never
-// see the button.
+// --- Volume control ---
+// Web Audio HTMLMediaElement has its own .volume (0-1). We persist it and
+// keep the cast session's volume in sync so moving the slider affects
+// whichever output is active.
+const LS_VOLUME = 'sensoryRadio.volume';
+let _lastVolume = 70;  // remembered for mute-toggle
+
+function volumeIconFor(v) {
+  if (v === 0) return 'volume_off';
+  if (v < 33)  return 'volume_mute';
+  if (v < 67)  return 'volume_down';
+  return 'volume_up';
+}
+function applyVolume(v, { persist = true } = {}) {
+  v = Math.max(0, Math.min(100, Math.round(v)));
+  const player = $('player');
+  player.volume = v / 100;
+  $('volumeSlider').value = v;
+  $('volumeValue').textContent = v;
+  $('volumeIcon').querySelector('.material-symbols-outlined').textContent = volumeIconFor(v);
+  if (v > 0) _lastVolume = v;
+  if (persist) localStorage.setItem(LS_VOLUME, String(v));
+  // Mirror to cast session if connected
+  if (typeof castSession !== 'undefined' && castSession) {
+    try { castSession.setVolume(v / 100); } catch (e) { /* best effort */ }
+  }
+}
+function toggleMute() {
+  const cur = parseInt($('volumeSlider').value, 10) || 0;
+  if (cur > 0) { applyVolume(0); }
+  else         { applyVolume(_lastVolume || 70); }
+}
+function initVolume() {
+  const saved = parseInt(localStorage.getItem(LS_VOLUME) ?? '70', 10);
+  applyVolume(isNaN(saved) ? 70 : saved, { persist: false });
+  $('volumeSlider').addEventListener('input', (e) => applyVolume(e.target.value));
+  // Keyboard arrows while focus is anywhere — subtle but useful
+  document.addEventListener('keydown', (e) => {
+    if (e.target.matches('input, textarea')) return;
+    if (e.key === 'ArrowUp')   { applyVolume(parseInt($('volumeSlider').value,10) + 5); e.preventDefault(); }
+    if (e.key === 'ArrowDown') { applyVolume(parseInt($('volumeSlider').value,10) - 5); e.preventDefault(); }
+    if (e.key === 'm' || e.key === 'M') { toggleMute(); }
+  });
+}
+initVolume();
+
+// --- Google Cast (Chromium browsers) ---
+// The Cast SDK fires this global when ready. The callback MUST be assigned
+// before the SDK finishes loading; otherwise the availability event is
+// missed and the button stays hidden. Even with the script tag above, we
+// also poll for 10s after DOM-ready as a belt-and-suspenders fallback for
+// cases where the SDK initialized before our inline JS executed.
 let castAvailable = false;
 let castSession = null;
 
-window['__onGCastApiAvailable'] = function(isAvailable) {
-  if (!isAvailable) return;
+window.__castOnReady = function(isAvailable) {
+  if (!isAvailable) {
+    console.info('Google Cast not available on this browser/OS');
+    return;
+  }
   try {
     const ctx = cast.framework.CastContext.getInstance();
     ctx.setOptions({
@@ -1176,7 +1293,6 @@ window['__onGCastApiAvailable'] = function(isAvailable) {
     });
     castAvailable = true;
     $('castBtn').style.display = 'flex';
-    $('castBtnSpacer').style.display = 'none';
     // Listen for session state changes so our UI can reflect active casting.
     ctx.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, (e) => {
       const state = e.sessionState;
@@ -1198,6 +1314,24 @@ window['__onGCastApiAvailable'] = function(isAvailable) {
     console.error('Cast init error:', e);
   }
 };
+
+// Drain the pre-SDK queue — in case cast_sender.js already fired the
+// availability callback before this inline JS ran, we still pick it up.
+if (window.__castReadyQueue && window.__castReadyQueue.available != null) {
+  window.__castOnReady(window.__castReadyQueue.available);
+  window.__castReadyQueue.available = null;
+}
+// Also poll briefly: on slow networks the SDK may still be loading.
+(function pollCast() {
+  let tries = 0;
+  const tmr = setInterval(() => {
+    tries++;
+    if (castAvailable || tries > 30) { clearInterval(tmr); return; }
+    if (window.chrome && window.chrome.cast && window.chrome.cast.isAvailable) {
+      window.__castOnReady(true);
+    }
+  }, 500);
+})();
 
 function updateCastIcon(active) {
   const icon = $('castIcon');
